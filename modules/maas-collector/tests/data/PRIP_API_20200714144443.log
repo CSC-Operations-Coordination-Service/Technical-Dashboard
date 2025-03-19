@@ -1,0 +1,7 @@
+[PRIP-API-1.0][2020-07-14 14:44:43,068][1298][INFO]Query "http://localhost:8081/odata/v1/Products(3db15311-a7d1-4cbc-a572-cd24eb22fb7b)/$value" by user 'user001'
+[PRIP-API-1.0][2020-07-14 14:44:46,887][1298][INFO]Query "http://localhost:8081/odata/v1/Products" started HTTP/1.1 200 OK by user 'user001'
+[PRIP-API-1.0][2020-07-14 14:45:00,050][1298][MON]Query "http://localhost:8081/odata/v1/Products" completed in 63ms HTTP/1.1 200 OK by user 'user001'
+[PRIP-API-1.0][2020-07-14 14:45:00,033][1298][INFO]Query "http://localhost:8081/odata/v1/Products?$filter=contains(Name,'_MSIL2A_')and PublicationDate gt 2019-07-01T00:00:00.000Z and PublicationDate lt 2019-09-01T00:00:00.000Z" started by user 'user001'
+[PRIP-API-1.0][2020-07-14 14:46:55,056][1298][MON]Query "http://localhost:8081/odata/v1/Products?$filter=contains(Name,'_MSIL2A_')and PublicationDate gt 2019-07-01T00:00:00.000Z and PublicationDate lt 2019-09-01T00:00:00.000Z" completed in 203ms by user 'user001'
+[PRIP-API-1.0][2020-07-14 14:47:43,068][1390][INFO]PDI: S2B_OPER_MSI_L2A_TL_SGS__20200714T120236_A015250_T26QPD_N02.14 download started by user 'usr001'
+[PRIP-API-1.0][2020-07-14 14:48:03,887][1390][MON]PDI: S2B_OPER_MSI_L2A_TL_SGS__20200714T120236_A015250_T26QPD_N02.14 download completed by user 'usr001' in 138675ms total transferred bytes 838526404 HTTP/1.1 200 OK

@@ -1,0 +1,25 @@
+services:
+  db-pg:
+    image: postgres:latest
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: ${GF_DATABASE_USER}
+      POSTGRES_PASSWORD: ${GF_DATABASE_PASSWORD}
+      POSTGRES_DB: ${GF_DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: dev-omcs-grafana
+    environment:
+      GF_DATABASE_TYPE: ${GF_DATABASE_TYPE}
+      GF_DATABASE_HOST: ${GF_DATABASE_HOST}
+      GF_DATABASE_NAME: ${GF_DATABASE_NAME}
+      GF_DATABASE_USER: ${GF_DATABASE_USER}
+      GF_DATABASE_PASSWORD: ${GF_DATABASE_PASSWORD}
+    depends_on:
+      - db-pg
+volumes:
+  postgres_data:

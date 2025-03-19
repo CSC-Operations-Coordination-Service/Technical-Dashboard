@@ -1,0 +1,9 @@
+# Python env create in dev 
+*-venv-*
+
+# Default backup folder use by collector
+backup/*
+
+# Not push temporary stuff
+tmp/*
+

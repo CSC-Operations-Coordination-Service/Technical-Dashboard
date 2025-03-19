@@ -1,0 +1,35 @@
+services:
+  maas-engine:
+    image: maas-cds:2.8.1-beta-01-aa
+    container_name: maas-engine-cds
+    command: ["maas_engine", "--config-directory", "/app/conf/", "--healthcheck-port", "80", "-f", "-vv"]
+    # ports:
+    #   - "80:80" # For external healthcheck
+    environment:
+      ES_URL: ${ES_INTERNAL_URL}
+      ES_USERNAME: ${ES_USERNAME}
+      ES_PASSWORD: ${ES_PASSWORD}
+      AMQP_USERNAME: ${AMQP_USERNAME}
+      AMQP_PASSWORD: ${AMQP_PASSWORD}
+      AMQP_URL: ${AMQP_INTERNAL_URL}
+      IGNORE_CERTS_VERIFICATION: True
+    volumes:
+      - ../configuration/engine/collect/maas-engine-conf:/app/conf:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
+    #       memory: 1G
+    #     reservations:
+    #       cpus: '0.1'
+    #       memory: 50M
+    user: "appuser"
+    depends_on:
+      - opensearch
+      - rabbitmq

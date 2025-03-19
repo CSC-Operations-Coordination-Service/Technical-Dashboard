@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+
+ARG PYTHON_VERSION=3.11.11
+ARG DEBIAN_VERSION="bookworm"
+
+FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION}
+LABEL Author="TELESPAZIO FRANCE"
+
+WORKDIR /app
+
+COPY ./build/maas-model/*.whl  ./
+COPY ./build/maas-engine/*.whl  ./
+COPY ./build/maas-cds/*.whl  ./
+
+# update distrib and add needed tools
+# follow best pratices: https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#sort-multi-line-arguments
+# RUN apt-get update
+# RUN apt-get install -y curl jq
+# RUN rm -rf /var/lib/apt/lists/*
+
+# install only usefull lib
+RUN pip install ./maas_model*.whl 
+RUN pip install ./maas_engine*.whl 
+RUN pip install ./maas_cds*.whl 
+
+RUN rm -f *.whl
+
+#Copy template for opensearch database, as initialisation scripts are provided
+COPY ./maas-cds/resources/ resources/
+# Copy default configuration for mass_cds
+COPY ./maas-cds/conf/cds-engine-conf.json /conf/default-engine.conf
+
+
+# Create a non-root user and group
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Change ownership of the application files
+RUN chown -R appuser:appuser /app
+
+# Switch to the non-root user
+USER appuser
+
+# Default host
+ENV HEALTHCHECK_HOSTNAME=localhost
+# Default port
+ENV HEALTHCHECK_PORT=8080
+
+# Health check to ensure the container is running properly
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl --fail http://${HEALTHCHECK_HOSTNAME}:${HEALTHCHECK_PORT}/healthcheck || exit 1
+
+VOLUME ["/conf"]
+
+ENTRYPOINT [ "python", "-m"]
+
+CMD ["maas_engine", "-v", "--config", "/conf/default-engine.conf"]

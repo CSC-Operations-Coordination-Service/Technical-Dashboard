@@ -1,0 +1,46 @@
+services:
+  maas-collector-monitor:
+    image: maas-collector:3.8.1-beta-01-aa
+    container_name: maas-collector-monitor
+    command: ["maas_collector.rawdata.cli.monitor", "-v", "-p", "300", "--healthcheck-port", "80", '--monitoring-interface-name', 'OMCS_Monitoring']
+    # ports:
+    #   - "80:80" # For external healthcheck
+    environment:
+      ES_URL: "${ES_INTERNAL_URL}"
+      ES_USERNAME: "${ES_USERNAME}"
+      ES_PASSWORD: "${ES_PASSWORD}"
+      AMQP_USERNAME: "${AMQP_USERNAME}"
+      AMQP_PASSWORD: "${AMQP_PASSWORD}"
+      AMQP_URL: "${AMQP_INTERNAL_URL}"
+      RAWDATA_CONFIG_DIR: "/conf/collector/"
+      CREDENTIAL_FILE: "/conf/secrets/maas-api-collector-credentials.json"
+      # IGNORE_CERTS_VERIFICATION: True
+      # BACKUP_ENABLED: "1"
+      # BACKUP_HOSTNAME: "${BACKUP_HOSTNAME}"
+      # BACKUP_PORT: "${BACKUP_PORT}"
+      # BACKUP_USERNAME: "${BACKUP_USERNAME}"
+      # BACKUP_PASSWORD: "${BACKUP_PASSWORD}"
+      # BACKUP_DIR: "/files/MAAS/BACKUP/ODATA"
+      # BACKUP_CALENDAR_TREE: "1"
+      # BACKUP_GZIP: "1"
+    volumes:
+      - ../configuration/collector/collector:/conf/collector/:ro
+      - ../configuration/credentials:/conf/secrets/:ro
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
+    #       memory: 1G
+    #     reservations:
+    #       cpus: '0.3'
+    #       memory: 200M
+    user: "appuser"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 1s
+      retries: 3
+      start_period: 30s
+    depends_on:
+      - opensearch
+      - rabbitmq
