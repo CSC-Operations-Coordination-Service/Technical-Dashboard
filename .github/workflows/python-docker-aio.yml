@@ -130,7 +130,7 @@ jobs:
 
     - name: Convert repository name to lowercase
       run: |
-        echo "REPO_NAME_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_EN
+        echo "REPO_NAME_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
     
     - name: Build Docker images
       run: |
