@@ -130,10 +130,12 @@ jobs:
 
     - name: Build Docker images
       run: |
-        docker build --no-cache -t "ghcr.io/${{ github.repository }}/maas-cds:${{ github.ref_name }}" -f ./modules/Dockerfile.maas-cds ./modules
-        docker build --no-cache -t "ghcr.io/${{ github.repository }}/maas-collector:${{ github.ref_name }}" -f ./modules/Dockerfile.maas-collector ./modules
+        REPO_NAME_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        docker build --no-cache -t "ghcr.io/${{ REPO_NAME_LOWER }}/maas-cds:${{ github.ref_name }}" -f ./modules/Dockerfile.maas-cds ./modules
+        docker build --no-cache -t "ghcr.io/${{ REPO_NAME_LOWER }}/maas-collector:${{ github.ref_name }}" -f ./modules/Dockerfile.maas-collector ./modules
 
     - name: Push Docker image
       run: |
-        docker push ghcr.io/${{ github.repository }}/maas-cds:${{ github.ref_name }}
-        docker push ghcr.io/${{ github.repository }}/maas-collector:${{ github.ref_name }}
+        REPO_NAME_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+        docker push ghcr.io/${{ REPO_NAME_LOWER }}/maas-cds:${{ github.ref_name }}
+        docker push ghcr.io/${{ REPO_NAME_LOWER }}/maas-collector:${{ github.ref_name }}
