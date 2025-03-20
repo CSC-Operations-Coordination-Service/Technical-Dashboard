@@ -145,6 +145,10 @@ class CdsDatatakeS1(CdsDatatake):
 
         if self.instrument_mode == "SM":
             product_type_with_instrument = f"S{self.instrument_swath}_{product_type}"
+        elif self.instrument_mode == "AN":
+            product_type_with_instrument = f"N{self.instrument_swath}_{product_type}"
+        elif self.instrument_mode == "ZS":
+            product_type_with_instrument = f"Z{self.instrument_swath}_{product_type}"
         else:
             product_type_with_instrument = f"{self.instrument_mode[:2]}_{product_type}"
 
@@ -343,12 +347,9 @@ class CdsDatatakeS1(CdsDatatake):
             + self.L1_SLC__PRODUCT_TYPE
             + self.L2_OCN__PRODUCT_TYPE,
             "RFC": ["RAW__0S"],
-            "Z1": ["RAW__0S"],
-            "Z2": ["RAW__0S"],
-            "Z3": ["RAW__0S"],
-            "Z4": ["RAW__0S"],
-            "Z5": ["RAW__0S"],
-            "Z6": ["RAW__0S"],
+            "AN": ["RAW__0S"],
+            "EN": ["RAW__0S"],
+            "ZS": ["RAW__0S"],
             "ZI": ["RAW__0S"],
             "ZE": ["RAW__0S"],
             "ZW": ["RAW__0S"],

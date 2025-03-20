@@ -92,13 +92,16 @@ def test_get_all_product_types_s1_not_exist(s1_datatake_ew):
 
 
 def test_add_prefix_instrument(
-    s1_datatake_ew, s1_datatake_iw, s1_datatake_rfc, s1_datatake_sm, s1_datatake_wv
+    s1_datatake_ew, s1_datatake_iw, s1_datatake_rfc, s1_datatake_sm, s1_datatake_wv, s1_datatake_an, s1_datatake_zs, s1_datatake_en
 ):
     assert s1_datatake_ew.add_prefix_instrument("RAW__0S") == "EW_RAW__0S"
     assert s1_datatake_iw.add_prefix_instrument("RAW__0S") == "IW_RAW__0S"
     assert s1_datatake_rfc.add_prefix_instrument("RAW__0S") == "RF_RAW__0S"
     assert s1_datatake_sm.add_prefix_instrument("RAW__0S") == "S5_RAW__0S"
     assert s1_datatake_wv.add_prefix_instrument("RAW__0S") == "WV_RAW__0S"
+    assert s1_datatake_an.add_prefix_instrument("RAW__0S") == "N2_RAW__0S"
+    assert s1_datatake_en.add_prefix_instrument("RAW__0S") == "EN_RAW__0S"
+    assert s1_datatake_zs.add_prefix_instrument("RAW__0S") == "Z3_RAW__0S"
 
 
 def test_impact_other_calculation_s1(s1_product_ew, s1_datatake_ew):

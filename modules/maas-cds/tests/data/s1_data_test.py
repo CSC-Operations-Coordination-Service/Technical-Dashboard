@@ -18,6 +18,9 @@ __all__ = [
     "s1_ddas_product_1",
     "s1_product_amalfi",
     "s1_raw_geopolygon",
+    "s1_datatake_an",
+    "s1_datatake_en",
+    "s1_datatake_zs",
 ]
 
 product_macp_dict = {
@@ -191,6 +194,110 @@ datatake_sm_dict = {
 @pytest.fixture
 def s1_datatake_sm():
     return CdsDatatakeS1(**datatake_sm_dict)
+
+
+s1_datatake_an_dict = {
+    "absolute_orbit": "1367",
+    "application_date": "2025-03-05T17:31:59.000Z",
+    "datatake_id": "9973",
+    "duplicated_global_max_duration": 0,
+    "duplicated_global_max_percentage": 0,
+    "hex_datatake_id": "26F5",
+    "instrument_mode": "AN",
+    "instrument_swath": "2",
+    "key": "S1C-9973",
+    "l0_sensing_duration": 27514000,
+    "l0_sensing_time_start": "2025-03-09T16:58:20.021Z",
+    "l0_sensing_time_stop": "2025-03-09T16:58:47.535Z",
+    "mission": "S1",
+    "name": "S1C_MP_ACQ__L0__20250305T173159_20250313T181805.csv",
+    "observation_duration": 27003000,
+    "observation_time_start": ["2025-03-09T16:58:20.303Z"],
+    "observation_time_stop": "2025-03-09T16:58:47.306Z",
+    "polarization": "SV",
+    "relative_orbit": "44",
+    "satellite_unit": "S1C",
+    "timeliness": "NTC",
+    "updateTime": "2025-03-11T10:26:07.795Z",
+}
+
+
+@pytest.fixture
+def s1_datatake_an():
+    datatake = CdsDatatakeS1(**s1_datatake_an_dict)
+    datatake.full_clean()
+    return datatake
+
+
+s1_datatake_en_dict = {
+    "absolute_orbit": "1326",
+    "application_date": "2025-03-05T17:31:59.000Z",
+    "cams_description": "[S1C] D/O 1327 DT´s not extracted",
+    "cams_origin": "Acquisition",
+    "cams_tickets": ["GSANOM-17957"],
+    "datatake_id": "9494",
+    "duplicated_global_max_duration": 0,
+    "duplicated_global_max_percentage": 0,
+    "hex_datatake_id": "2516",
+    "instrument_mode": "EN",
+    "instrument_swath": "0",
+    "key": "S1C-9494",
+    "l0_sensing_duration": 120495000,
+    "l0_sensing_time_start": "2025-03-06T22:52:24.842Z",
+    "l0_sensing_time_stop": "2025-03-06T22:54:25.337Z",
+    "last_attached_ticket": "GSANOM-17957",
+    "last_attached_ticket_url": "https://esa-cams.atlassian.net/browse/GSANOM-17957",
+    "mission": "S1",
+    "name": "S1C_MP_ACQ__L0__20250305T173159_20250313T181805.csv",
+    "observation_duration": 120017000,
+    "observation_time_start": ["2025-03-06T22:52:25.124Z"],
+    "observation_time_stop": "2025-03-06T22:54:25.141Z",
+    "polarization": "DH",
+    "relative_orbit": "3",
+    "satellite_unit": "S1C",
+    "timeliness": "NTC",
+    "updateTime": "2025-03-10T13:46:24.341Z",
+}
+
+
+@pytest.fixture
+def s1_datatake_en():
+    datatake = CdsDatatakeS1(**s1_datatake_en_dict)
+    datatake.full_clean()
+    return datatake
+
+
+s1_datatake_zs_dict = {
+    "absolute_orbit": "1206",
+    "application_date": "2025-02-24T17:42:06.000Z",
+    "datatake_id": "8050",
+    "duplicated_global_max_duration": 0,
+    "duplicated_global_max_percentage": 0,
+    "hex_datatake_id": "1F72",
+    "instrument_mode": "ZS",
+    "instrument_swath": "3",
+    "key": "S1C-8050",
+    "l0_sensing_duration": 793000,
+    "l0_sensing_time_start": "2025-02-26T15:57:18.556Z",
+    "l0_sensing_time_stop": "2025-02-26T15:57:19.349Z",
+    "mission": "S1",
+    "name": "S1C_MP_ACQ__L0__20250224T174206_20250227T184051.csv",
+    "observation_duration": 274000,
+    "observation_time_start": ["2025-02-26T15:57:18.883Z"],
+    "observation_time_stop": "2025-02-26T15:57:19.157Z",
+    "polarization": "SH",
+    "relative_orbit": "58",
+    "satellite_unit": "S1C",
+    "timeliness": "NTC",
+    "updateTime": "2025-02-24T14:57:08.865Z",
+}
+
+
+@pytest.fixture
+def s1_datatake_zs():
+    datatake = CdsDatatakeS1(**s1_datatake_zs_dict)
+    datatake.full_clean()
+    return datatake
 
 
 product_ew_over_specific_area_data_dict_1 = {

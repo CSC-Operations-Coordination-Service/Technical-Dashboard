@@ -1,0 +1,1 @@
+alias lpe='export WORK_DIR=$(pwd) && . $WORK_DIR/development/.env && . $WORK_DIR/omcs-venv-$PYTHON_VERSION-dev/bin/activate'
