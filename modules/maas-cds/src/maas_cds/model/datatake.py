@@ -81,7 +81,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             },
             "S2B": {
                 "0": ["S2-legacy"],
-                "2022-04-01T00:00:00.000Z": ["PRIP_S2B_CAPGEMIN"],
+                "2022-04-01T00:00:00.000Z": ["PRIP_S2B_CAPGEMINI"],
             },
             "S2C": {
                 "0": ["PRIP_S2C_ATOS_datatest"],
