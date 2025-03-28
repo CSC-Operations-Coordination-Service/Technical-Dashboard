@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - '**'  # Triggers on pull request to any branch
-    
+  workflow_dispatch:
 
 jobs:
   python-test:
