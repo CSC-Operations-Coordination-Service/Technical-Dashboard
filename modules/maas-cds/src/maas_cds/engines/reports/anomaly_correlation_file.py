@@ -97,7 +97,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 .query()
                 .filter("term", satellite_id=satellite_id.upper())
                 .filter("term", downlink_orbit=identifier)
-                .filter("term", ground_station=ground_station.upper()),
+                .filter("term", station_id=f"{ground_station.upper()}_"),
             },
             {
                 "class": CdsHktmAcquisitionCompleteness,
