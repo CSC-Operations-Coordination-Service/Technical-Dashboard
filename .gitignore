@@ -7,3 +7,9 @@ backup/*
 # Not push temporary stuff
 tmp/*
 
+.prod.env
+
+
+# All backup of message
+collect-*
+etl-*
