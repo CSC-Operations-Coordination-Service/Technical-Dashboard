@@ -91,6 +91,7 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-22.04
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
 
     needs: python-build
     steps:
