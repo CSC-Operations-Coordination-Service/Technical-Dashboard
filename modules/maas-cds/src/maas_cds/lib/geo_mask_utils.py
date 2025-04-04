@@ -1,4 +1,4 @@
-"""Module to operate geo feature """
+"""Module to operate geo feature"""
 
 import logging
 import json
@@ -21,15 +21,18 @@ class GeoMaskUtils:
     """Class to manage mask and intersection"""
 
     OVER_SPECIFIC_AREA_GEOJSON = {
-        "OCN": {
-            "0": "ne_110m_ocean.geojson",
-            "2024-06-06T13:20:00.000Z": "simplified_sea_cls.geojson",
+        "default": {
+            "OCN": {
+                "0": "ne_110m_ocean.geojson",
+                "2024-06-06T13:20:00.000Z": "simplified_sea_cls.geojson",
+            },
+            "SLC": {
+                "0": "EW_SLC_area.geojson",
+                "2024-01-29T22:47:05.000Z": "EW_SLC_area_v2.geojson",
+            },
+            "EU": {"0": "EU_area.geojson"},
         },
-        "SLC": {
-            "0": "EW_SLC_area.geojson",
-            "2024-01-29T22:47:05.000Z": "EW_SLC_area_v2.geojson",
-        },
-        "EU": {"0": "EU_area.json"},
+        "S1C": {"SLC": {"0": "EW_SLC_area_v3_for_s1c.geojson"}},
     }
 
     COVERING_AREA_FIELD = "_coverage_percentage"
@@ -39,24 +42,12 @@ class GeoMaskUtils:
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def load_mask(self, mask_name, nearest_time_indicators="0"):
+    def load_mask(self, mask_filename):
         """Load mask from his identifier (his name)
 
         Args:
-            mask_name (str): identifier of the mask
+            mask_filename (str): identifier of the mask on the filesystem
         """
-
-        config_mask = self.OVER_SPECIFIC_AREA_GEOJSON.get(mask_name, None)
-
-        if config_mask is None:
-            self.logger.warning(
-                "[%s] - Mask not found",
-                config_mask,
-            )
-
-            return
-
-        mask_filename = config_mask.get(nearest_time_indicators, None)
 
         if mask_filename is None:
             self.logger.warning(
@@ -67,8 +58,8 @@ class GeoMaskUtils:
             return
 
         self.logger.debug(
-            "[%s] - Loaded mask",
-            mask_name,
+            "[%s] - start loading mask",
+            mask_filename,
         )
 
         geojson_data = {}
@@ -78,7 +69,7 @@ class GeoMaskUtils:
             )
 
         except FileNotFoundError as file_error:
-            self.logger.error("[%s] - Mask path invalid : %s", mask_name, mask_filename)
+            self.logger.error("[%s] - Mask path invalid", mask_filename)
             raise file_error
 
         mask_shapes = GeometryCollection(
@@ -90,21 +81,42 @@ class GeoMaskUtils:
 
         self.CACHED_MASK[mask_filename] = mask_shapes
 
-    def get_mask(self, mask_name, time_indicator="0"):
+    def get_mask(self, satellite_unit, mask_name, time_indicator="0"):
         """Get mask from his identifier (his name)
 
         Args:
+            satellite_unit (str): The satellite unit of the product
             mask_name (str): identifier of the mask
+            time_indicator (str): The time indicator to use for the mask ie the sensing start date
 
         Returns:
             Polygons: The mask with shapely format (Polygons)
         """
+
+        # Determine the mask configuration for the given satellite unit and mask name
+        config_for_satellite_unit: dict = self.OVER_SPECIFIC_AREA_GEOJSON.get(
+            satellite_unit, {}
+        ).get(mask_name, {})
+
+        # Fallback to default mask configuration if no custom mask is found
+        if not config_for_satellite_unit:
+            config_for_satellite_unit = self.OVER_SPECIFIC_AREA_GEOJSON.get(
+                "default", {}
+            ).get(mask_name, {})
+
+        # If no mask found, return None
+        if not config_for_satellite_unit:
+            self.logger.warning(
+                "[%s] - No mask found for this satellite unit", mask_name
+            )
+            return None
+
         (nearest_time_indicator, file_name) = get_good_threshold_config_from_value(
-            self.OVER_SPECIFIC_AREA_GEOJSON.get(mask_name, {}), time_indicator
+            config_for_satellite_unit, time_indicator
         )
 
         if file_name not in self.CACHED_MASK:
-            self.load_mask(mask_name, nearest_time_indicator)
+            self.load_mask(file_name)
         else:
             self.logger.debug(
                 "[%s] - Mask already loaded (%s)", mask_name, nearest_time_indicator
@@ -159,7 +171,7 @@ class GeoMaskUtils:
 
         return product_shape
 
-    def area_coverage(self, footprint, mask_name, date_indicator="0"):
+    def area_coverage(self, satellite_unit, footprint, mask_name, date_indicator="0"):
         """Get the coverage of the footprint on the mask identified by the mask_name
 
         Area is calculated in square meters to match products calculus method.
@@ -175,7 +187,7 @@ class GeoMaskUtils:
             float: the percentage of the footprint in the mask
         """
 
-        mask = self.get_mask(mask_name, date_indicator)
+        mask = self.get_mask(satellite_unit, mask_name, date_indicator)
 
         if mask is None:
             self.logger.warning("[%s] - Cannot intersect with this mask", mask_name)
@@ -191,7 +203,6 @@ class GeoMaskUtils:
 
         product_area = abs(geod.geometry_area_perimeter(product_shape)[0])
 
-        mask = self.get_mask(mask_name, date_indicator)
         intersection = mask.intersection(product_shape)
         intersection_area = abs(geod.geometry_area_perimeter(intersection)[0])
 
@@ -199,7 +210,9 @@ class GeoMaskUtils:
 
         return min(total_coverage, 100)
 
-    def intersect_with_masks(self, footprint, masks_name, date_indicator="0"):
+    def intersect_with_masks(
+        self, satellite_unit, footprint, masks_name, date_indicator="0"
+    ):
         """Intersect a footprint with several masks
 
         Args:
@@ -212,7 +225,9 @@ class GeoMaskUtils:
         result_coverage = {}
 
         for mask_name in masks_name:
-            total_coverage = self.area_coverage(footprint, mask_name, date_indicator)
+            total_coverage = self.area_coverage(
+                satellite_unit, footprint, mask_name, date_indicator
+            )
 
             self.logger.debug(
                 "[%s] - Footprint intersect of %s %%", mask_name, total_coverage
@@ -223,13 +238,19 @@ class GeoMaskUtils:
         return result_coverage
 
     def coverage_over_specific_area_s1(
-        self, instrument_mode: str, footprint: str, start_date: ZuluDate
+        self,
+        satellite_unit: str,
+        instrument_mode: str,
+        footprint: str,
+        start_date: ZuluDate,
     ):
         """Coverage method specific for sentinel 1
 
         Args:
+            satellite_unit (str): The satellite unit of the product
             instrument_mode (str): The product instrument mode
             footprint (str): The product footprint
+            start_date (ZuluDate): The product sensing start date
 
         Returns:
             dict: the coverage of the footprint required for compute completeness over specific area
@@ -237,6 +258,7 @@ class GeoMaskUtils:
 
         masks_name = []
 
+        # Like OCN/SLC
         masks_name_for_instrument = CdsDatatakeS1.PRODUCT_TYPES_OVER_SPECIFIC_AREA.get(
             instrument_mode
         )
@@ -249,7 +271,7 @@ class GeoMaskUtils:
         intersection_data = {}
         if masks_name:
             intersection_data = self.intersect_with_masks(
-                footprint, masks_name, datetime_to_zulu(start_date)
+                satellite_unit, footprint, masks_name, datetime_to_zulu(start_date)
             )
 
         return intersection_data
