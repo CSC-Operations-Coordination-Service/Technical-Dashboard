@@ -142,6 +142,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         self.update_all_entities = False
 
     def action_iterator(self) -> Iterator[Dict[str, Any]]:
+
         # setup specific settings depending input
         match self.payload.document_class:
             case "CamsAnomalyCorrelation":
@@ -159,11 +160,15 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
             ticket_id = getattr(report, issue_attrname, "")
 
             if not ticket_id:
-                self.logger.warning(
-                    "No related ticket found for Anomaly Correlation %s",
-                    report.reportName,
-                )
-                continue
+                # Try to guess the ticket_id from the title
+                if match := re.search(r"GSANOM-\d+", report.title):
+                    ticket_id = match.group(0)
+                else:
+                    self.logger.warning(
+                        "No related ticket found for Anomaly Correlation %s",
+                        report.reportName,
+                    )
+                    continue
 
             ticket_id = ticket_id.strip()
             ticket = self.get_ticket(ticket_id)

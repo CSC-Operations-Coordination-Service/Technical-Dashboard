@@ -2,6 +2,7 @@
 
 A basic entry point for engine cli run
 """
+
 import argparse
 import dataclasses
 import json
@@ -64,8 +65,6 @@ def maas_engine_main(
 
     if namespace.config_directory:
         Engine.load_config_directory(namespace.config_directory)
-
-    Engine.load_config(namespace.config)
 
     engine = Engine.get(engine_id, namespace)
 
