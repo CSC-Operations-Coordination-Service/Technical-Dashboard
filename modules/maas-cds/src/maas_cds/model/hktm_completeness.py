@@ -1,4 +1,6 @@
 """Custom consolidated acquisition pass status"""
+
+from datetime import timedelta
 from opensearchpy import Keyword
 
 from maas_cds.model import generated
@@ -16,3 +18,40 @@ class CdsHktmAcquisitionCompleteness(
     """overide to add cams_tickets as a multi keyword"""
 
     cams_tickets = Keyword(multi=True)
+
+    def count_produced_hktm(self, tolerance_value=0):
+        """
+        Compute the completeness of production based on products.
+
+
+        Args:
+            tolerance_value (int): The shift of the sensing start date in minutes
+
+        Returns:
+            int: The count of document that met the criteria
+
+        """
+        tolerance_value = timedelta(minutes=tolerance_value)
+
+        search = (
+            generated.CdsProduct.search()
+            .filter("term", mission="S2")
+            .filter("term", satellite_unit=self.satellite_unit)
+            .filter("term", product_type="PRD_HKTM__")
+            .filter(
+                "range",
+                sensing_start_date={
+                    "lte": self.effective_downlink_start + tolerance_value
+                },
+            )
+            .filter(
+                "range",
+                sensing_start_date={
+                    "gte": self.effective_downlink_start - tolerance_value
+                },
+            )
+        )
+
+        count = search.count()
+
+        return count

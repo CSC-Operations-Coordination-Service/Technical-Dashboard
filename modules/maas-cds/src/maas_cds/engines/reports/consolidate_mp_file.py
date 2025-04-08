@@ -741,7 +741,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
     def consolidate_cdshktmproductioncompleteness_from_mphktmdownlink(
         self, mp_hktm_downlink: MpHktmDownlink
-    ) -> MAASDocument:
+    ) -> CdsHktmProductionCompleteness:
         """generate a CdsHktmProductionCompleteness from a MpHktmDownlink
 
         Args:
@@ -794,44 +794,13 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             raw_document_application_date
         )
 
-        count = self.count_produced_hktm(mp_hktm_downlink.effective_downlink_start)
+        count = cds_hktm_production_completeness.count_produced_hktm(
+            self.tolerance_value
+        )
 
         cds_hktm_production_completeness.completeness = 1 if count > 0 else 0
 
         return cds_hktm_production_completeness
-
-    def count_produced_hktm(self, effective_downlink_start):
-        """
-        Compute the completeness of production based on products.
-
-
-        Args:
-            effective_downlink_start (datetime): The planned date around which a
-            cds-product should have its sensing start date in the nominal case
-
-        Returns:
-            int: The count of document that met the criteria
-
-        """
-        tolerance_value = timedelta(minutes=self.tolerance_value)
-
-        search = (
-            CdsProduct.search()
-            .filter("term", mission="S2")
-            .filter("term", product_type="PRD_HKTM__")
-            .filter(
-                "range",
-                sensing_start_date={"lte": effective_downlink_start + tolerance_value},
-            )
-            .filter(
-                "range",
-                sensing_start_date={"gte": effective_downlink_start - tolerance_value},
-            )
-        )
-
-        count = search.count()
-
-        return count
 
     def count_hktm_acquisition_completeness(
         self, acquisition_class, session_criteria, status_criteria, orbit_filter=None

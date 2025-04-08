@@ -98,7 +98,10 @@
             "downlink_execution_time": {
                 "type": "date",
                 "locale": "utc"
-            }
+            },
+            "related_document_id": {
+                "type": "keyword"
+            },
         },
         "_meta": {
             "partition_field": "ingestionTime",
