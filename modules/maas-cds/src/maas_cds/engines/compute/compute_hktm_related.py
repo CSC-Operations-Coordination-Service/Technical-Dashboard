@@ -7,8 +7,11 @@ from opensearchpy import MultiSearch
 
 from maas_engine.engine.rawdata import DataEngine
 
-from maas_cds.model import CdsHktmProductionCompleteness, CdsHktmAcquisitionCompleteness
-
+from maas_cds.model import (
+    CdsHktmProductionCompleteness,
+    CdsHktmAcquisitionCompleteness,
+    CdsProduct,
+)
 from maas_cds import model
 
 
@@ -35,8 +38,6 @@ class ComputeHktmRelatedEngine(DataEngine):
         target_model: str = None,
         send_reports=False,
         tolerance_value: int = 30,
-        chunk_size=0,
-        dd_attrs=None,
     ):
         """constructor
 
@@ -45,15 +46,13 @@ class ComputeHktmRelatedEngine(DataEngine):
             target_model (str, optional): Model class name. Defaults to None.
             send_reports (bool, optional): flag. Defaults to False.
         """
-        super().__init__(args, send_reports=send_reports, chunk_size=chunk_size)
+        super().__init__(args, send_reports=send_reports)
 
         self.target_model: (
             CdsHktmAcquisitionCompleteness | CdsHktmProductionCompleteness
         ) = target_model
 
         self.tolerance_value = tolerance_value
-
-        self.dd_attrs = dd_attrs or {}
 
     def update_hktm_factory(self) -> Callable:
         """
@@ -125,7 +124,9 @@ class ComputeHktmRelatedEngine(DataEngine):
 
         return document
 
-    def search_hktm_production(self, documents) -> Tuple[MultiSearch, List[Dict]]:
+    def search_hktm_production(
+        self, documents: CdsProduct
+    ) -> Tuple[MultiSearch, List[Dict]]:
         """
         Search for HKTM information within a tolerance window.
 
@@ -149,6 +150,7 @@ class ComputeHktmRelatedEngine(DataEngine):
 
             msearch = msearch.add(
                 CdsHktmProductionCompleteness.search()
+                .filter("term", satellite_unit=raw_document.satellite_unit)
                 .filter(
                     "range",
                     effective_downlink_start={
@@ -228,28 +230,51 @@ class ComputeHktmRelatedEngine(DataEngine):
                     result_map[document.meta.id] = raw_document
 
             # retrieve again targeted documents as msearch does not support versionning :'(
-            for document in getattr(model, self.target_model).mget_by_ids(
-                list(result_map.keys())
+            for hktm_completeness_document, proof_document in zip(
+                getattr(model, self.target_model).mget_by_ids(list(result_map.keys())),
+                result_map.values(),
             ):
-                initial_dict = document.to_dict()
+                initial_dict = hktm_completeness_document.to_dict()
 
                 update_method = self.update_hktm_factory()
-                document = update_method(document)
+                hktm_completeness_document = update_method(hktm_completeness_document)
 
-                if initial_dict | document.to_dict() != initial_dict:
-                    self.logger.debug(
-                        "[%s] - Update : %s",
-                        document.meta.id,
-                        document.reportName,
+                if (
+                    getattr(hktm_completeness_document, "related_document_id")
+                    and proof_document.meta.id
+                    != hktm_completeness_document.related_document_id
+                ):
+                    self.logger.warning(
+                        "[%s] - This document was already completed by : %s",
+                        hktm_completeness_document.meta.id,
+                        hktm_completeness_document.related_document_id,
                     )
-                    yield document.to_bulk_action()
+
+                setattr(
+                    hktm_completeness_document,
+                    "related_document_id",
+                    proof_document.meta.id,
+                )
+
+                if initial_dict | hktm_completeness_document.to_dict() != initial_dict:
+                    self.logger.info(
+                        "[%s] - Update : %s",
+                        hktm_completeness_document.meta.id,
+                        hktm_completeness_document.reportName,
+                    )
+                    yield hktm_completeness_document.to_bulk_action()
 
                 else:
                     self.logger.debug(
                         "[%s] - Nothing to do : %s",
-                        document.meta.id,
+                        hktm_completeness_document.meta.id,
                         document.reportName,
                     )
+            else:
+                self.logger.info(
+                    "[%s] - Nothing to do : no hktm found",
+                    hktm_completeness_document.meta.id,
+                )
         else:
             self.logger.debug(
                 "[SKIPPING] - Nothing to do : no acquisition have an OK status",

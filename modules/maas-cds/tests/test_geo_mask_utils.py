@@ -1,7 +1,8 @@
-""" Module to test GeoMaskUtils class"""
+"""Module to test GeoMaskUtils class"""
 
 from unittest.mock import patch
 import unittest
+import pytest
 from maas_cds import model
 from maas_cds.lib.geo_mask_utils import GeoMaskUtils
 from opensearchpy.helpers.utils import AttrDict
@@ -15,7 +16,7 @@ def test_geo_cache():
 
     assert len(GeoMaskUtils.CACHED_MASK) == 0
 
-    geo_mask_utils.load_mask("OCN")
+    geo_mask_utils.load_mask("ne_110m_ocean.geojson")
 
     assert len(GeoMaskUtils.CACHED_MASK) > 0
 
@@ -24,6 +25,7 @@ def test_s1_ew(s1_product_ew):
     geo_mask_utils = GeoMaskUtils()
 
     result = geo_mask_utils.coverage_over_specific_area_s1(
+        s1_product_ew.satellite_unit,
         s1_product_ew.instrument_mode,
         s1_product_ew.footprint,
         s1_product_ew.sensing_start_date,
@@ -40,6 +42,7 @@ def test_s1_wv(s1_product_wv):
     geo_mask_utils = GeoMaskUtils()
 
     result = geo_mask_utils.coverage_over_specific_area_s1(
+        s1_product_wv.satellite_unit,
         s1_product_wv.instrument_mode,
         s1_product_wv.footprint,
         s1_product_wv.sensing_start_date,
@@ -48,11 +51,12 @@ def test_s1_wv(s1_product_wv):
     assert result == {"EU_coverage_percentage": 0.0}
 
 
-@patch("logging.Logger.warning")
+@patch("logging.Logger.error")
 def test_load_invalid_mask_name(logger_mock):
     geo_mask_utils = GeoMaskUtils()
 
-    geo_mask_utils.load_mask("YOLO")
+    with pytest.raises(FileNotFoundError):
+        geo_mask_utils.load_mask("YOLO")
 
     logger_mock.assert_called_once()
 
@@ -63,8 +67,10 @@ def test_load_invalid_mask_name(logger_mock):
 def test_load_all_mask(logger_mock):
     geo_mask_utils = GeoMaskUtils()
 
-    for mask_name in GeoMaskUtils.OVER_SPECIFIC_AREA_GEOJSON:
-        geo_mask_utils.load_mask(mask_name)
+    for masks_per_sat in GeoMaskUtils.OVER_SPECIFIC_AREA_GEOJSON.values():
+        for instrument_mode in masks_per_sat.values():
+            for mask_file in instrument_mode.values():
+                geo_mask_utils.load_mask(mask_file)
 
     assert logger_mock.call_count == 0
 
@@ -91,14 +97,14 @@ def test_load_invalid_mask_path(logger_mock):
 
 @patch("logging.Logger.warning")
 def test_mask_not_loaded_coverage(logger_mock, s1_product_wv):
-    GeoMaskUtils().area_coverage(s1_product_wv.footprint, "MASKNOTLOAD")
+    GeoMaskUtils().area_coverage("S1A", s1_product_wv.footprint, "MASKNOTLOAD")
 
     assert logger_mock.call_count == 2
 
 
 @patch("logging.Logger.warning")
 def test_invalid_footprint_coverage(logger_mock, s1_product_wv):
-    GeoMaskUtils().area_coverage(s1_product_wv.footprint[0:-5], "SLC")
+    GeoMaskUtils().area_coverage("S1A", s1_product_wv.footprint[0:-5], "SLC")
 
     logger_mock.assert_called_once()
 
@@ -107,7 +113,7 @@ def test_intersect_svalbard():
     footprint = "Polygon((15 79, 15 80, 16 80, 16 79, 15 79))"
 
     intersect = GeoMaskUtils().area_coverage(
-        footprint, "SLC", "2024-04-02T12:12:12.000Z"
+        "S1A", footprint, "SLC", "2024-04-02T12:12:12.000Z"
     )
 
     assert intersect == 100
@@ -126,22 +132,22 @@ def test_intersect_format_geojson():
             ]
         ],
     }
-    intersect = GeoMaskUtils().area_coverage(footprint, "SLC")
+    intersect = GeoMaskUtils().area_coverage("S1A", footprint, "SLC")
 
     assert intersect == 100
 
 
 def test_intersect_specific_product():
     footprint = "POLYGON((128.563 -8.7541,129.2694 -8.6452,128.854 -6.8028,128.1508 -6.9098,128.563 -8.7541))"
-    intersect = GeoMaskUtils().area_coverage(footprint, "SLC")
+    intersect = GeoMaskUtils().area_coverage("S1A", footprint, "SLC")
     assert intersect == 0
-    intersect = GeoMaskUtils().area_coverage(footprint, "OCN")
+    intersect = GeoMaskUtils().area_coverage("S1A", footprint, "OCN")
     assert intersect == 100
 
 
 def test_from_raw_product_footprint_geo(s1_raw_geopolygon):
     assert isinstance(s1_raw_geopolygon.footprint, AttrDict)
-    intersect = GeoMaskUtils().area_coverage(s1_raw_geopolygon.footprint, "OCN")
+    intersect = GeoMaskUtils().area_coverage("S1A", s1_raw_geopolygon.footprint, "OCN")
     assert intersect == 100
 
 
@@ -160,7 +166,7 @@ def test_new_masks():
     }
 
     intersect = GeoMaskUtils().area_coverage(
-        footprint, "SLC", "2024-04-02T12:12:12.000Z"
+        "S1A", footprint, "SLC", "2024-04-02T12:12:12.000Z"
     )
 
     assert intersect == 100
@@ -181,7 +187,7 @@ def test_intersect_format_geojson_eu_mask():
         ],
         "type": "Polygon",
     }
-    intersect = GeoMaskUtils().area_coverage(footprint, "EU")
+    intersect = GeoMaskUtils().area_coverage("S1A", footprint, "EU")
 
     assert intersect == 100
 
@@ -189,7 +195,7 @@ def test_intersect_format_geojson_eu_mask():
 def test_groenland_coverage():
 
     footprint = "Polygon((-39.9765 80.9498,-17.6093 82.9458,-21.0764 83.8781,-44.8408 81.6605,-39.9765 80.9498))"
-    intersect = GeoMaskUtils().area_coverage(footprint, "OCN")
+    intersect = GeoMaskUtils().area_coverage("S1A", footprint, "OCN")
 
     assert 19.46 < intersect < 19.47
 
@@ -231,6 +237,7 @@ def test_date_masks_impact_bug():
 
     # OLD
     result = geo_mask_utils.coverage_over_specific_area_s1(
+        "S1A",
         "IW",
         raw_document.footprint,
         raw_document.end_date,  # fake previous date
@@ -243,6 +250,7 @@ def test_date_masks_impact_bug():
 
     # NEW
     result = geo_mask_utils.coverage_over_specific_area_s1(
+        "S1A",
         "IW",
         raw_data_product_dict.get("footprint"),
         raw_document.start_date,

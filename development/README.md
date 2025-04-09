@@ -26,7 +26,7 @@ curl $ES_URL  -k -u $ES_USERNAME:$ES_PASSWORD
 Verify grafana provissioning at `http://localhost:${GRF_PORT}/dashboards`
 and `http://localhost:${GRF_PORT}/connections/datasources`
 
-Verify RMQ launch at http://localhost:${AMQP_IHM_PORT}/
+Verify RMQ launch at <http://localhost:${AMQP_IHM_PORT}/>
 
 ## Install module locally
 
@@ -89,6 +89,20 @@ Then to check the correct init
 curl ${ES_URL}cds-datatake-s1-s2 -k -u $ES_USERNAME:$ES_PASSWORD
 ```
 
+## Running engine with payload
+
+### Anomaly correlation example
+
+```bash
+maas_engine_cli -e CONSOLIDATE_ANOMALY_CORRELATION_FILE -vv -p $WORK_DIR/development/payload-sample/an-payload.json
+```
+
+### Hktm production
+
+```bash
+maas_engine_cli -e COMPUTE_HKTM_RELATED -vv -p $WORK_DIR/development/payload-sample/hktm-payload.json -f --routing-key update.hktm-products
+```
+
 ## Load some data from aother cluster
 
 This will depend of cours of how both cluster is configured
@@ -96,7 +110,7 @@ This will depend of cours of how both cluster is configured
 {
   "source": {
     "remote": {
-      "host": "https://HOST:PORT",
+      "host": "<https://HOST:PORT>",
       "username": "USER",
       "password": "PASSWORD"
     },
@@ -132,6 +146,7 @@ reindex.remote.whitelist: ["HOST:PORT"]
 ```
 
 if not inside a volume:
+
 ```bash
 # Import file locally
 docker cp dev-omcs-opensearch:/usr/share/opensearch/config/opensearch.yml $WORK_DIR/development/opensearch/opensearch.yml
@@ -140,14 +155,15 @@ docker cp dev-omcs-opensearch:/usr/share/opensearch/config/opensearch.yml $WORK_
 docker cp $WORK_DIR/development/opensearch/opensearch.yml dev-omcs-opensearch:/usr/share/opensearch/config/opensearch.yml
 ```
 
-Then reload 
-```bash 
+Then reload
+
+```bash
 docker restart dev-omcs-opensearch
 ```
 
 ### Add certificate
 
-Error 
+Error
 
 ```json
 {
@@ -188,11 +204,9 @@ keytool -importcert -alias mycert -file /tmp/opensearch_certificate.der -keystor
 docker restart dev-omcs-opensearch
 ```
 
-
 ### Bypass Certficate not match
 
-
-Error 
+Error
 
 ```json
 {
@@ -217,9 +231,8 @@ In docker compose add some extra host in the service
       - "cert_HOST:real_HOST"
 ```
 
-Next you will probably the same error as the beginning 
+Next you will probably the same error as the beginning
 so add the cert_HOST:PORT in reindex.remote.whitelist: ["HOST:PORT"] as describe previously
-
 
 Then update also the query
 
@@ -241,7 +254,7 @@ Then update also the query
 
 ## Run local python module
 
-## Build local python wheel 
+## Build local python wheel
 
 tox -c ./modules/maas-model/tox.ini -e build
 cp -ar ${WORK_DIR}/modules/maas-model/dist/ ${WORK_DIR}/modules/build/maas-model/
@@ -257,7 +270,7 @@ cp -ar ${WORK_DIR}/modules/maas-cds/dist/ ${WORK_DIR}/modules/build/maas-cds/
 
 ## Build local docker image
 
-```
+```bash
 docker build --no-cache -t "maas-cds:2.8.1-beta" -f ./modules/Dockerfile.maas-cds ./modules
 docker build --no-cache -t "maas-collector:3.8.2-beta" -f ./modules/Dockerfile.maas-collector ./modules
 ```
@@ -274,13 +287,11 @@ docker compose -f ${WORK_DIR}/development/docker-compose.yaml \
 --env-file ${WORK_DIR}/development/.env up -d 
 ```
 
-
 ## S3 bucket snapshot
 
 ```bash
 docker exec -it dev-omcs-opensearch /bin/bash -c "opensearch-plugin install repository-s3"  
 ```
-
 
 ```bash
 export S3_SECRET_KEY=""
@@ -313,7 +324,6 @@ docker exec -it dev-omcs-opensearch /bin/bash -c "opensearch-keystore list ; ope
 
 ## Performing some reprocessing
 
-
 ### Replay PRIP ingestion
 
 ```bash
@@ -328,15 +338,13 @@ el_grando_satruman --document-class PripProduct --query-string "interface_name: 
 el_grando_satruman --document-class CdsCompletenessS1 --query-string "sensing_global_percentage: [* TO 99] AND  observation_time_start: [now-7d TO now-2h]" --routing-key "compute.cds-completeness" --chunk-size "1" --amqp-priority 4 --output-document-class 'CdsCompletenessS1' -c $WORK_DIR/development/maas-engine-conf/cds-engine.json
 ```
 
-
 ## Replay RabbitMQ Manually
 
 Some engine can't be trigger be satruman
 
-#### collect-exchange
+### collect-exchange
 
-##### file.raw.data.mp-product
-
+#### file.raw.data.mp-product
 
 ```json
 {"date": "2025-01-20T13:43:32.773Z", "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271", "ancestor_ids": [], "pipeline": ["ODataCollector"], "force": true, "document_ids": ["S1C_MP_ACQ__L0__20250120T174545_20250124T181805.csv"], "document_indices": [], "document_class": "MpProduct"}
@@ -344,13 +352,11 @@ Some engine can't be trigger be satruman
 
 ## Tips
 
-
 - In this file all command are full, we encourage you to use aliases
 
 ### OpenSearch
 
-For better OpenSearch explorations and manipulations https://elasticvue.com
-
+For better OpenSearch explorations and manipulations <https://elasticvue.com>
 
 Check Opensearch log `docker logs dev-omcs-opensearch`
 With follow `docker logs -f dev-omcs-opensearch`
@@ -358,7 +364,7 @@ With follow `docker logs -f dev-omcs-opensearch`
 It's not possible to restore a snapshot from a higher version cluster.
 However, it is possible to restore a snasphot from a lower version cluster (cool for upgrade).
 
-For small extract you can use Elastic dump https://github.com/elasticsearch-dump/elasticsearch-dump
+For small extract you can use Elastic dump <https://github.com/elasticsearch-dump/elasticsearch-dump>
 
 ## Running Grafana with external database
 
@@ -371,6 +377,7 @@ docker compose -f ${WORK_DIR}/development/docker-compose.yaml \
 ### Importing data from a dump
 
 Assuming dump is inside ``./backup`` folder
+
 ```bash
 docker run --rm -v ./backup:/backup postgres:latest bash -c "gunzip -c /backup/my-db.dump.gz | pg_restore -h localhost -U grafana -d grafana"
 ```

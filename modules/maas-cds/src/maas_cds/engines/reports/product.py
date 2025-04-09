@@ -198,6 +198,7 @@ class ProductConsolidatorEngine(
 
             # Add intersect coverage
             result_dict = self.geo_mask_utils.coverage_over_specific_area_s1(
+                document.satellite_unit,
                 instrument_mode,
                 raw_document.footprint,
                 raw_document.start_date,
