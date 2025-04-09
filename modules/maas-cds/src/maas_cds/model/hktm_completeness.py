@@ -7,9 +7,7 @@ from maas_cds.model import generated
 
 from maas_cds.model.anomaly_mixin import AnomalyMixin
 
-__all__ = [
-    "CdsHktmAcquisitionCompleteness",
-]
+__all__ = ["CdsHktmAcquisitionCompleteness", "CdsHktmProductionCompleteness"]
 
 
 class CdsHktmAcquisitionCompleteness(
@@ -18,6 +16,10 @@ class CdsHktmAcquisitionCompleteness(
     """overide to add cams_tickets as a multi keyword"""
 
     cams_tickets = Keyword(multi=True)
+
+
+class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
+    """overide to add cams_tickets as a multi keyword"""
 
     def count_produced_hktm(self, tolerance_value=0):
         """

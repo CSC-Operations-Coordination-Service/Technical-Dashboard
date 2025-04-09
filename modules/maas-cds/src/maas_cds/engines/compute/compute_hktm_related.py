@@ -216,7 +216,6 @@ class ComputeHktmRelatedEngine(DataEngine):
         msearch, valid_input_documents = search_method(self.input_documents)
 
         if valid_input_documents:
-            print(valid_input_documents)
             # contained identifier to container instance as MultiSearch does not support
             # metadata like params(version=True, seq_no_primary_term=True)
             result_map = {}
@@ -239,6 +238,18 @@ class ComputeHktmRelatedEngine(DataEngine):
 
                 update_method = self.update_hktm_factory()
                 hktm_completeness_document = update_method(hktm_completeness_document)
+
+                if (
+                    getattr(hktm_completeness_document, "related_document_id")
+                    and proof_document.meta.id
+                    != hktm_completeness_document.related_document_id
+                ):
+                    self.logger.warning(
+                        "[%s] - This document was already completed by : %s",
+                        hktm_completeness_document.meta.id,
+                        hktm_completeness_document.related_document_id,
+                    )
+
                 setattr(
                     hktm_completeness_document,
                     "related_document_id",
@@ -246,7 +257,7 @@ class ComputeHktmRelatedEngine(DataEngine):
                 )
 
                 if initial_dict | hktm_completeness_document.to_dict() != initial_dict:
-                    self.logger.debug(
+                    self.logger.info(
                         "[%s] - Update : %s",
                         hktm_completeness_document.meta.id,
                         hktm_completeness_document.reportName,
@@ -260,7 +271,7 @@ class ComputeHktmRelatedEngine(DataEngine):
                         document.reportName,
                     )
             else:
-                self.logger.debug(
+                self.logger.info(
                     "[%s] - Nothing to do : no hktm found",
                     hktm_completeness_document.meta.id,
                 )

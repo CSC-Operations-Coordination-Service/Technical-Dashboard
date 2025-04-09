@@ -905,6 +905,7 @@ def test_consolidate_cds_hktm_production_completeness_from_mphktmdownlink(
     assert consolidated.application_date == datestr_to_utc_datetime(
         raw.reportName[16:31]
     )
+    # This is a raw data engine test ?
     assert consolidated.reportName == raw.reportName
     assert consolidated.satellite_unit == raw.satellite_id
     assert consolidated.mission == raw.mission
