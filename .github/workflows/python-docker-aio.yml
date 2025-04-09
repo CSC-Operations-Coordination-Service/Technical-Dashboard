@@ -32,6 +32,7 @@ jobs:
     - name: Init venv
       run: |
         python -m venv venv
+        pip install -U pip
 
     - name: Install dependencies
       run: |
@@ -47,6 +48,7 @@ jobs:
         pip install pytest
         pip install pytest-cov
         pip install wheel
+
     - name: Run tests
       run: |
         source venv/bin/activate
