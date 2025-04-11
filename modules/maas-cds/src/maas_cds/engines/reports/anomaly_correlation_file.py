@@ -127,7 +127,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         max_datatakes=10000,
         max_acquisitions=10000,
         max_products=10000,
-        base_url="https://cams.esa.int/browse/",
+        base_url="https://esa-cams.atlassian.net/browse/",
     ):
         super().__init__(args, send_reports=send_reports)
         # max_* attribute are here to fill size parameter of search request

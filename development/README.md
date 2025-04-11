@@ -342,6 +342,11 @@ el_grando_satruman --document-class CdsCompletenessS1 --query-string "sensing_gl
 
 Some engine can't be trigger be satruman
 
+Properties
+
+- content_type = application/json
+- priority = 4
+
 ### collect-exchange
 
 #### file.raw.data.mp-product

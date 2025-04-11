@@ -57,6 +57,8 @@ def maas_engine_main(
 
     namespace = parser.parse_args(args)
 
+    setup_logging(loglevel=namespace.loglevel)
+
     if not engine_id:
         engine_id = namespace.engine_id
 
@@ -68,14 +70,24 @@ def maas_engine_main(
 
     engine = Engine.get(engine_id, namespace)
 
+    # ? TODO Need here to get default configuration if exist else run using only the engine id
+    # ? Like the following maybe use a extra input-routing-key args
+    # engine = Engine.get(
+    #     {
+    #         "id": "COMPUTE_HKTM_RELATED",
+    #         "send_reports": False,
+    #         "tolerance_value": 30,
+    #         "target_model": "CdsHktmProductionCompleteness",
+    #     },
+    #     namespace,
+    # )
+
     if namespace.payload:
         with open(namespace.payload, encoding="UTF-8") as payload_fd:
             message = engine.deserialize_payload(json.load(payload_fd))
             engine.payload = message
     else:
         message = maas_model.MAASMessage()
-
-    setup_logging(loglevel=namespace.loglevel)
 
     # dump some system info
     logging.info("Starting maas-engine %s", maas_engine.__version__)
