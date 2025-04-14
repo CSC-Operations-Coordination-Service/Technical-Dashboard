@@ -1,4 +1,4 @@
-""" Custom CDS model definition for product"""
+"""Custom CDS model definition for product"""
 
 import logging
 

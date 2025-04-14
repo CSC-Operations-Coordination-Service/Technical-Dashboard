@@ -405,3 +405,57 @@ def test_s1_oper_macp():
         "product_type": "REP__MACP_",
         "product_level": "L__",
     }
+
+
+def test_s1_oper_tlm_rep():
+    product_name = "S1A_OPER_TLM__REQ_F_20250124T230000_20250126T000000_0001.TGZ"
+    result_dict = extract_data_from_product_name_s1(product_name)
+
+    assert result_dict == {
+        "satellite_unit": "S1A",
+        "mission": "S1",
+        "product_type": "TLM__REQ_F",
+        "product_level": "L__",
+    }
+
+
+def test_s1_oper_random():
+    product_name = "S1C_OPER_L_PREORB_O_20250217T205847_2025030.TGZ"
+    result_dict = extract_data_from_product_name_s1(product_name)
+
+    assert result_dict == {
+        "satellite_unit": "S1C",
+        "mission": "S1",
+        "product_type": "L_PREORB_O",
+        "product_level": "L__",
+    }
+
+    product_name = "S1C_OPER_MPL__GTDEV_20250122T000128_20250202T230341_0001.DBL.zip"
+    result_dict = extract_data_from_product_name_s1(product_name)
+
+    assert result_dict == {
+        "satellite_unit": "S1C",
+        "mission": "S1",
+        "product_type": "MPL__GTDEV",
+        "product_level": "L__",
+    }
+
+    product_name = "S1A_OPER_REP_MP_MP__PDMC_20241203T075319_V20241203T173221_20241223T194000.xml.zip"
+    result_dict = extract_data_from_product_name_s1(product_name)
+
+    assert result_dict == {
+        "satellite_unit": "S1A",
+        "mission": "S1",
+        "product_type": "REP_MP_MP_",
+        "product_level": "L__",
+    }
+
+    product_name = "S1C_OPER_L_PREORB_O_20250217T205847_2025030.TGZ"
+    result_dict = extract_data_from_product_name_s1(product_name)
+
+    assert result_dict == {
+        "satellite_unit": "S1C",
+        "mission": "S1",
+        "product_type": "L_PREORB_O",
+        "product_level": "L__",
+    }

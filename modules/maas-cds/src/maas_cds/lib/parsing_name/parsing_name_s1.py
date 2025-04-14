@@ -1,4 +1,4 @@
-""" Custom method to extract data from sentinel 1 product name"""
+"""Custom method to extract data from sentinel 1 product name"""
 
 import re
 
@@ -25,12 +25,9 @@ def extract_product_type_from_product_name_s1(product_name):
     if match := re.search(r"_AUX_([a-zA-Z0-9]*)_", product_name):
         return f"AUX_{match.group(1)}"
 
-    # Handling OPER REP
-    if match := re.search(r"_OPER_REP_.*", product_name):
-        return product_name[9:19]
     # Handling OPER
-    if match := re.search(r"_OPER_([a-zA-Z0-9]*_[a-zA-Z0-9]*)_", product_name):
-        return f"{match.group(1)}"
+    if match := re.search(r"_OPER_.*", product_name):
+        return product_name[9:19]
 
     # 90% product_type is on 10 char
     return product_name[4:14]

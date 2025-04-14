@@ -2,6 +2,7 @@
 
 acquisition sass status engines for consolidation
 """
+
 from maas_engine.engine.replicate import ReplicatorEngine
 from maas_cds.engines.reports.anomaly_impact import (
     AnomalyImpactMixinEngine,
@@ -92,6 +93,8 @@ class HktmConsolidatorEngine(AnomalyImpactMixinEngine, ReplicatorEngine):
             search = self.raw_data.search().filter("term", reportName=report_name)
             self.logger.debug("[%s] to consolidate query : %s", report_name, search)
             search = search.params(ignore=404)
+
+            # Not memeory safe
             raw_input_documents = list(search.scan())
             self.logger.debug(
                 "[%s] to consolidate query result list: %s",
@@ -284,12 +287,14 @@ class HktmAcquisitionConsolidatorEngine(HktmConsolidatorEngine):
                     hktm.ground_station,
                 ]
             )
+        else:
+            self.logger.warning("Unknow acq format %s", raw_document.session_id)
 
         document.cadip_completeness = cadip_completeness
         document.edrs_completeness = edrs_completeness
 
         self.logger.debug("CADIP Completeness : %s | EDRS Completeness : %s")
-        self.logger.debug("Applying anomalies ...")
+
         self._apply_anomalies(document, key=anomaly_key)
 
         return document
