@@ -170,6 +170,103 @@ def test_prip_publication_consolidation_s1_sm_footprint_bug(
 
 
 @pytest.fixture
+def prip_product_s1c_ew_footprint_bug_antimeridian():
+    data_dict = {
+        "reportName": "https://prip.s1c.werum.copernicus.eu",
+        "product_id": "9484cbcc-c1d0-48d8-0de6-010756521dd2",
+        "product_name": "S1C_EW_RAW__0SDH_20250414T184546_20250414T184636_001893_003A5F_9B06.SAFE.zip",
+        "content_length": 743895196,
+        "publication_date": "2025-04-14T21:00:00.586Z",
+        "start_date": "2025-04-14T18:45:46.712Z",
+        "end_date": "2025-04-14T18:46:36.182Z",
+        "origin_date": "2025-04-14T20:07:28.053Z",
+        "eviction_date": "2025-05-14T21:00:00.586Z",
+        "footprint": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [174.9862, 71.1153],
+                    [173.5574, 68.1633],
+                    [-176.9544, 67.381],
+                    [-174.2251, 70.2348],
+                    [174.9862, 71.1153],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        "interface_name": "PRIP_S1C_Werum",
+        "production_service_type": "PRIP",
+        "production_service_name": "S1C-Werum",
+        "ingestionTime": "2025-04-14T21:16:07.186Z",
+    }
+    raw_document = model.PripProduct(**data_dict)
+    raw_document.meta.id = "b759d82f721504ea0c0db5f7ddd73fe7"
+    raw_document.full_clean()
+    return raw_document
+
+
+@patch("maas_cds.model.CdsDatatake.mget_by_ids")
+def test_prip_publication_consolidation_s1c_ew_footprint_bug_antimeridian(
+    mock_mget_by_ids, prip_product_s1c_ew_footprint_bug_antimeridian
+):
+    datatake_doc = model.CdsDatatake()
+
+    datatake_doc.datatake_id = "399589"
+    datatake_doc.absolute_orbit = "50613"
+    datatake_doc.instrument_mode = "SM"
+    datatake_doc.timeliness = "NTC"
+
+    mock_mget_by_ids.return_value = [datatake_doc]
+
+    engine = ProductConsolidatorEngine()
+
+    product = engine.consolidate_from_PripProduct(
+        prip_product_s1c_ew_footprint_bug_antimeridian, model.CdsProduct()
+    )
+
+    engine.consolidated_documents = [product]
+
+    engine.on_post_consolidate()
+
+    product = engine.consolidated_documents[0]
+
+    product.full_clean()
+
+    print(product.to_dict())
+
+    assert product.to_dict() == {
+        "absolute_orbit": "50613",
+        "datatake_id": "399589",
+        "key": "7bd04c364f658646b5644cd4b36ab29e",
+        "instrument_mode": "SM",
+        "mission": "S1",
+        "name": "S1C_EW_RAW__0SDH_20250414T184546_20250414T184636_001893_003A5F_9B06.SAFE.zip",
+        "polarization": "DH",
+        "product_class": "S",
+        "product_type": "EW_RAW__0S",
+        "product_level": "L0_",
+        "satellite_unit": "S1C",
+        "sensing_start_date": "2025-04-14T18:45:46.712Z",
+        "sensing_end_date": "2025-04-14T18:46:36.182Z",
+        "sensing_duration": 49470000,
+        "timeliness": "NTC",
+        "content_length": 743895196,
+        "PRIP_S1C_Werum_is_published": True,
+        "PRIP_S1C_Werum_publication_date": datetime.datetime(
+            2025, 4, 14, 21, 0, 0, 586000, tzinfo=datetime.timezone.utc
+        ),
+        "PRIP_S1C_Werum_id": "9484cbcc-c1d0-48d8-0de6-010756521dd2",
+        "nb_prip_served": 1,
+        "prip_id": "9484cbcc-c1d0-48d8-0de6-010756521dd2",
+        "prip_publication_date": "2025-04-14T21:00:00.586Z",
+        "prip_service": "PRIP_S1C_Werum",
+        "OCN_coverage_percentage": 100,
+        "SLC_coverage_percentage": 100,
+        "EU_coverage_percentage": 51.216492373449185,
+    }
+
+
+@pytest.fixture
 def prip_product_s1_aisaux():
     data_dict = {
         "reportName": "https://s1c.prip.onda-dias.com",

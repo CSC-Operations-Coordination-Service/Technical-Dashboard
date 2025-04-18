@@ -459,3 +459,15 @@ def test_s1_oper_random():
         "product_type": "L_PREORB_O",
         "product_level": "L__",
     }
+
+
+def test_s1d_oper_random():
+    product_name = "S1D_OPER_AUX_OBMEMC_PDMC_20240906T094116.xml.zip"
+    result_dict = extract_data_from_product_name_s1(product_name)
+
+    assert result_dict == {
+        "satellite_unit": "S1D",
+        "mission": "S1",
+        "product_type": "AUX_OBMEMC",
+        "product_level": "L__",
+    }
