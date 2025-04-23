@@ -5225,42 +5225,6 @@
         {
             "type": "Feature",
             "properties": {
-                "Name": "Add-33",
-                "tessellate": 1,
-                "extrude": 0,
-                "visibility": 0
-            },
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [
-                            -73.396927,
-                            45.519541
-                        ],
-                        [
-                            -73.396927,
-                            45.524139
-                        ],
-                        [
-                            -73.390796,
-                            45.524139
-                        ],
-                        [
-                            -73.390796,
-                            45.519541
-                        ],
-                        [
-                            -73.396927,
-                            45.519541
-                        ]
-                    ]
-                ]
-            }
-        },
-        {
-            "type": "Feature",
-            "properties": {
                 "Name": "Add-34",
                 "tessellate": 1,
                 "extrude": 0,
