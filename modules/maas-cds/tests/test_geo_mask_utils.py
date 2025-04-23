@@ -261,208 +261,209 @@ def test_date_masks_impact_bug():
         "EU_coverage_percentage": 0.0,
     }
 
-    @pytest.mark.parametrize(
-        "footprint",
-        [
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-69.0779, -3.75],
-                        [-70.0068, -7.8509],
-                        [-66.3711, -8.4129],
-                        [-65.4711, -4.2899],
-                        [-69.0779, -3.75],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-69.8947, -7.359],
-                        [-70.7874, -11.1471],
-                        [-67.1143, -11.7292],
-                        [-66.2635, -7.9181],
-                        [-69.8947, -7.359],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-69.0797, -3.7507],
-                        [-70.0085, -7.8516],
-                        [-66.3729, -8.4136],
-                        [-65.4729, -4.2906],
-                        [-69.0797, -3.7507],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-65.1065, -4.3914],
-                        [-66.0417, -8.4912],
-                        [-62.3995, -9.057],
-                        [-61.4963, -4.9347],
-                        [-65.1065, -4.3914],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-65.9271, -7.9987],
-                        [-66.8266, -11.7855],
-                        [-63.1444, -12.3719],
-                        [-62.2898, -8.5616],
-                        [-65.9271, -7.9987],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-73.5041, 45.9885],
-                        [-73.8378, 44.4297],
-                        [-68.7973, 43.938],
-                        [-68.3239, 45.4901],
-                        [-73.5041, 45.9885],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-77.4782, 46.6283],
-                        [-77.8147, 45.0697],
-                        [-72.7184, 44.5754],
-                        [-72.2377, 46.1268],
-                        [-77.4782, 46.6283],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-73.5028, 45.9889],
-                        [-73.8366, 44.4301],
-                        [-68.796, 43.9384],
-                        [-68.3226, 45.4905],
-                        [-73.5028, 45.9889],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-72.9442, 44.5066],
-                        [-73.2783, 46.0653],
-                        [-78.4663, 45.5664],
-                        [-77.9921, 44.0145],
-                        [-72.9442, 44.5066],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-68.9676, 45.147],
-                        [-69.2646, 46.5225],
-                        [-74.4953, 46.0214],
-                        [-74.0712, 44.6522],
-                        [-68.9676, 45.147],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-72.9445, 44.5068],
-                        [-73.2787, 46.0655],
-                        [-78.4667, 45.5666],
-                        [-77.9924, 44.0147],
-                        [-72.9445, 44.5068],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-68.9683, 45.1474],
-                        [-69.2652, 46.5229],
-                        [-74.4961, 46.0218],
-                        [-74.072, 44.6526],
-                        [-68.9683, 45.1474],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-            {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-77.478, 46.628],
-                        [-77.8145, 45.0694],
-                        [-72.7182, 44.5751],
-                        [-72.2375, 46.1265],
-                        [-77.478, 46.628],
-                    ]
-                ],
-                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
-            },
-        ],
+
+@pytest.mark.parametrize(
+    "footprint",
+    [
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-69.0779, -3.75],
+                    [-70.0068, -7.8509],
+                    [-66.3711, -8.4129],
+                    [-65.4711, -4.2899],
+                    [-69.0779, -3.75],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-69.8947, -7.359],
+                    [-70.7874, -11.1471],
+                    [-67.1143, -11.7292],
+                    [-66.2635, -7.9181],
+                    [-69.8947, -7.359],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-69.0797, -3.7507],
+                    [-70.0085, -7.8516],
+                    [-66.3729, -8.4136],
+                    [-65.4729, -4.2906],
+                    [-69.0797, -3.7507],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-65.1065, -4.3914],
+                    [-66.0417, -8.4912],
+                    [-62.3995, -9.057],
+                    [-61.4963, -4.9347],
+                    [-65.1065, -4.3914],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-65.9271, -7.9987],
+                    [-66.8266, -11.7855],
+                    [-63.1444, -12.3719],
+                    [-62.2898, -8.5616],
+                    [-65.9271, -7.9987],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-73.5041, 45.9885],
+                    [-73.8378, 44.4297],
+                    [-68.7973, 43.938],
+                    [-68.3239, 45.4901],
+                    [-73.5041, 45.9885],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-77.4782, 46.6283],
+                    [-77.8147, 45.0697],
+                    [-72.7184, 44.5754],
+                    [-72.2377, 46.1268],
+                    [-77.4782, 46.6283],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-73.5028, 45.9889],
+                    [-73.8366, 44.4301],
+                    [-68.796, 43.9384],
+                    [-68.3226, 45.4905],
+                    [-73.5028, 45.9889],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-72.9442, 44.5066],
+                    [-73.2783, 46.0653],
+                    [-78.4663, 45.5664],
+                    [-77.9921, 44.0145],
+                    [-72.9442, 44.5066],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-68.9676, 45.147],
+                    [-69.2646, 46.5225],
+                    [-74.4953, 46.0214],
+                    [-74.0712, 44.6522],
+                    [-68.9676, 45.147],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-72.9445, 44.5068],
+                    [-73.2787, 46.0655],
+                    [-78.4667, 45.5666],
+                    [-77.9924, 44.0147],
+                    [-72.9445, 44.5068],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-68.9683, 45.1474],
+                    [-69.2652, 46.5229],
+                    [-74.4961, 46.0218],
+                    [-74.072, 44.6526],
+                    [-68.9683, 45.1474],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+        {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-77.478, 46.628],
+                    [-77.8145, 45.0694],
+                    [-72.7182, 44.5751],
+                    [-72.2375, 46.1265],
+                    [-77.478, 46.628],
+                ]
+            ],
+            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+        },
+    ],
+)
+def test_strange_masks_s1(footprint):
+    geo_mask_utils = GeoMaskUtils()
+    data_dict = {
+        "reportName": "https://prip.s1c.werum.copernicus.eu",
+        "product_id": "9484cbcc-c1d0-48d8-0de6-010756521dd2",
+        "product_name": "S1C_EW_RAW__0SDH_20250414T184546_20250414T184636_001893_003A5F_9B06.SAFE.zip",
+        "content_length": 743895196,
+        "publication_date": "2025-04-14T21:00:00.586Z",
+        "start_date": "2025-04-14T18:45:46.712Z",
+        "end_date": "2025-04-14T18:46:36.182Z",
+        "origin_date": "2025-04-14T20:07:28.053Z",
+        "eviction_date": "2025-05-14T21:00:00.586Z",
+        "interface_name": "PRIP_S1C_Werum",
+        "production_service_type": "PRIP",
+        "production_service_name": "S1C-Werum",
+        "ingestionTime": "2025-04-14T21:16:07.186Z",
+        "footprint": footprint,
+    }
+    raw_document = model.PripProduct(**data_dict)
+    raw_document.meta.id = "b759d82f721504ea0c0db5f7ddd73fe7"
+    raw_document.full_clean()
+
+    result_dict = geo_mask_utils.coverage_over_specific_area_s1(
+        "S1C",
+        "EW",
+        raw_document.footprint,
+        raw_document.start_date,
     )
-    def test_strange_masks_s1(footprint):
-        geo_mask_utils = GeoMaskUtils()
-        data_dict = {
-            "reportName": "https://prip.s1c.werum.copernicus.eu",
-            "product_id": "9484cbcc-c1d0-48d8-0de6-010756521dd2",
-            "product_name": "S1C_EW_RAW__0SDH_20250414T184546_20250414T184636_001893_003A5F_9B06.SAFE.zip",
-            "content_length": 743895196,
-            "publication_date": "2025-04-14T21:00:00.586Z",
-            "start_date": "2025-04-14T18:45:46.712Z",
-            "end_date": "2025-04-14T18:46:36.182Z",
-            "origin_date": "2025-04-14T20:07:28.053Z",
-            "eviction_date": "2025-05-14T21:00:00.586Z",
-            "interface_name": "PRIP_S1C_Werum",
-            "production_service_type": "PRIP",
-            "production_service_name": "S1C-Werum",
-            "ingestionTime": "2025-04-14T21:16:07.186Z",
-            "footprint": footprint,
-        }
-        raw_document = model.PripProduct(**data_dict)
-        raw_document.meta.id = "b759d82f721504ea0c0db5f7ddd73fe7"
-        raw_document.full_clean()
 
-        result_dict = geo_mask_utils.coverage_over_specific_area_s1(
-            "S1C",
-            "EW",
-            raw_document.footprint,
-            raw_document.start_date,
-        )
-
-        # only want to check runtime
-        assert result_dict != {}
+    # only want to check runtime
+    assert result_dict != {}
