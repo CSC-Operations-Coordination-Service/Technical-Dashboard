@@ -232,8 +232,6 @@ def test_prip_publication_consolidation_s1c_ew_footprint_bug_antimeridian(
 
     product.full_clean()
 
-    print(product.to_dict())
-
     assert product.to_dict() == {
         "absolute_orbit": "50613",
         "datatake_id": "399589",
