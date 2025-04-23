@@ -260,3 +260,105 @@ def test_date_masks_impact_bug():
         "OCN_coverage_percentage": 20.870232761754124,
         "EU_coverage_percentage": 0.0,
     }
+
+    @pytest.mark.parametrize(
+        "footprint",
+        [
+            {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [-69.0779, -3.75],
+                        [-70.0068, -7.8509],
+                        [-66.3711, -8.4129],
+                        [-65.4711, -4.2899],
+                        [-69.0779, -3.75],
+                    ]
+                ],
+                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            },
+            {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [-69.8947, -7.359],
+                        [-70.7874, -11.1471],
+                        [-67.1143, -11.7292],
+                        [-66.2635, -7.9181],
+                        [-69.8947, -7.359],
+                    ]
+                ],
+                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            },
+            {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [-69.0797, -3.7507],
+                        [-70.0085, -7.8516],
+                        [-66.3729, -8.4136],
+                        [-65.4729, -4.2906],
+                        [-69.0797, -3.7507],
+                    ]
+                ],
+                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            },
+            {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [-65.1065, -4.3914],
+                        [-66.0417, -8.4912],
+                        [-62.3995, -9.057],
+                        [-61.4963, -4.9347],
+                        [-65.1065, -4.3914],
+                    ]
+                ],
+                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            },
+            {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [-65.9271, -7.9987],
+                        [-66.8266, -11.7855],
+                        [-63.1444, -12.3719],
+                        [-62.2898, -8.5616],
+                        [-65.9271, -7.9987],
+                    ]
+                ],
+                "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+            },
+        ],
+    )
+    def test_strange_masks_s1(footprint):
+        geo_mask_utils = GeoMaskUtils()
+        data_dict = {
+            "reportName": "https://prip.s1c.werum.copernicus.eu",
+            "product_id": "9484cbcc-c1d0-48d8-0de6-010756521dd2",
+            "product_name": "S1C_EW_RAW__0SDH_20250414T184546_20250414T184636_001893_003A5F_9B06.SAFE.zip",
+            "content_length": 743895196,
+            "publication_date": "2025-04-14T21:00:00.586Z",
+            "start_date": "2025-04-14T18:45:46.712Z",
+            "end_date": "2025-04-14T18:46:36.182Z",
+            "origin_date": "2025-04-14T20:07:28.053Z",
+            "eviction_date": "2025-05-14T21:00:00.586Z",
+            "interface_name": "PRIP_S1C_Werum",
+            "production_service_type": "PRIP",
+            "production_service_name": "S1C-Werum",
+            "ingestionTime": "2025-04-14T21:16:07.186Z",
+            "footprint": footprint,
+        }
+        raw_document = model.PripProduct(**data_dict)
+        raw_document.meta.id = "b759d82f721504ea0c0db5f7ddd73fe7"
+        raw_document.full_clean()
+
+        result_dict = geo_mask_utils.coverage_over_specific_area_s1(
+            "S1C",
+            "EW",
+            raw_document.footprint,
+            raw_document.start_date,
+        )
+
+        # only want to check runtime
+        assert result_dict != {}
