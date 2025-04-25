@@ -256,6 +256,7 @@ Then update also the query
 
 ## Build local python wheel
 
+```bash
 tox -c ./modules/maas-model/tox.ini -e build
 cp -ar ${WORK_DIR}/modules/maas-model/dist/ ${WORK_DIR}/modules/build/maas-model/
 
@@ -267,6 +268,7 @@ cp -ar ${WORK_DIR}/modules/maas-collector/dist/ ${WORK_DIR}/modules/build/maas-c
 
 tox -c ./modules/maas-cds/tox.ini -e build
 cp -ar ${WORK_DIR}/modules/maas-cds/dist/ ${WORK_DIR}/modules/build/maas-cds/
+```
 
 ## Build local docker image
 

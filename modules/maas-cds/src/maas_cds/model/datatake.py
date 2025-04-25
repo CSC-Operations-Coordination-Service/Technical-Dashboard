@@ -1,9 +1,11 @@
 """Custom CDS model definition"""
 
+from datetime import datetime
 import logging
 from typing import List
 
 from maas_cds.lib.config import get_good_threshold_config_from_value
+from maas_cds.lib.partitionning import get_partionning
 from maas_model.date_utils import datetime_to_zulu
 from opensearchpy import Keyword, Q
 from maas_cds.lib import tolerance
@@ -52,6 +54,29 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     datastrip_ids = Keyword(multi=True)
 
     product_group_ids = Keyword(multi=True)
+
+    def get_product_partitionning(self, day_precision=10) -> List[str]:
+        """Utils function to get the partitionning of the product
+        This function is used to get the partitionning of the product
+
+        Args:
+            day_precision (int, optional): Add some tolerance for the location. Defaults to 10.
+
+        Returns:
+            List[str]: Return the list of the indices where product are located
+        """
+
+        if not self.observation_time_start or not self.observation_time_stop:
+            LOGGER.warning("Observation time start or stop is not set.")
+            return []
+
+        date_set = get_partionning(
+            self.observation_time_start, self.observation_time_stop, day_precision
+        )
+
+        return [
+            f"{CdsProduct.Index.name}-{date_part}" for date_part in sorted(date_set)
+        ]
 
     def get_service_for_completeness(self):
 
@@ -495,7 +520,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             Q: ES query
         """
 
-    def find_brother_products_scan(self, product_type):
+    def find_brother_products_scan(self, product_type, indices=None):
         """Find products with the same datatake and the same product_type
 
         Note: Seek only product with a prip_id
@@ -521,14 +546,20 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             )
             completeness_service = ["NO_SERVICE_FOR_THIS"]
 
+        base_search = CdsProduct.search()
+        if indices:
+            base_search = CdsProduct.search(index=indices)
+
+        # Ignore if index are missing -
+        # This can be dangerous to not raise an error on missing index this can hide an database issue
+
         search_request = (
-            CdsProduct.search()
-            .filter("term", datatake_id=self.datatake_id)
+            base_search.filter("term", datatake_id=self.datatake_id)
             .filter("term", satellite_unit=self.satellite_unit)
             .filter("term", product_type=product_type)
             .filter("terms", prip_service=completeness_service)
             .filter("exists", field="prip_id")
-            .params(ignore=404)
+            .params(ignore=404, ignore_unavailable=True)
         )
 
         query_scan = search_request.scan()

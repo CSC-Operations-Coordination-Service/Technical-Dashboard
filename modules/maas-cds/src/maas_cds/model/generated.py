@@ -1697,6 +1697,8 @@ class CdsHktmProductionCompleteness(MAASDocument):
 
     related_document_id = Keyword()
 
+    related_document_name = Keyword()
+
     reportFolder = Keyword()
 
     satellite_unit = Keyword()
