@@ -28,9 +28,12 @@ def get_partionning(
         date_set.add(current_date.strftime("%Y-%m"))
         # Increment by one month
         if current_date.month == 12:
-            current_date = current_date.replace(year=current_date.year + 1, month=1)
+            current_date = current_date.replace(
+                year=current_date.year + 1, month=1, day=1
+            )
         else:
-            current_date = current_date.replace(month=current_date.month + 1)
+            new_month = current_date.month + 1
+            current_date = current_date.replace(month=new_month, day=1)
     date_set.add(target_end_date.strftime("%Y-%m"))
 
     return sorted(date_set)
