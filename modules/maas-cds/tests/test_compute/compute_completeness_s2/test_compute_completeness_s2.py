@@ -529,6 +529,8 @@ def test_compute_overlap_gr(mock_find_brother_products_scan):
         "instrument_mode": "NOBS",
     }
     datatake = CdsDatatakeS2(**datatake_s2_gr_overlap_dict)
+    datatake.full_clean()
+
     assert len(datatake.get_product_compute_brother("GR")) == 2
 
 

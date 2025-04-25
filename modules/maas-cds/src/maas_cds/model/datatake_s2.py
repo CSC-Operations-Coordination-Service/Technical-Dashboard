@@ -1,4 +1,4 @@
-""" Datatake S2 model definition """
+"""Datatake S2 model definition"""
 
 import logging
 
@@ -415,7 +415,7 @@ class CdsDatatakeS2(CdsDatatake):
         )
 
         products_scan = self.find_brother_products_scan(
-            product_type,
+            product_type, self.get_product_partitionning(day_precision=1)
         )
         brother_of_datatake_documents = None
 
