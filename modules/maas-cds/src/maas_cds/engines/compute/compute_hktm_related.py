@@ -245,8 +245,9 @@ class ComputeHktmRelatedEngine(DataEngine):
                     != hktm_completeness_document.related_document_id
                 ):
                     self.logger.warning(
-                        "[%s] - This document was already completed by : %s",
+                        "[%s] - This document was already completed by : %s (%s)",
                         hktm_completeness_document.meta.id,
+                        hktm_completeness_document.related_document_name,
                         hktm_completeness_document.related_document_id,
                     )
 
@@ -254,6 +255,12 @@ class ComputeHktmRelatedEngine(DataEngine):
                     hktm_completeness_document,
                     "related_document_id",
                     proof_document.meta.id,
+                )
+
+                setattr(
+                    hktm_completeness_document,
+                    "related_document_name",
+                    proof_document.name,
                 )
 
                 if initial_dict | hktm_completeness_document.to_dict() != initial_dict:
@@ -273,7 +280,7 @@ class ComputeHktmRelatedEngine(DataEngine):
             else:
                 self.logger.info(
                     "[%s] - Nothing to do : no hktm found",
-                    hktm_completeness_document.meta.id,
+                    valid_input_documents,
                 )
         else:
             self.logger.debug(
