@@ -257,11 +257,13 @@ class ComputeHktmRelatedEngine(DataEngine):
                     proof_document.meta.id,
                 )
 
-                setattr(
-                    hktm_completeness_document,
-                    "related_document_name",
-                    proof_document.name,
-                )
+                # TODO adjust name repr for CdsCadipAcquisitionPassStatus
+                if hasattr(proof_document, "name"):
+                    setattr(
+                        hktm_completeness_document,
+                        "related_document_name",
+                        proof_document.name,
+                    )
 
                 if initial_dict | hktm_completeness_document.to_dict() != initial_dict:
                     self.logger.info(

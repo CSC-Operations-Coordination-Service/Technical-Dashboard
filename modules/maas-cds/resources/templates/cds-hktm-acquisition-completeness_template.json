@@ -78,6 +78,12 @@
             },
             "production_service_name": {
                 "type": "keyword"
+            },
+            "related_document_id": {
+                "type": "keyword"
+            },
+            "related_document_name": {
+                "type": "keyword"
             }
         },
         "_meta": {
