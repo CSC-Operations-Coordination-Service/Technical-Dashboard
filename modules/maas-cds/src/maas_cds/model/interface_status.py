@@ -1,4 +1,5 @@
 """Custom CdsInterfaceStatus DAO"""
+
 from maas_cds.model import generated
 
 

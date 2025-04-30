@@ -89,3 +89,19 @@ def test_expected_sr_0_sra___(cds_s3_completeness_sr_0_sra___):
     assert expected_sra == cds_s3_completeness_sr_0_sra___.get_expected_value()
 
     CdsS3Completeness.COMPLETENESS_TOLERANCE = {}
+
+
+def test_completeness_service_01(cds_s3_completeness_sr_0_sra___):
+    result = cds_s3_completeness_sr_0_sra___.get_service_for_completeness()
+
+    assert result == ["PRIP_S3B_SERCO"]
+
+
+def test_completeness_service_02(cds_s3_completeness_sr_0_sra___):
+
+    cds_s3_completeness_sr_0_sra___.observation_time_start = "2025-04-01T00:00:00.000Z"
+    cds_s3_completeness_sr_0_sra___.full_clean()
+
+    result = cds_s3_completeness_sr_0_sra___.get_service_for_completeness()
+
+    assert result == ["PRIP_S3B_TPZ"]

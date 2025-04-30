@@ -1,4 +1,4 @@
-""" Custom CDS dataflow type spec definition"""
+"""Custom CDS dataflow type spec definition"""
 
 from opensearchpy import Keyword
 from maas_cds.model import generated

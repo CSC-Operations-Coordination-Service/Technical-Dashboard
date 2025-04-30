@@ -1,4 +1,4 @@
-""" Datatake S1 model definition """
+"""Datatake S1 model definition"""
 
 import logging
 from typing import Callable

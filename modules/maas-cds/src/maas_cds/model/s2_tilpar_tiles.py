@@ -1,4 +1,4 @@
-""" Custom CDS model definition for s2 tiles"""
+"""Custom CDS model definition for s2 tiles"""
 
 import logging, copy, opensearchpy
 from itertools import groupby

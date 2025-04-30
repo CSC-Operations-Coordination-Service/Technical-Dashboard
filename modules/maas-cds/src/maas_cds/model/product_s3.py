@@ -1,4 +1,4 @@
-""" Custom CDS model definition for s3 product"""
+"""Custom CDS model definition for s3 product"""
 
 import logging
 

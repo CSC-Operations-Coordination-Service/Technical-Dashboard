@@ -1,4 +1,5 @@
 """contains all the model classes"""
+
 # import custom enumeration
 from maas_cds.model.enumeration import *
 

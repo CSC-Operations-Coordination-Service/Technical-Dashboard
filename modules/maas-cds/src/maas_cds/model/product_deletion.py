@@ -1,4 +1,5 @@
-""" Custom CDS model definition for product deletion"""
+"""Custom CDS model definition for product deletion"""
+
 from typing import List
 
 from maas_model import ZuluDate

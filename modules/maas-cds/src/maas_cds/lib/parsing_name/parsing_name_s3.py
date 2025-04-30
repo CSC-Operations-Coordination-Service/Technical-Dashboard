@@ -1,4 +1,4 @@
-""" Custom method to extract data from sentinel 3 product name"""
+"""Custom method to extract data from sentinel 3 product name"""
 
 import logging
 from maas_model import datestr_to_utc_datetime
@@ -99,9 +99,9 @@ def extract_data_from_product_name_s3(product_name):
             #
             # this pseudo datatake shall match the orbit, which is the base for S3 completeness
             #
-            data[
-                "datatake_id"
-            ] = f"{data['satellite_unit']}-{data['cycle_number']}-{data['relative_orbit_number']}"
+            data["datatake_id"] = (
+                f"{data['satellite_unit']}-{data['cycle_number']}-{data['relative_orbit_number']}"
+            )
         else:
             LOGGER.debug(
                 "S3 product %s has no valid cycle_number or relative_orbit_number",

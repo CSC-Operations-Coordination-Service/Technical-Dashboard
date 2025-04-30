@@ -1,4 +1,5 @@
 """Custom consolidated acquisition pass status"""
+
 from opensearchpy import Keyword
 
 from maas_cds.model import generated
@@ -14,7 +15,10 @@ __all__ = [
 
 
 class CdsAcquisitionPassStatus(
-    generated.CdsAcquisitionPassStatus, AnomalyMixin, TimelinessCalculationMixin, BitrateCalculationMixin
+    generated.CdsAcquisitionPassStatus,
+    AnomalyMixin,
+    TimelinessCalculationMixin,
+    BitrateCalculationMixin,
 ):
     """overide to add cams_tickets as a multi keyword"""
 
@@ -28,7 +32,10 @@ class CdsAcquisitionPassStatus(
 
 
 class CdsCadipAcquisitionPassStatus(
-    generated.CdsCadipAcquisitionPassStatus, AnomalyMixin, TimelinessCalculationMixin, BitrateCalculationMixin
+    generated.CdsCadipAcquisitionPassStatus,
+    AnomalyMixin,
+    TimelinessCalculationMixin,
+    BitrateCalculationMixin,
 ):
     """overide to add cams_tickets as a multi keyword"""
 
@@ -39,6 +46,7 @@ class CdsCadipAcquisitionPassStatus(
 
     _BITRATE_VOLUME = "TotalVolume"
     _BITRATE_DURATION = "from_acq_delivery_timeliness"
+
 
 class CdsEdrsAcquisitionPassStatus(
     generated.CdsEdrsAcquisitionPassStatus, AnomalyMixin

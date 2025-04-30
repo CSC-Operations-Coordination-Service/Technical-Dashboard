@@ -130,9 +130,9 @@ class AcquisitionPassStatusConsolidatorS5AndEDRS(AnomalyImpactMixinEngine, DataE
         # Store the consolidated documents in a dict ( key is the raw id)
         consolidated_documents_dict = {}
         for i, input_doc in enumerate(input_documents):
-            consolidated_documents_dict[
-                self.get_consolidated_id(input_doc)
-            ] = consolidated_document_list[i]
+            consolidated_documents_dict[self.get_consolidated_id(input_doc)] = (
+                consolidated_document_list[i]
+            )
 
         # populate ticket cache for attachement
         self._populate_ticket_cache(consolidated_document_list)
@@ -613,9 +613,9 @@ class EDRSAcquisitionPassStatusConsolidatorEngine(
                         ground_stations_guessed[1],
                     )
                     input_document["ground_station"] = ground_stations_guessed[0]
-                    self.deduced_ground_station[
-                        input_document.meta.id
-                    ] = ground_stations_guessed[0]
+                    self.deduced_ground_station[input_document.meta.id] = (
+                        ground_stations_guessed[0]
+                    )
 
                     # Create a fictive input document which is a copy of the input document but
                     # with the opposite ground_station and store it for later usage

@@ -1,4 +1,5 @@
 """DD Product consolidation"""
+
 import typing
 
 from maas_engine.engine.base import EngineReport

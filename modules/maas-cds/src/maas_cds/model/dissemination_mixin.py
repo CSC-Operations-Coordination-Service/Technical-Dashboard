@@ -1,6 +1,7 @@
 """
 This file contain all mixin to be used for dissemination products
 """
+
 import logging
 
 __all__ = ["DisseminationMixin"]

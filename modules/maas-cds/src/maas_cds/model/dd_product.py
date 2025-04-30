@@ -1,4 +1,5 @@
-""" Custom CDS model definition """
+"""Custom CDS model definition"""
+
 from maas_cds.model import generated, DisseminationMixin
 
 __all__ = ["DdProduct"]

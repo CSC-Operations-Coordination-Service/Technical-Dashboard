@@ -38,7 +38,7 @@ class BaseStrategy(InterfaceStrategy):
 
     DD_ATTRS = {}
 
-    def __init__(self, dd_attrs = None) -> None:
+    def __init__(self, dd_attrs=None) -> None:
         super().__init__()
         self.service_id = None
         self.service_type = self.SERVICE_TYPE

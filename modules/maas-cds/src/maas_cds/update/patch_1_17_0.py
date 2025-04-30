@@ -28,7 +28,11 @@ class PatchV1_17_0(MaasMigrator):
     )
     def add_hex_datatake_id_to_datatake(self):
         dict_payload = {
-            "query": {"query_string": {"query": "mission: S1 AND datatake_id: * AND NOT datatake_id: ______ AND NOT hex_datatake_id: * "}},
+            "query": {
+                "query_string": {
+                    "query": "mission: S1 AND datatake_id: * AND NOT datatake_id: ______ AND NOT hex_datatake_id: * "
+                }
+            },
             "script": "int datatake_id_int=Integer.parseInt(ctx._source.datatake_id);String hex = Integer.toHexString(datatake_id_int);hex = hex.toUpperCase();ctx._source.hex_datatake_id=hex",
         }
         yield dict_payload
@@ -38,19 +42,21 @@ class PatchV1_17_0(MaasMigrator):
         operation="delete_by_query",
     )
     def remove_old_probe(self):
-        
+
         interface_names = [
-            'CADIP_Maspalomas_Files',
-            'CADIP_Maspalomas_Qualityinfos',
-            'metrics_LTA_Exprivia_S1',
-            'metrics_LTA_Exprivia_S2',
-            'metrics_LTA_Exprivia_S3',
-            'CADIP_Svalbard_Files'
+            "CADIP_Maspalomas_Files",
+            "CADIP_Maspalomas_Qualityinfos",
+            "metrics_LTA_Exprivia_S1",
+            "metrics_LTA_Exprivia_S2",
+            "metrics_LTA_Exprivia_S3",
+            "CADIP_Svalbard_Files",
         ]
 
         for interface_name in interface_names:
             dict_payload = {
-                "query": {"query_string": {"query": f"interface_name: {interface_name}"}}
+                "query": {
+                    "query_string": {"query": f"interface_name: {interface_name}"}
+                }
             }
             yield dict_payload
 
