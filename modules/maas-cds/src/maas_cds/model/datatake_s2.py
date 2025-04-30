@@ -424,30 +424,16 @@ class CdsDatatakeS2(CdsDatatake):
         if key_field in ["GR"]:
             brother_of_datatake_documents = set()
 
+            intermediary_buffer = {}
             for product in products_scan:
                 if product.sensing_start_date and product.detector_id:
-                    # Group by detector id and ± tolerance on sensing_start_date
-                    for (
-                        sensing_start_date,
-                        detector_id,
-                    ) in brother_of_datatake_documents:
-                        if (
-                            detector_id == product.detector_id
-                            and abs(
-                                sensing_start_date.timestamp()
-                                - product.sensing_start_date.timestamp()
-                            )
-                            <= self.TOLERENCE_SENSING_START_GRANULE
-                        ):
-                            break
-                    else:
-                        brother_of_datatake_documents.add(
-                            (
-                                product.sensing_start_date,
-                                product.detector_id,
-                            )
-                        )
+                    if product.detector_id not in intermediary_buffer:
+                        intermediary_buffer[product.detector_id] = []
 
+                    # Group Sensing per detector id
+                    intermediary_buffer[product.detector_id].append(
+                        product.sensing_start_date
+                    )
                 else:
                     LOGGER.warning(
                         "[%s][%s] - Failed to add it in document brothers [ %s, %s]",
@@ -456,6 +442,34 @@ class CdsDatatakeS2(CdsDatatake):
                         product.sensing_start_date,
                         product.detector_id,
                     )
+
+            # Group by detector id and ± tolerance on sensing_start_date
+
+            for detector_id, sensing_start_date_list in intermediary_buffer.items():
+                ordered_sensing = sorted(sensing_start_date_list)
+                prev = None
+                for product_date in ordered_sensing:
+                    if (
+                        prev
+                        and product_date.timestamp() - prev
+                        <= self.TOLERENCE_SENSING_START_GRANULE
+                    ):
+                        LOGGER.warning(
+                            "[%s] - Potential duplicate GR for datatake detector_id %s sensing %s",
+                            self.datatake_id,
+                            detector_id,
+                            product_date,
+                        )
+
+                    else:
+
+                        prev = product_date.timestamp()
+                        brother_of_datatake_documents.add(
+                            (
+                                product_date,
+                                detector_id,
+                            )
+                        )
 
         elif key_field in ["TL", "TC"]:
             # get unique TL/TC number
