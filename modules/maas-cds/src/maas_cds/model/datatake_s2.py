@@ -444,7 +444,6 @@ class CdsDatatakeS2(CdsDatatake):
                     )
 
             # Group by detector id and ± tolerance on sensing_start_date
-
             for detector_id, sensing_start_date_list in intermediary_buffer.items():
                 ordered_sensing = sorted(sensing_start_date_list)
                 prev = None
@@ -462,7 +461,6 @@ class CdsDatatakeS2(CdsDatatake):
                         )
 
                     else:
-
                         prev = product_date.timestamp()
                         brother_of_datatake_documents.add(
                             (
