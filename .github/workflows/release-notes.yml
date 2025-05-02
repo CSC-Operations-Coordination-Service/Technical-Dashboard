@@ -1,0 +1,36 @@
+name: Publish Release Notes
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  publish-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Generate Release Notes
+      id: generate_release_notes
+      uses: actions/github-script@v5
+      with:
+        script: |
+            const { generateReleaseNotes } = require('@actions/github-script');
+            const releaseNotes = await generateReleaseNotes({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: context.ref.replace('refs/tags/', ''),
+                previous_tag_name: 'previous-tag',
+            });
+            core.setOutput('release_notes', releaseNotes);
+    - name: Commit and Push Release Notes
+      run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          echo "${{ steps.generate_release_notes.outputs.release_notes }}" > release-notes.md
+          git checkout -b pages
+          git add release-notes.md
+          git commit -m "Add release notes for ${{ github.ref }}"
+          git push origin pages

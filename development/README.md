@@ -354,7 +354,31 @@ Properties
 #### file.raw.data.mp-product
 
 ```json
-{"date": "2025-01-20T13:43:32.773Z", "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271", "ancestor_ids": [], "pipeline": ["ODataCollector"], "force": true, "document_ids": ["S1C_MP_ACQ__L0__20250120T174545_20250124T181805.csv"], "document_indices": [], "document_class": "MpProduct"}
+{
+  "date": "2025-01-20T13:43:32.773Z",
+  "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271",
+  "ancestor_ids": [], "pipeline": ["ODataCollector"],
+  "force": true,
+  "document_ids": ["S1C_MP_ACQ__L0__20250120T174545_20250124T181805.csv"],
+  "document_indices": [],
+  "document_class": "MpProduct"
+}
+```
+
+### etl-exchange
+
+#### new.cds-s
+
+```json
+{
+  "date": "2025-01-20T13:43:32.773Z",
+  "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271",
+  "ancestor_ids": [], "pipeline": ["ODataCollector"],
+  "force": true,
+  "document_ids": ["e7ae5411c5bb1953ab64ae28ec6132ed", "be1b440920c7199d8be2e9b640949f94"],
+  "document_indices": [],
+  "document_class": "CdsProductS3"
+}
 ```
 
 ## Tips
