@@ -21,11 +21,13 @@ class S2Tiles(CdsS2Tilpar):
         """
         assert footprint
         result = []
-        footprint_copy = copy.deepcopy(footprint)
 
         # if the footprint cross antemeridian try correction and intersection
-        if S2Tiles.is_crossing_antemeridian(footprint_copy):
-            S2Tiles.correct_polygon(footprint_copy)
+        if S2Tiles.is_crossing_antemeridian(footprint):
+            corrected_geojson = S2Tiles.correct_polygon(footprint)
+            corrected_geojson_without_duplicate = S2Tiles.remove_duplicate_points(
+                corrected_geojson
+            )
             try:
                 tiles_search = (
                     S2Tiles.search()
@@ -33,7 +35,7 @@ class S2Tiles(CdsS2Tilpar):
                         "geo_shape",
                         geometry={
                             "relation": "intersects",
-                            "shape": S2Tiles.remove_duplicate_points(footprint_copy),
+                            "shape": corrected_geojson_without_duplicate,
                         },
                     )
                     .scan()
@@ -108,9 +110,21 @@ class S2Tiles(CdsS2Tilpar):
         """
         correct longitudes for antemeridian geometries
         """
+
+        corrected_coordinate = []
+
         for coordinates in geojson_footprint["coordinates"]:
             for coordinate in coordinates:
-                lon = float(coordinate[0])
-                if lon > 0:
-                    corrected_lon = -360 + lon
-                    coordinate[0] = corrected_lon
+                corrected_lon = float(coordinate[0])
+                if 179.99 <= abs(corrected_lon) <= 180:
+                    # This point are too much dangerous don't keep it
+                    continue
+                if corrected_lon < 0:
+                    corrected_lon = corrected_lon + 360
+                corrected_coordinate.append([corrected_lon, coordinate[1]])
+
+        corrected_geojson_footprint = copy.deepcopy(geojson_footprint)
+
+        corrected_geojson_footprint["coordinates"] = [corrected_coordinate]
+
+        return corrected_geojson_footprint
