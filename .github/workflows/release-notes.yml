@@ -11,7 +11,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
+    - name: Get the latest tag
+      id: get_latest_tag
+      run: |
+        latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+        echo "latest_tag=$latest_tag" >> $GITHUB_ENV
     - name: Generate Release Notes
       id: generate_release_notes
       uses: actions/github-script@v5
@@ -19,7 +23,7 @@ jobs:
         script: |
           const { owner, repo } = context.repo;
           const tag_name = context.ref.replace('refs/tags/', '');
-          const previous_tag_name = 'previous-tag'; // Replace with logic to fetch the previous tag if necessary
+          const previous_tag_name = process.env.latest_tag;
 
           const releaseNotes = await github.rest.repos.generateReleaseNotes({
               owner,
