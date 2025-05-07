@@ -17,14 +17,19 @@ jobs:
       uses: actions/github-script@v5
       with:
         script: |
-            const { generateReleaseNotes } = require('@actions/github-script');
-            const releaseNotes = await generateReleaseNotes({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag_name: context.ref.replace('refs/tags/', ''),
-                previous_tag_name: 'previous-tag',
-            });
-            core.setOutput('release_notes', releaseNotes);
+          const { owner, repo } = context.repo;
+          const tag_name = context.ref.replace('refs/tags/', '');
+          const previous_tag_name = 'previous-tag'; // Replace with logic to fetch the previous tag if necessary
+
+          const releaseNotes = await github.rest.repos.generateReleaseNotes({
+              owner,
+              repo,
+              tag_name,
+              previous_tag_name,
+          });
+
+          core.setOutput('release_notes', releaseNotes.data.body);
+
     - name: Commit and Push Release Notes
       run: |
           git config --global user.name 'github-actions[bot]'
