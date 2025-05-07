@@ -147,6 +147,7 @@ class AppProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-app-product"
 
     @classmethod
@@ -189,6 +190,7 @@ class ApsEdrs(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-aps-edrs"
 
     @classmethod
@@ -263,6 +265,7 @@ class ApsFile(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-aps-file"
 
     @classmethod
@@ -309,6 +312,7 @@ class ApsPerPass(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-aps-per-pass"
 
     @classmethod
@@ -361,6 +365,7 @@ class ApsProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-aps-product"
 
     @classmethod
@@ -441,6 +446,7 @@ class ApsQualityInfo(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-aps-quality-info"
 
     @classmethod
@@ -533,6 +539,7 @@ class ApsSession(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-aps-session"
 
     @classmethod
@@ -603,6 +610,7 @@ class AuxipProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-auxip-product"
 
     @classmethod
@@ -647,6 +655,7 @@ class CamsAnomalyCorrelation(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-cams-anomaly-correlation"
 
     @classmethod
@@ -685,6 +694,7 @@ class CamsCloudAnomalyCorrelation(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-cams-cloud-anomaly-correlation"
 
     @classmethod
@@ -739,6 +749,7 @@ class CamsCloudTickets(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-cams-cloud-tickets"
 
     @classmethod
@@ -801,6 +812,7 @@ class CamsTickets(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-cams-tickets"
 
     @classmethod
@@ -859,6 +871,7 @@ class CdsAcquisitionPassStatus(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-acquisition-pass-status"
 
     @classmethod
@@ -989,6 +1002,7 @@ class CdsCadipAcquisitionPassStatus(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-cadip-acquisition-pass-status"
 
     @classmethod
@@ -1105,6 +1119,7 @@ class CdsCamsTickets(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-cams-tickets"
 
     @classmethod
@@ -1179,6 +1194,7 @@ class CdsDatabudget(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-databudget"
 
     @classmethod
@@ -1231,6 +1247,7 @@ class CdsDataflow(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-dataflow"
 
     @classmethod
@@ -1289,6 +1306,7 @@ class CdsDatatake(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-datatake"
 
     @classmethod
@@ -1369,6 +1387,7 @@ class CdsDdpDataAvailable(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-ddp-data-available"
 
     @classmethod
@@ -1415,6 +1434,7 @@ class CdsDownlinkDatatake(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-downlink-datatake"
 
     @classmethod
@@ -1477,6 +1497,7 @@ class CdsEdrsAcquisitionPassStatus(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-edrs-acquisition-pass-status"
 
     @classmethod
@@ -1561,6 +1582,7 @@ class CdsGrafanaUsage(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-grafana-usage"
 
     @classmethod
@@ -1591,6 +1613,7 @@ class CdsHktmAcquisitionCompleteness(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-hktm-acquisition-completeness"
 
     @classmethod
@@ -1634,7 +1657,7 @@ class CdsHktmAcquisitionCompleteness(MAASDocument):
     related_document_id = Keyword()
 
     related_document_name = Keyword()
-    
+
     reportFolder = Keyword()
 
     satellite_unit = Keyword()
@@ -1653,6 +1676,7 @@ class CdsHktmProductionCompleteness(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-hktm-production-completeness"
 
     @classmethod
@@ -1723,6 +1747,7 @@ class CdsInterfaceProductDeletion(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-interface-product-deletion"
 
     @classmethod
@@ -1749,6 +1774,7 @@ class CdsInterfaceStatus(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-interface-status"
 
     @classmethod
@@ -1781,6 +1807,7 @@ class CdsMetricsProduct(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-metrics-product"
 
     @classmethod
@@ -1825,6 +1852,7 @@ class CdsProduct(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-product"
 
     @classmethod
@@ -1963,6 +1991,7 @@ class CdsPublication(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-publication"
 
     @classmethod
@@ -2091,6 +2120,7 @@ class CdsS2Tilpar(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-s2-tilpar"
 
     @classmethod
@@ -2117,6 +2147,7 @@ class CdsS3Completeness(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-s3-completeness"
 
     @classmethod
@@ -2179,6 +2210,7 @@ class CdsS5Completeness(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-s5-completeness"
 
     @classmethod
@@ -2247,6 +2279,7 @@ class CdsSatUnavailability(MAASDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "cds-sat-unavailability"
 
     @classmethod
@@ -2303,6 +2336,7 @@ class CreodiasProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-creodias-product"
 
     @classmethod
@@ -2355,6 +2389,7 @@ class DasProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-das-product"
 
     @classmethod
@@ -2399,6 +2434,7 @@ class Databudget(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-databudget"
 
     @classmethod
@@ -2441,6 +2477,7 @@ class DdArchive(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-dd-archive"
 
     @classmethod
@@ -2475,6 +2512,7 @@ class DdProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-dd-product"
 
     @classmethod
@@ -2519,6 +2557,7 @@ class DdpDataAvailable(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-ddp-data-available"
 
     @classmethod
@@ -2559,6 +2598,7 @@ class DeletionIssue(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-deletion-issue"
 
     @classmethod
@@ -2593,6 +2633,7 @@ class DownloadVolumeCount(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-download-volume-count"
 
     @classmethod
@@ -2631,6 +2672,7 @@ class GrafanaUsage(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-grafana-usage"
 
     @classmethod
@@ -2659,6 +2701,7 @@ class InterfaceProbe(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-interface-probe"
 
     @classmethod
@@ -2697,6 +2740,7 @@ class LtaProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-lta-product"
 
     @classmethod
@@ -2743,6 +2787,7 @@ class MetricsProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-metrics-product"
 
     @classmethod
@@ -2781,6 +2826,7 @@ class MpAllProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-mp-all-product"
 
     @classmethod
@@ -2853,6 +2899,7 @@ class MpHktmAcquisitionProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-mp-hktm-acquisition-product"
 
     @classmethod
@@ -2893,6 +2940,7 @@ class MpHktmDownlink(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-mp-hktm-downlink"
 
     @classmethod
@@ -2961,6 +3009,7 @@ class MpProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-mp-product"
 
     @classmethod
@@ -3017,6 +3066,7 @@ class MpcipProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-mpcip-product"
 
     @classmethod
@@ -3063,6 +3113,7 @@ class MpipProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-mpip-product"
 
     @classmethod
@@ -3099,6 +3150,7 @@ class PripProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-prip-product"
 
     @classmethod
@@ -3153,6 +3205,7 @@ class ProductDeletion(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-product-deletion"
 
     @classmethod
@@ -3179,6 +3232,7 @@ class SatUnavailabilityProduct(MAASRawDocument):
 
     class Index:
         "inner class for DSL"
+
         name = "raw-data-sat-unavailability-product"
 
     @classmethod

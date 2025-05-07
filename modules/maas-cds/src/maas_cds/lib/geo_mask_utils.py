@@ -32,7 +32,13 @@ class GeoMaskUtils:
             },
             "EU": {"0": "EU_area.geojson"},
         },
-        "S1C": {"SLC": {"0": "EW_SLC_area_v3_for_s1c.geojson"}},
+        "S1C": {
+            "SLC": {
+                "0": "EW_SLC_area_v2.geojson",
+                "2025-04-03T22:10:00.000Z": "EW_SLC_area_v3_for_s1c.geojson",
+                "2025-05-07T22:00:00.000Z": "EW_SLC_area_v2.geojson",
+            }
+        },
     }
 
     COVERING_AREA_FIELD = "_coverage_percentage"

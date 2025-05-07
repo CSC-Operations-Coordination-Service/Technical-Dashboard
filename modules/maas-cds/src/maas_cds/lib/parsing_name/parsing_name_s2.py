@@ -1,4 +1,4 @@
-""" Custom method to extract data from sentinel 2 product name"""
+"""Custom method to extract data from sentinel 2 product name"""
 
 import logging
 import re

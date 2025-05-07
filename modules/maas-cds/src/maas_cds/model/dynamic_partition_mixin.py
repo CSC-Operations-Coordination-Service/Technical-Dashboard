@@ -1,6 +1,7 @@
 """
 This file contain all mixin to be used for dynamic partitionning ES indexes
 """
+
 import logging
 import re
 

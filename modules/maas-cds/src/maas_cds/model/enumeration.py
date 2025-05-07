@@ -1,4 +1,5 @@
-""" Enumerations CDS model definition """
+"""Enumerations CDS model definition"""
+
 import enum
 
 __all__ = ["CompletenessStatus", "CompletenessScope"]

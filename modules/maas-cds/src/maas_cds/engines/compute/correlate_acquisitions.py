@@ -234,9 +234,9 @@ class CorrelateAcquisitionsEngine(DataEngine):
                 else:
                     cached_downlink[downlink.meta.id] = downlink
 
-                cached_downlink[
-                    downlink.meta.id
-                ].observation_time_start = doc.observation_time_start
+                cached_downlink[downlink.meta.id].observation_time_start = (
+                    doc.observation_time_start
+                )
 
         versionned_downlinks = list(
             CdsDownlinkDatatake.mget_by_ids(list(cached_downlink.keys()))

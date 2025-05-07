@@ -57,7 +57,7 @@ class MissingConsolidationEngine(QueryEngine):
         "AUXIP": ["Exprivia"],
     }
 
-    def __init__(self, args=None, send_reports=True, chunk_size=128, dd_attrs = None):
+    def __init__(self, args=None, send_reports=True, chunk_size=128, dd_attrs=None):
         super().__init__(args, send_reports, chunk_size)
         self.dd_attrs = dd_attrs or {}
 
@@ -180,7 +180,9 @@ class MissingConsolidationEngine(QueryEngine):
 
         for interface_type, interface_ids in interfaces_to_inspect_dict.items():
 
-            interface_query_builder = INTERFACE_STRATEGY_DICT.get(interface_type)(self.dd_attrs)
+            interface_query_builder = INTERFACE_STRATEGY_DICT.get(interface_type)(
+                self.dd_attrs
+            )
 
             for interface_id in interface_ids:
 

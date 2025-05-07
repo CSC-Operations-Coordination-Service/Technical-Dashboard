@@ -113,12 +113,12 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             },
             # "S3A": {
             #     "0": ["PRIP_S3_Legacy"],
-            #     "0": ["PRIP_S3A_ACRI"],
+            #     "2022-04-01T00:00:00.000Z": ["PRIP_S3A_ACRI"],  # Approx
             # },
             # "S3B": {
             #     "0": ["PRIP_S3_Legacy"],
-            #     "0": ["PRIP_S3B_SERCO"],
-            #     "0": ["PRIP_S3B_TPZ"],
+            #     "2022-04-01T00:00:00.000Z": ["PRIP_S3B_SERCO"],  # Approx
+            #     "2025-02-01T00:00:00.000Z": ["PRIP_S3B_TPZ"],
             # },
             # "S5P": {"0": ["PRIP_SSP_DLR"]},
         }

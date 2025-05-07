@@ -1,4 +1,5 @@
 """Update entities after some products from containers are seen"""
+
 import typing
 
 from opensearchpy import MultiSearch

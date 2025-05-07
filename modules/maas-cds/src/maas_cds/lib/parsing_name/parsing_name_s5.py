@@ -1,4 +1,4 @@
-""" Custom method to extract data from sentinel 5 product name"""
+"""Custom method to extract data from sentinel 5 product name"""
 
 import logging
 from maas_model import datestr_to_utc_datetime
@@ -64,9 +64,9 @@ def extract_data_from_product_name_s5(product_name):
             #
             # this pseudo datatake shall match the orbit, which is the base for S5 completeness
             #
-            data[
-                "datatake_id"
-            ] = f"{data['satellite_unit']}-{data['absolute_orbit_number']}"
+            data["datatake_id"] = (
+                f"{data['satellite_unit']}-{data['absolute_orbit_number']}"
+            )
 
         data["product_level"] = f"L{product_level}"
 

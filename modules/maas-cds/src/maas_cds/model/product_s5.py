@@ -1,4 +1,4 @@
-""" Custom CDS model definition for s5 product"""
+"""Custom CDS model definition for s5 product"""
 
 import logging
 

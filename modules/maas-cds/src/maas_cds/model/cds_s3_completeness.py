@@ -1,7 +1,9 @@
-""" Custom CDS model definition for product"""
+"""Custom CDS model definition for product"""
 
 import logging
 
+from maas_cds.lib.config import get_good_threshold_config_from_value
+from maas_model.date_utils import datetime_to_zulu
 from opensearchpy import Keyword
 from maas_cds.model import generated
 from maas_cds.model.product_s3 import CdsProductS3
@@ -259,10 +261,45 @@ class CdsS3Completeness(AnomalyMixin, generated.CdsS3Completeness):
 
         return implied_documents
 
+    def get_service_for_completeness(self):
+
+        # TODO Move this to a more global configuration and in a external stuff (ie db)
+        completeness_service_dict = {
+            "S3A": {
+                "0": ["PRIP_S3_Legacy"],
+                "2022-04-01T00:00:00.000Z": ["PRIP_S3A_ACRI"],  # Approx
+            },
+            "S3B": {
+                "0": ["PRIP_S3_Legacy"],
+                "2022-04-01T00:00:00.000Z": ["PRIP_S3B_SERCO"],  # Approx
+                "2025-02-01T00:00:00.000Z": ["PRIP_S3B_TPZ"],
+            },
+        }
+
+        config_completeness = completeness_service_dict.get(self.satellite_unit, None)
+
+        if config_completeness is None:
+            LOGGER.warning(
+                "[CompletenessConfig] - Unknow satellite : %s", self.satellite_unit
+            )
+            return None
+
+        # Maybe use
+        (nearest_time_indicator, allowed_prip_name) = (
+            get_good_threshold_config_from_value(
+                config_completeness, datetime_to_zulu(self.observation_time_start)
+            )
+        )
+
+        return allowed_prip_name
+
     def find_products_scan(self):
         """Build and execute the opensearchpy query to retrieve products matching
         completeness properties
         """
+        # TODO move this to maas-config - completeness
+        completeness_service = self.get_service_for_completeness()
+
         search_request = (
             CdsProductS3.search()
             .filter("term", datatake_id=self.datatake_id)
@@ -270,6 +307,7 @@ class CdsS3Completeness(AnomalyMixin, generated.CdsS3Completeness):
             .filter("term", satellite_unit=self.satellite_unit)
             .filter("term", product_type=self.product_type)
             .filter("term", timeliness=self.timeliness)
+            .filter("terms", prip_service=completeness_service)
             .filter("exists", field="prip_id")
         )
 

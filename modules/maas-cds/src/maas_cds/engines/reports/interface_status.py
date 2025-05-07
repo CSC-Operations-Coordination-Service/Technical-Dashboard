@@ -1,4 +1,5 @@
 """Interface status consolidation"""
+
 import datetime
 import hashlib
 

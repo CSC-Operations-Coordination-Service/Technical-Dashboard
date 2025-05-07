@@ -82,10 +82,18 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
             self.logger.debug("DATA4COMPLETENESS %s", datas_for_completnesses)
 
             # create all completeness
-            docs_in_db = CdsS3Completeness.mget_by_ids(list(datas_for_completnesses.keys()))
+            docs_in_db = CdsS3Completeness.mget_by_ids(
+                list(datas_for_completnesses.keys())
+            )
 
-            for (key, data_for_completeness),doc_in_db in zip(datas_for_completnesses.items(),docs_in_db):
-                if key != compute_key and key not in self.local_cache_completeness and not doc_in_db:
+            for (key, data_for_completeness), doc_in_db in zip(
+                datas_for_completnesses.items(), docs_in_db
+            ):
+                if (
+                    key != compute_key
+                    and key not in self.local_cache_completeness
+                    and not doc_in_db
+                ):
                     # create all others completeness and store it in the local cache
                     self.logger.debug("Creating completeness: %s", key)
                     completeness_doc = model_class(**data_for_completeness)
@@ -266,7 +274,10 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
                 considered_products,
             ):
                 if not doc and key not in self.local_cache_completeness:
-                    self.logger.debug("[CACHE] - key neither found in db nor in local cache, create a new one : %s",key,)
+                    self.logger.debug(
+                        "[CACHE] - key neither found in db nor in local cache, create a new one : %s",
+                        key,
+                    )
                     self.create_completeness_doc(key, product, self.target_model)
                 elif key in self.local_cache_completeness:
                     self.logger.debug(
@@ -282,8 +293,7 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
                     self.local_cache_completeness[key] = (
                         doc,
                         original_completeness_doc,
-                )
-
+                    )
 
     def identify_missing_datatakes_ids(
         self,

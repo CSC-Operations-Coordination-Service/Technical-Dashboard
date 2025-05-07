@@ -1,4 +1,4 @@
-""" Custom CDS model definition for publication"""
+"""Custom CDS model definition for publication"""
 
 import logging
 

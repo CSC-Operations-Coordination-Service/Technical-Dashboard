@@ -1,4 +1,5 @@
 """Deletion consolidation"""
+
 import itertools
 from typing import List, Generator
 
