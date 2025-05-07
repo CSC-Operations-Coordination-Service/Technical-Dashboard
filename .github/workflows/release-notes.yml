@@ -12,6 +12,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
+      - name: Install conventional-changelog
+        run: npm install conventional-changelog
       - name: Generate Changelog
         run: |
           npx conventional-changelog -p angular -i CHANGELOG.md -s
