@@ -1,46 +1,63 @@
-name: Publish Release Notes
-
+name: Generate and Push Release Notes
 on:
   push:
     tags:
       - '*.*.*'
-
 jobs:
-  publish-release-notes:
+  release-notes:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Get the latest tag
-      id: get_latest_tag
-      run: |
-        latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-        echo "latest_tag=$latest_tag" >> $GITHUB_ENV
-    - name: Generate Release Notes
-      id: generate_release_notes
-      uses: actions/github-script@v5
-      with:
-        script: |
-          const { owner, repo } = context.repo;
-          const tag_name = context.ref.replace('refs/tags/', '');
-          const previous_tag_name = process.env.latest_tag;
-
-          const releaseNotes = await github.rest.repos.generateReleaseNotes({
-              owner,
-              repo,
-              tag_name,
-              previous_tag_name,
-          });
-
-          core.setOutput('release_notes', releaseNotes.data.body);
-
-    - name: Commit and Push Release Notes
-      run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          echo "${{ steps.generate_release_notes.outputs.release_notes }}" > release-notes.md
-          git checkout -b pages
-          git pull origin pages --rebase  # Pull the latest changes from the remote
-          git add release-notes.md
-          git commit -m "Add release notes for ${{ github.ref }}"
+      - uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Generate Changelog
+        run: |
+          npx conventional-changelog -p angular -i CHANGELOG.md -s
+      - name: Commit and Push to Pages Branch
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git checkout -b pages || git checkout pages
+          git add CHANGELOG.md
+          git commit -m "chore: update release notes"
           git push origin pages
+  # release-notes-test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #   - name: Get the latest tag
+  #     id: get_latest_tag
+  #     run: |
+  #       latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+  #       echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+  #   - name: Generate Release Notes
+  #     id: generate_release_notes
+  #     uses: actions/github-script@v5
+  #     with:
+  #       script: |
+  #         const { owner, repo } = context.repo;
+  #         const tag_name = context.ref.replace('refs/tags/', '');
+  #         const previous_tag_name = process.env.latest_tag;
+
+  #         const releaseNotes = await github.rest.repos.generateReleaseNotes({
+  #             owner,
+  #             repo,
+  #             tag_name,
+  #             previous_tag_name,
+  #         });
+
+  #         core.setOutput('release_notes', releaseNotes.data.body);
+
+  #   - name: Commit and Push Release Notes
+  #     run: |
+  #         git config --global user.name 'github-actions[bot]'
+  #         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+  #         echo "${{ steps.generate_release_notes.outputs.release_notes }}" > release-notes.md
+  #         git checkout -b pages
+  #         git pull origin pages --rebase  # Pull the latest changes from the remote
+  #         git add release-notes.md
+  #         git commit -m "Add release notes for ${{ github.ref }}"
+  #         git push origin pages
