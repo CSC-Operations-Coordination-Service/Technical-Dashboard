@@ -40,6 +40,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           echo "${{ steps.generate_release_notes.outputs.release_notes }}" > release-notes.md
           git checkout -b pages
+          git pull origin pages --rebase  # Pull the latest changes from the remote
           git add release-notes.md
           git commit -m "Add release notes for ${{ github.ref }}"
           git push origin pages
