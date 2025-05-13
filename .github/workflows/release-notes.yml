@@ -4,62 +4,28 @@ on:
     tags:
       - '*.*.*'
 jobs:
-  release-notes:
+  changelog:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '22'
-      - name: Install conventional-changelog
-        run: npm install conventional-changelog-cli
-      - name: Generate Changelog
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install git-cliff
         run: |
-          npx conventional-changelog -p angular -i CHANGELOG.md -s
-      - name: Commit and Push to Pages Branch
+          curl -sSL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+          sudo mv git-cliff /usr/local/bin/
+
+      - name: Generate changelog
+        run: git-cliff -o CHANGELOG.md
+
+      - name: Commit and push changelog
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git checkout -b pages || git checkout pages
           git add CHANGELOG.md
-          git commit -m "chore: update release notes"
+          git commit -m "chore: update changelog for ${{ github.ref_name }}"
           git push origin pages
-  # release-notes-test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
-  #   - name: Get the latest tag
-  #     id: get_latest_tag
-  #     run: |
-  #       latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-  #       echo "latest_tag=$latest_tag" >> $GITHUB_ENV
-  #   - name: Generate Release Notes
-  #     id: generate_release_notes
-  #     uses: actions/github-script@v5
-  #     with:
-  #       script: |
-  #         const { owner, repo } = context.repo;
-  #         const tag_name = context.ref.replace('refs/tags/', '');
-  #         const previous_tag_name = process.env.latest_tag;
-
-  #         const releaseNotes = await github.rest.repos.generateReleaseNotes({
-  #             owner,
-  #             repo,
-  #             tag_name,
-  #             previous_tag_name,
-  #         });
-
-  #         core.setOutput('release_notes', releaseNotes.data.body);
-
-  #   - name: Commit and Push Release Notes
-  #     run: |
-  #         git config --global user.name 'github-actions[bot]'
-  #         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-  #         echo "${{ steps.generate_release_notes.outputs.release_notes }}" > release-notes.md
-  #         git checkout -b pages
-  #         git pull origin pages --rebase  # Pull the latest changes from the remote
-  #         git add release-notes.md
-  #         git commit -m "Add release notes for ${{ github.ref }}"
-  #         git push origin pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
