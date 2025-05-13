@@ -23,11 +23,12 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          git fetch origin
           git checkout -b pages || git checkout pages
           git branch --set-upstream-to=origin/pages pages
           git pull
           git add CHANGELOG.md
           git commit -m "chore: update changelog for ${{ github.ref_name }}"
-          git push origin pages
+          git push origin pages || git push -u origin pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
