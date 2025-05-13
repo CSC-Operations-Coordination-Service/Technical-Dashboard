@@ -178,6 +178,18 @@
                     "_specific": "S2"
                 }
             },
+            "centre": {
+                "type": "keyword",
+                "meta": {
+                    "_specific": "S3"
+                }
+            },
+            "platform": {
+                "type": "keyword",
+                "meta": {
+                    "_specific": "S3"
+                }
+            },
             "collection_number": {
                 "type": "keyword"
             },

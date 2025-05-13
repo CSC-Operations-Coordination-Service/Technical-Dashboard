@@ -53,6 +53,18 @@
             "product_uuid": {
                 "type": "keyword"
             },
+            "centre": {
+                "type": "keyword",
+                "meta": {
+                    "_specific": "S3"
+                }
+            },
+            "platform": {
+                "type": "keyword",
+                "meta": {
+                    "_specific": "S3"
+                }
+            },
             "content_length": {
                 "type": "long",
                 "meta": {

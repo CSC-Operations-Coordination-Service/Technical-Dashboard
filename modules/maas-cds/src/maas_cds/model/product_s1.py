@@ -33,15 +33,11 @@ class CdsProductS1(CdsProduct):
                 "EW",
                 "WV",
                 "RFC",
-                "Z1",
-                "Z2",
-                "Z3",
-                "Z4",
-                "Z5",
-                "Z6",
                 "ZI",
                 "ZE",
                 "ZW",
+                "AN",
+                "ZS",
                 "AIS",
             )
             or self.product_type in CdsDatatakeS1.EXCLUDES_PRODUCTED_TYPES

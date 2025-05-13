@@ -353,7 +353,7 @@ class CdsDatatakeS1(CdsDatatake):
             "ZI": ["RAW__0S"],
             "ZE": ["RAW__0S"],
             "ZW": ["RAW__0S"],
-            "AIS": ["RAW__0S"],
+            "AIS": ["RAW__0_"],
         }
 
         if self.instrument_mode[:2] not in [

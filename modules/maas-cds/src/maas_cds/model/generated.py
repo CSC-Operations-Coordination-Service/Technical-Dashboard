@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2024-12-18T13:02:58.913453
+Generated date: 2025-05-12T13:02:58.913453
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -1875,6 +1875,8 @@ class CdsProduct(MAASDocument):
 
     cams_tickets = Keyword()
 
+    centre = Keyword()
+
     cloud_cover = Float()
 
     collection_number = Keyword()
@@ -1936,6 +1938,8 @@ class CdsProduct(MAASDocument):
     name = Keyword()
 
     nb_lta_served = Integer()
+
+    platform = Keyword()
 
     polarization = Keyword()
 
@@ -2010,6 +2014,8 @@ class CdsPublication(MAASDocument):
 
     cams_tickets = Keyword()
 
+    centre = Keyword()
+
     cloud_cover = Float()
 
     collection_number = Keyword()
@@ -2053,6 +2059,8 @@ class CdsPublication(MAASDocument):
     name = Keyword()
 
     origin_date = ZuluDate()
+
+    platform = Keyword()
 
     polarization = Keyword()
 

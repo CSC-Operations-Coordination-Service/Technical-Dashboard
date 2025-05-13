@@ -1,4 +1,5 @@
 """Base classes and function for migrations"""
+
 import argparse
 from datetime import datetime
 import fnmatch
@@ -46,7 +47,7 @@ class MaasMigrator:
 
         if self.args.dry_run:
             self.logger.warning(
-                "Dry mode is on: not modification will happen on existing data"
+                "Dry mode is on: no modification will be applied on existing data"
             )
 
         # get the list of available templates following maas suffix convention
@@ -297,6 +298,16 @@ class MaasMigrator:
         # clean up templates
         self.es_conn.indices.delete_template(f"template_migrating-{index_name}")
 
+    def update_template(self, index_name):
+        template_data = self.load_template(index_name)
+
+        # update the target template
+        self.es_conn.indices.put_template(
+            f"template_{index_name}",
+            template_data,
+            request_timeout=self.args.es_timeout,
+        )
+
     def update_index(self, index_name):
         """update index template and mapping for all indices matching index_name
 
@@ -322,12 +333,37 @@ class MaasMigrator:
         if self.args.dry_run:
             return
 
-        # update the target template
-        self.es_conn.indices.put_template(
-            f"template_{index_name}",
-            template_data,
-            request_timeout=self.args.es_timeout,
-        )
+        self.update_template(index_name)
+
+    def patch_index(self, index_name, partitions, patch):
+        #  Patch example
+        #   {
+        #         "properties": {
+        #             "platform": {"type": "keyword", "meta": {"_specific": "S3"}},
+        #             "centre": {"type": "keyword", "meta": {"_specific": "S3"}},
+        #         }
+        #     }
+
+        patch = json.loads(patch)
+
+        indices_to_patch = []
+
+        if "all" in partitions:
+            indices_to_patch = self.get_index_list(index_name)
+        else:
+            indices_to_patch = [f"{index_name}-{partition}" for partition in partitions]
+
+        for name in indices_to_patch:
+            self.logger.info("Patching index mapping for %s", name)
+
+            if self.args.dry_run:
+                continue
+
+            self.es_conn.indices.put_mapping(
+                body=patch,
+                index=name,
+                request_timeout=self.args.es_timeout,
+            )
 
     def install_index(self, index_name):
         """put template of the index
@@ -498,9 +534,15 @@ def migration_main(argv, migrator_class):
     )
 
     parser.add_argument(
+        "-u",
+        "--patch-partition-mapping",
+        help="Patch partition mapping (put)",
+    )
+
+    parser.add_argument(
         "-p",
         "--partition",
-        help="migrate only a set of partitions",
+        help="migrate/patch only a set of partitions",
         nargs="+",
     )
 
@@ -512,7 +554,7 @@ def migration_main(argv, migrator_class):
 
     parser.add_argument(
         "--script",
-        help="script to use during index migrating",
+        help="script to use during index migrating / patch in case of patch",
     )
 
     parser.add_argument(
@@ -551,6 +593,10 @@ def migration_main(argv, migrator_class):
     if args.install:
         for index_name in migrator.get_effective_template_list(args.install):
             migrator.install_index(index_name)
+
+    # Maybe add this as an fallback option in case of update mapping fail
+    if args.patch_partition_mapping:
+        migrator.patch_index(args.patch_partition_mapping, args.partition, args.script)
 
     if args.migrate:
         for index_name in migrator.get_effective_template_list(args.migrate):

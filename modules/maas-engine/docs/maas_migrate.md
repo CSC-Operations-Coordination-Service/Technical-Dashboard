@@ -5,7 +5,7 @@ The CLI utility `maas_migrate` helps to perform install opensearch template upda
 It uses standard maas environment variables:
 
 ```bash
-$ maas_migrate -h
+maas_migrate -h
 ```
 
 Will output:
@@ -211,3 +211,15 @@ For maas-collector-journal:
 For others indices/templates:
 
 - Nothing change
+
+## Patching mapping on some indices
+
+In some case, you want to update the mapping to add new fields, but some indices may require a reindex to apply the whole mapping, and sometime you don't want to reindex all of this indices
+
+To patch all index mapping you can run this command
+
+```bash
+maas_migrate -r resources -v -u cds-publication --script '{"properties":{"platform": {"type": "keyword", "meta": {"_specific": "S3"}},"centre": {"type": "keyword", "meta": {"_specific": "S3"}}}}'  -p all
+```
+
+This command will try to add 2 properties on all on all cds-publication index mappings

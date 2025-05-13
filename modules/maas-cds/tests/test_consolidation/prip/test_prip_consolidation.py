@@ -432,6 +432,8 @@ def test_prip_publication_consolidation_s3(mock_get_by_id, prip_product_s3):
     publication.full_clean()
 
     assert publication.to_dict() == {
+        "centre": "LN2",
+        "platform": "O",
         "key": "d0fbb9ad9b16c82b50d9445195cf5756",
         "mission": "S3",
         "name": "S3A_SY_2_VG1____20220121T000000_20220121T235959_20220122T204333_NORTH_AMERICA_____LN2_O_ST_002.SEN3.zip",
@@ -482,6 +484,8 @@ def test_prip_publication_consolidation(mock_mget_by_ids, prip_product_s3):
     publication.full_clean()
 
     expected_dict = {
+        "centre": "LN2",
+        "platform": "O",
         "content_length": 35160306,
         "eviction_date": "2022-01-29T21:41:49.332Z",
         "from_sensing_timeliness": 78110332000,

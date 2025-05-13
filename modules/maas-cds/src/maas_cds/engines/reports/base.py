@@ -169,6 +169,10 @@ class BaseProductConsolidatorEngine(RawDataEngine):
 
         document.site_center = data_dict.get("site_center", document.site_center)
 
+        # S3 Specific
+        document.platform = data_dict.get("platform", None)
+        document.centre = data_dict.get("centre", None)
+
         # S5 specific
         document.collection_number = data_dict.get(
             "collection_number", document.collection_number
