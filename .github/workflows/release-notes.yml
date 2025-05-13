@@ -24,6 +24,7 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git checkout -b pages || git checkout pages
+          git branch --set-upstream-to=origin/pages pages
           git pull
           git add CHANGELOG.md
           git commit -m "chore: update changelog for ${{ github.ref_name }}"
