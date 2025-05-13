@@ -14,7 +14,7 @@ jobs:
       - name: Install git-cliff
         run: |
           curl -sSL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-2.8.0-x86_64-unknown-linux-gnu.tar.gz  | tar -xz
-          sudo mv git-cliff /usr/local/bin/
+          sudo mv git-cliff-2.8.0 /usr/local/bin/
 
       - name: Generate changelog
         run: git-cliff -o CHANGELOG.md
