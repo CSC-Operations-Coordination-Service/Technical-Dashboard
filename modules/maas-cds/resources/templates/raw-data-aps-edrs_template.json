@@ -83,7 +83,7 @@
                 "type": "long"
             },
             "fer": {
-                "type": "long"
+                "type": "float"
             },
             "archived_data_size": {
                 "type": "float"
