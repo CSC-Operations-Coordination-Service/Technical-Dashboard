@@ -217,7 +217,7 @@ class ApsEdrs(MAASRawDocument):
 
     edte_acquisition_status = Keyword()
 
-    fer = Long()
+    fer = Float()
 
     geo_satellite_id = Keyword()
 
@@ -1530,7 +1530,7 @@ class CdsEdrsAcquisitionPassStatus(MAASDocument):
 
     edte_acquisition_status = Keyword()
 
-    fer = Long()
+    fer = Float()
 
     geo_satellite_id = Keyword()
 

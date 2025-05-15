@@ -78,7 +78,7 @@
                 },
                 {
                     "name": "fer",
-                    "type": "Long"
+                    "type": "Float"
                 },
                 {
                     "name": "archived_data_size",
