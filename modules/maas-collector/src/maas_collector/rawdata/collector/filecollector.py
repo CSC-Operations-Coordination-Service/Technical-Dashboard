@@ -71,11 +71,7 @@ class CollectorArgs:
 
     watch_period: int = 60
 
-    v1_compatibility: bool = False
-
     force_message: bool = False
-
-    backup: BackupArgs = None
 
     es_retries: int = 3
 
@@ -287,7 +283,6 @@ class FileCollector(CredentialMixin):
         # deal with rabbitmq
         self._messenger: Messenger = Messenger(
             url=self.args.amqp_url,
-            v1_compatibility=self.args.v1_compatibility,
             priority=self.args.amqp_priority,
             max_retries=self.args.amqp_retries,
             pipeline_name=self.__class__.__name__,

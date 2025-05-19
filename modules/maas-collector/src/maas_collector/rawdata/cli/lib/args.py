@@ -1022,15 +1022,6 @@ def common_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        "--v1-compatibility",
-        dest="v1_compatibility",
-        help="V1 compatibility (default: %(default)s): simple amqp message payload",
-        action="store_true",
-        required=False,
-        default=False,
-    )
-
-    parser.add_argument(
         "--force-message",
         dest="force_message",
         help="Notify unmodified documents on the amqp bus (default: %(default)s)",
@@ -1075,7 +1066,6 @@ def get_collector_args(classobj, namespace, **kwargs):
         healthcheck_port=namespace.healthcheck_port,
         healthcheck_timeout=namespace.healthcheck_timeout,
         watch_period=namespace.watch_period,
-        v1_compatibility=namespace.v1_compatibility,
         es_retries=namespace.es_retries,
         amqp_retries=namespace.amqp_retries,
         force_message=namespace.force_message,
