@@ -103,7 +103,9 @@ maas_engine_cli -e CONSOLIDATE_ANOMALY_CORRELATION_FILE -vv -p $WORK_DIR/develop
 maas_engine_cli -e COMPUTE_HKTM_RELATED -vv -p $WORK_DIR/development/payload-sample/hktm-payload.json -f --routing-key update.hktm-products
 ```
 
-## Load some data from aother cluster
+## Opensearch common usecase
+
+### Load some data from aother cluster
 
 This will depend of cours of how both cluster is configured
 
@@ -253,6 +255,14 @@ Then update also the query
 ```
 
 ## Run local python module
+
+### Run local collector with backup inside minio
+
+```bash
+maas_collector.rawdata.cli.jirax -v --es-ignore-certs-verification True -p 0 -f 
+# Or for a specific folder
+python -m maas_collector.rawdata.cli.jirax --healthcheck-port  4584 -p 0 -vv  -d $WORK_DIR/configuration/collector/jira/edrs -vv
+```
 
 ## Build local python wheel
 
