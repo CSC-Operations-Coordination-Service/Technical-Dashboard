@@ -78,6 +78,7 @@ class JIRAExtendedCollector(FileCollector):
         """Ingest from JIRA. All arguments are ignored so defaults to None"""
         # iterate over all JIRA collector configurations
         for config in self.configs:
+            self.logger.info("On going for %s", config.interface_name)
             if not config.end_point:
                 # skip configuration with no end_point like configuration for
                 # attachement ingestion
@@ -242,11 +243,11 @@ class JIRAExtendedCollector(FileCollector):
                     # https://jira.atlassian.com/browse/JRASERVER-31250
                     # so additionnal check is required with the real issue date
 
-                    if journal.last_date and not issue_date > journal.last_date:
-                        self.logger.debug(
-                            "Skipping %s: too old (%s)", issue, issue.fields.updated
-                        )
-                        continue
+                    # if journal.last_date and not issue_date > journal.last_date:
+                    #     self.logger.debug(
+                    #         "Skipping %s: too old (%s)", issue, issue.fields.updated
+                    #     )
+                    #     continue
 
                     if config.extractor:
                         # conventional ticket ingestion if performed with JSON extractor

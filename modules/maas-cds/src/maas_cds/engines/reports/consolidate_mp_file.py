@@ -87,6 +87,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
             # retrieve satelite id from report
             sat_id = local_report_name[0:3]
+
             # Min date to delete
             # Get the minimum data time start_field from current report (i.e. local_report_name)
             min_date = self.get_report_min_date(local_report_name)
@@ -101,6 +102,15 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             else:
                 # no next report use * to get all data
                 max_date = "*"
+
+            self.logger.debug(
+                "[MP-%s] - Find a next report %s delete all data between %s and %s ",
+                sat_id,
+                next_repport_name,
+                min_date,
+                max_date,
+            )
+
             # Delete all consolidated data between min and max date
             datatake_delete_list = self.get_to_delete_consolidated_data(
                 sat_id, min_date, max_date

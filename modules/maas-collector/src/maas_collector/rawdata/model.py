@@ -1,4 +1,5 @@
 """opensearch model classes for raw database"""
+
 import datetime
 import logging
 

@@ -7,7 +7,6 @@ from argparse import Action, ArgumentParser, Namespace
 
 import maas_collector
 
-from maas_collector.rawdata.backup import BackupArgs
 from maas_collector.rawdata.replay import ReplayArgs
 
 
@@ -1022,15 +1021,6 @@ def common_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        "--v1-compatibility",
-        dest="v1_compatibility",
-        help="V1 compatibility (default: %(default)s): simple amqp message payload",
-        action="store_true",
-        required=False,
-        default=False,
-    )
-
-    parser.add_argument(
         "--force-message",
         dest="force_message",
         help="Notify unmodified documents on the amqp bus (default: %(default)s)",
@@ -1075,7 +1065,6 @@ def get_collector_args(classobj, namespace, **kwargs):
         healthcheck_port=namespace.healthcheck_port,
         healthcheck_timeout=namespace.healthcheck_timeout,
         watch_period=namespace.watch_period,
-        v1_compatibility=namespace.v1_compatibility,
         es_retries=namespace.es_retries,
         amqp_retries=namespace.amqp_retries,
         force_message=namespace.force_message,
@@ -1083,23 +1072,6 @@ def get_collector_args(classobj, namespace, **kwargs):
         amqp_priority=namespace.amqp_priority,
         **kwargs,
     )
-
-    # setup backup configuration
-    if namespace.backup_enabled:
-        args.backup = BackupArgs(
-            namespace.backup_type,
-            namespace.backup_hostname,
-            namespace.back_port,
-            namespace.backup_username,
-            namespace.backup_password,
-            namespace.backup_dir,
-            namespace.backup_calendar_tree,
-            namespace.backup_gzip,
-            namespace.backup_s3_endpoint,
-            namespace.backup_s3_key_id,
-            namespace.backup_s3_access_key,
-            namespace.backup_s3_bucket,
-        )
 
     if namespace.replay_interface_name:
         args.replay = ReplayArgs(

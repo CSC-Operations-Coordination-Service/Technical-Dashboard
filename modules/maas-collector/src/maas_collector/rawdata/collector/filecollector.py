@@ -17,6 +17,8 @@ from urllib.parse import urlparse
 
 from functools import cached_property
 
+from maas_collector.backup import instanciate_collector_backup
+from maas_collector.backup.backup import CollectorBackupConfiguration
 from opensearchpy.helpers import parallel_bulk
 from opensearchpy.connection.connections import connections as es_connections
 
@@ -33,10 +35,6 @@ from maas_collector.rawdata.configuration import (
     find_configurations,
 )
 
-from maas_collector.rawdata.backup import (
-    BackupArgs,
-    instanciate_collector_backup,
-)
 from maas_collector.rawdata.messenger import Messenger
 from maas_collector.rawdata.replay import ReplayArgs
 
@@ -71,11 +69,7 @@ class CollectorArgs:
 
     watch_period: int = 60
 
-    v1_compatibility: bool = False
-
     force_message: bool = False
-
-    backup: BackupArgs = None
 
     es_retries: int = 3
 
@@ -129,6 +123,8 @@ class FileCollectorConfiguration:
     no_probe: bool = False
 
     store_meta: list = None
+
+    backup: CollectorBackupConfiguration = None
 
     @cached_property
     def name(self) -> str:
@@ -287,11 +283,12 @@ class FileCollector(CredentialMixin):
         # deal with rabbitmq
         self._messenger: Messenger = Messenger(
             url=self.args.amqp_url,
-            v1_compatibility=self.args.v1_compatibility,
             priority=self.args.amqp_priority,
             max_retries=self.args.amqp_retries,
             pipeline_name=self.__class__.__name__,
         )
+
+        self._backup = None
 
         # action iterator reference so it can be found to be stopped
         self._action_iterator = None
@@ -299,11 +296,6 @@ class FileCollector(CredentialMixin):
 
         # list of configuration files
         self.__config_files = None
-
-        if args.backup:
-            self._backup = instanciate_collector_backup(args.backup)
-        else:
-            self._backup = None
 
     def get_configs(self, path: str):
         """get configurations of a given class from a json file
@@ -489,6 +481,7 @@ class FileCollector(CredentialMixin):
             report_folder=report_folder,
             iter_callback=iter_callback,
         )
+
         self.action_iterator_errors = []
         try:
             # feed parallel_bulk with action iterator
@@ -561,7 +554,10 @@ class FileCollector(CredentialMixin):
                     path,
                 )
 
-            if self._backup:
+            # Should we backup all ?
+            if config.backup:
+
+                self._backup = instanciate_collector_backup(config.backup)
                 self._backup.backup_file(config, path)
 
                 # handle meta

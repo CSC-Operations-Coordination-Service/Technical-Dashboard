@@ -1,4 +1,5 @@
 """Message bus tools"""
+
 import dataclasses
 import json
 import logging
@@ -23,7 +24,6 @@ class Messenger:
     def __init__(
         self,
         url: str,
-        v1_compatibility: bool = False,
         priority: int = 0,
         max_retries: int = 0,
         pipeline_name: str = "Collector",
@@ -44,9 +44,6 @@ class Messenger:
 
         # message emitter
         self._producer: Producer | None = None
-
-        # V1 compatibility flag
-        self.v1_compatibility = v1_compatibility
 
         # message group configuration
         self.chunk_config: Dict[str, int] = {}
@@ -229,10 +226,7 @@ class Messenger:
         payload.document_indices = list(set(payload.document_indices))
         payload.pipeline = [self.pipeline_name]
 
-        if self.v1_compatibility:
-            body = payload.document_ids
-        else:
-            body = dataclasses.asdict(payload)
+        body = dataclasses.asdict(payload)
 
         self.logger.info(
             "MSG %s PUBLISHING TO %s/%s",
