@@ -14,7 +14,6 @@ python3 -m maas_collector.rawdata.cli.filesystem -h
 
 > See [Common options](common_options)
 
-
 ## Generic collectors
 
 | Collector                                  | Entry point                             | Description                                                                                            |
@@ -38,7 +37,6 @@ python3 -m maas_collector.rawdata.cli.filesystem -h
 
 ## Generic extractors
 
-
 maas-collector can extract data from different formats using text configuration.
 
 | Format | Description                        | Extractor                                   | Comments                                                                                                      |
@@ -50,7 +48,6 @@ maas-collector can extract data from different formats using text configuration.
 | xlsx   | Microsoft Excel Format             | [XLSXExtractor](xlsxextractor.md)           | extract data dictionaries from **rows** with or with headers                                                  |
 | xlsx   | Microsoft Excel Format             | [XLSXColumnExtractor](xlsxextractor.md)     | extract data dictionaries from **columns** with or with headers                                               |
 | xml    | eXtensible Mark-up Language (text) | [XMLExtractor](xmlextractor.md)             | extract data dictionaries using XPath expressions                                                             |
-
 
 ## Troubleshooting
 

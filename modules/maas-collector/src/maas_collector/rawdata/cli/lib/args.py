@@ -7,7 +7,6 @@ from argparse import Action, ArgumentParser, Namespace
 
 import maas_collector
 
-from maas_collector.rawdata.backup import BackupArgs
 from maas_collector.rawdata.replay import ReplayArgs
 
 
@@ -1073,23 +1072,6 @@ def get_collector_args(classobj, namespace, **kwargs):
         amqp_priority=namespace.amqp_priority,
         **kwargs,
     )
-
-    # setup backup configuration
-    if namespace.backup_enabled:
-        args.backup = BackupArgs(
-            namespace.backup_type,
-            namespace.backup_hostname,
-            namespace.back_port,
-            namespace.backup_username,
-            namespace.backup_password,
-            namespace.backup_dir,
-            namespace.backup_calendar_tree,
-            namespace.backup_gzip,
-            namespace.backup_s3_endpoint,
-            namespace.backup_s3_key_id,
-            namespace.backup_s3_access_key,
-            namespace.backup_s3_bucket,
-        )
 
     if namespace.replay_interface_name:
         args.replay = ReplayArgs(
