@@ -313,7 +313,7 @@ class MAASDocument(Document):
                 "_op_type": "delete",
             }
         if hasattr(self, "updateTime"):
-            setattr(self, "updateTime", datetime.datetime.now(tz=datetime.timezone.utc))
+            setattr(self, "updateTime", datetime.datetime.now(tz=datetime.UTC))
 
         if op_type == "create":
             if _id is None:
@@ -486,7 +486,7 @@ class MAASRawDocument(MAASDocument):
     # pylint: disable=W0221
     # def save(self, **kwargs):
     #     """override to fill ingestionTime automatically"""
-    #     now = datetime.datetime.utcnow()
+    #     now = datetime.now(tz=UTC)
 
     #     # MAAS document models use camel case naming
     #     # pylint: disable=C0103

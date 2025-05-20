@@ -814,7 +814,7 @@ class FileCollector(CredentialMixin):
         """Post-insert callback"""
         stats = self.entity_stats(config)
         stats.inserts += 1
-        stats.last_ingest = datetime.datetime.utcnow()
+        stats.last_ingest = datetime.datetime.now(tz=datetime.UTC)
 
     def on_document_update(
         self, path: str, config: FileCollectorConfiguration, document_id: str
@@ -822,7 +822,7 @@ class FileCollector(CredentialMixin):
         """Post-update callback"""
         stats = self.entity_stats(config)
         stats.updates += 1
-        stats.last_ingest = datetime.datetime.utcnow()
+        stats.last_ingest = datetime.datetime.now(tz=datetime.UTC)
 
     def on_document_error(
         self,
@@ -833,7 +833,7 @@ class FileCollector(CredentialMixin):
         """Post-error callback"""
         stats = self.entity_stats(config)
         stats.errors += 1
-        stats.last_error = datetime.datetime.utcnow()
+        stats.last_error = datetime.datetime.now(tz=datetime.UTC)
 
     def entity_stats(self, config: FileCollectorConfiguration):
         """Get the EntityStats instance for a FileCollectorConfiguration"""
@@ -851,7 +851,7 @@ class FileCollector(CredentialMixin):
             [type]: sub path
         """
         if dirdatetime is None:
-            dirdatetime = datetime.datetime.utcnow()
+            dirdatetime = datetime.now(tz=UTC)
 
         return os.path.join(
             f"{dirdatetime.year:04d}",

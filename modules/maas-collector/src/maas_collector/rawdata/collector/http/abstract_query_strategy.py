@@ -1,4 +1,5 @@
 """Contain base class for OData implementations"""
+
 import datetime
 import logging
 import typing
@@ -49,7 +50,7 @@ class AbstractHttpQueryStrategy:
         self.product_url = config.get_config_product_url()
 
         if not end_date_without_offset:
-            end_date_without_offset = datetime.datetime.now(datetime.timezone.utc)
+            end_date_without_offset = datetime.datetime.now(datetime.UTC)
         self.end_date = end_date_without_offset - datetime.timedelta(
             minutes=config.end_date_time_offset
         )

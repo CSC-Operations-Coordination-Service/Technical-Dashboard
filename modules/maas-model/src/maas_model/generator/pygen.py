@@ -133,7 +133,7 @@ class ModelGenerator:
             self.template.HEADER.format(
                 field_classes=", ".join(list(sorted(es_types))),
                 all_classes=", ".join(all_classes),
-                date=datetime.datetime.utcnow().isoformat(),
+                date=datetime.datetime.now(tz=datetime.UTC).isoformat(),
                 source_files="\n".join(
                     [self.template.INDENT + f"- {path}" for path in self.path_list]
                 ),

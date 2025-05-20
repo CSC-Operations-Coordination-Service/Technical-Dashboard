@@ -42,6 +42,6 @@ class ZuluDate(Date):
 
         data = super()._deserialize(data)
         # normalize UTC
-        if data.tzinfo != datetime.timezone.utc:
-            data = data.astimezone(datetime.timezone.utc)
+        if data.tzinfo != datetime.UTC:
+            data = data.astimezone(datetime.UTC)
         return data

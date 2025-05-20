@@ -190,7 +190,7 @@ class JIRAExtendedCollector(FileCollector):
         filename_prefix = "_".join(
             (
                 config.interface_name,
-                datetime.datetime.utcnow().strftime(
+                datetime.datetime.now(tz=datetime.UTC).strftime(
                     "%Y%m%d_%H%M%S%f"
                 ),  # UUID could be better
             )

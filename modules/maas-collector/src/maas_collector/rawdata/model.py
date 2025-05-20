@@ -114,7 +114,7 @@ class ActionIterator:
 
             document.meta.id = document_id
 
-            document.ingestionTime = datetime.datetime.utcnow()
+            document.ingestionTime = datetime.datetime.now(tz=datetime.UTC)
 
             # coerce fields : i.e. convert number strings to int, etc ...
             document.full_clean()
@@ -122,7 +122,7 @@ class ActionIterator:
             document_dict = document.to_dict(include_meta=True)
 
             document_dict["_source"]["ingestionTime"] = datetime_to_zulu(
-                datetime.datetime.utcnow()
+                datetime.datetime.now(tz=datetime.UTC)
             )
 
             document_dict["_index"] = document.partition_index_name
@@ -162,7 +162,7 @@ class ActionIterator:
             else:
                 # update ingestionTime directly in the dict after comparison
                 document_dict["_source"]["ingestionTime"] = datetime_to_zulu(
-                    datetime.datetime.utcnow()
+                    datetime.datetime.now(tz=datetime.UTC)
                 )
 
         if self.iter_callback:

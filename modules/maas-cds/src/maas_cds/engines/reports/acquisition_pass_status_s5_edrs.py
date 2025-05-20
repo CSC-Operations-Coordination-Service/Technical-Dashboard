@@ -5,7 +5,7 @@ acquisition pass status engines for consolidation
 import copy
 import hashlib
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from maas_engine.engine.base import EngineReport
 
 from typing import List, Dict, Any, Generator
@@ -281,7 +281,7 @@ class AcquisitionPassStatusConsolidatorS5AndEDRS(AnomalyImpactMixinEngine, DataE
             raw_data.report_type, raw_data.reportName, consolidated_document
         )
 
-        consolidated_document.updateTime = datetime.now(tz=timezone.utc)
+        consolidated_document.updateTime = datetime.now(tz=UTC)
 
         consolidated_document.fill_common_fields(raw_data)
 
@@ -695,7 +695,7 @@ class EDRSAcquisitionPassStatusConsolidatorEngine(
                 ):
                     # Fill it with the same data as the one which has an associated raw_data
                     consolid_doc.fill_common_fields(fictive_best_input_doc)
-                    consolid_doc.updateTime = datetime.now(tz=timezone.utc)
+                    consolid_doc.updateTime = datetime.now(tz=UTC)
 
                 # Fill the report_name_X (daily,weekly)
                 for x in fictive_input_doct_list:

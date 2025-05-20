@@ -1,4 +1,5 @@
 """features a custom excel extractor for files attached to CAMS anomalies"""
+
 import datetime
 import hashlib
 import os
@@ -45,11 +46,9 @@ class AnomalyCorrelationExtractor(BaseExtractor):
 
         md5 = hashlib.md5()
         md5.update(path.encode())
-        md5.update(str(datetime.datetime.utcnow()).encode())
+        md5.update(str(datetime.datetime.now(tz=datetime.UTC)).encode())
 
         correlation_id = md5.hexdigest()
-
-        datetime.datetime.utcnow()
 
         # TODO build a unique report name with last update time
         report_name = os.path.basename(path)

@@ -38,6 +38,7 @@ class JournalDocument(opensearchpy.Document):
 
     class Index:
         "opensearch meta"
+
         name = "maas-collector-journal"
 
     tick_collect_date = ZuluDate(default_timezone="UTC")
@@ -102,7 +103,7 @@ class CollectorJournal:
 
     def __enter__(self):
         # store first loop start date before i/o to not add later delay
-        self.__start_date = datetime.datetime.now(tz=datetime.timezone.utc)
+        self.__start_date = datetime.datetime.now(tz=datetime.UTC)
         self.logger.debug("set start date to %s", self.__start_date)
 
         self.load()
@@ -112,7 +113,7 @@ class CollectorJournal:
             raise NoRefreshException()
 
         if self.document.tick_collect_date is not None:
-            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            now = datetime.datetime.now(tz=datetime.UTC)
 
             if now - self.document.tick_collect_date < datetime.timedelta(
                 minutes=self.timeout
@@ -186,9 +187,7 @@ class CollectorJournal:
         """
         tick opensearch by setting the update_date to not be considered as timeout
         """
-        self.document.tick_collect_date = datetime.datetime.now(
-            tz=datetime.timezone.utc
-        )
+        self.document.tick_collect_date = datetime.datetime.now(tz=datetime.UTC)
 
         self.logger.debug(
             "Setting tick_collect_date to %s", self.document.tick_collect_date
@@ -226,7 +225,7 @@ class CollectorJournal:
         self.document.last_collect_date = (
             self.__start_date
             if self.__start_date
-            else datetime.datetime.now(tz=datetime.timezone.utc)
+            else datetime.datetime.now(tz=datetime.UTC)
         )
 
         # drop tick attribute
@@ -246,7 +245,7 @@ class CollectorJournal:
         if self.document.last_collect_date:
             collect_delta_seconds = round(
                 (
-                    datetime.datetime.now(tz=datetime.timezone.utc)
+                    datetime.datetime.now(tz=datetime.UTC)
                     - self.document.last_collect_date
                 ).total_seconds()
             )
@@ -270,6 +269,7 @@ class ReplayJournalDocument(JournalDocument):
 
     class Index:
         "database meta"
+
         name = "maas-collector-replay-journal"
 
     start_date = ZuluDate(default_timezone="UTC")

@@ -1,7 +1,7 @@
 """Module responsible for consolidation of databudget raw data"""
 
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 import hashlib
 import re
 import typing
@@ -98,7 +98,7 @@ class ConsolidateDatabudget(DataEngine):
 
             # Insert new databudget data in db
             for element in expanded_raw_data + thresholds_and_luts:
-                element.ingestionTime = datetime.now(tz=timezone.utc)
+                element.ingestionTime = datetime.now(tz=UTC)
                 element.version = self.databudget_version
                 element.reportName = self.report_name
                 yield element.to_bulk_action()

@@ -7,7 +7,7 @@ from maas_engine.engine.replicate import ReplicatorEngine
 from maas_cds.engines.reports.anomaly_impact import (
     AnomalyImpactMixinEngine,
 )
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 
 from opensearchpy import Q
 
@@ -224,7 +224,7 @@ class HktmAcquisitionConsolidatorEngine(HktmConsolidatorEngine):
 
         document = super().consolidate(raw_document, document)
 
-        document.ingestionTime = datetime.now(tz=timezone.utc)
+        document.ingestionTime = datetime.now(tz=UTC)
         document.reportName = raw_document.reportName
         document.interface_name = raw_document.interface_name
         document.channel = raw_document.channel
