@@ -62,7 +62,7 @@ class CollectorBackup:
         if self.args.calendar_tree:
             # DOI instead of ingestion time ?
             if dirdatetime is None:
-                dirdatetime = datetime.datetime.utcnow()
+                dirdatetime = datetime.datetime.now(tz=datetime.UTC)
 
             path_elements.extend(
                 [

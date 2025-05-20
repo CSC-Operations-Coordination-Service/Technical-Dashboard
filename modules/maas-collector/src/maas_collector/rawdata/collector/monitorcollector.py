@@ -107,9 +107,7 @@ class InterfaceMeta:
 
             probe_data = InterfaceProbeData(self.name)
 
-            probe_data.probe_time_start = datetime.datetime.now(
-                tz=datetime.timezone.utc
-            )
+            probe_data.probe_time_start = datetime.datetime.now(tz=datetime.UTC)
 
         try:
             self.probe_callable(self.config, probe_data)
@@ -133,7 +131,7 @@ class InterfaceMeta:
         # pylint: enable=W0703
 
         probe_time_end = probe_data.probe_time_end = datetime.datetime.now(
-            tz=datetime.timezone.utc
+            tz=datetime.UTC
         )
 
         duration = probe_time_end - probe_data.probe_time_start
@@ -157,7 +155,7 @@ class InterfaceProbeData:
     interface_name: str
 
     probe_time_start: datetime.datetime = dataclasses.field(
-        default_factory=lambda: datetime.datetime.now(tz=datetime.timezone.utc)
+        default_factory=lambda: datetime.datetime.now(tz=datetime.UTC)
     )
 
     probe_time_end: datetime.datetime | None = None
@@ -236,7 +234,7 @@ class RetryThread(Thread):
 
             time.sleep(self.interval)
 
-            self.last_start = datetime.datetime.now(tz=datetime.timezone.utc)
+            self.last_start = datetime.datetime.now(tz=datetime.UTC)
 
             probe = self.probe_retry.interface.run_probe(self.probe)
 
@@ -252,7 +250,7 @@ class RetryThread(Thread):
         Returns:
             bool: True if stuck
         """
-        delta = datetime.datetime.now(tz=datetime.timezone.utc) - self.last_start
+        delta = datetime.datetime.now(tz=datetime.UTC) - self.last_start
         return delta.seconds >= self.stuck_timeout
 
 
@@ -607,7 +605,7 @@ class InterfaceMonitor(FileCollector, CredentialMixin):
         filename = os.path.join(
             self.args.working_directory,
             "MAAS-Monitoring-"
-            f"{datetime.datetime.now(tz=datetime.timezone.utc).strftime('%Y%m%d_%H%M%S%f')}.json",
+            f"{datetime.datetime.now(tz=datetime.UTC).strftime('%Y%m%d_%H%M%S%f')}.json",
         )
 
         # save metric dictionnary to file

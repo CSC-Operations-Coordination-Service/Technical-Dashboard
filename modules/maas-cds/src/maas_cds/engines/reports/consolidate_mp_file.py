@@ -3,7 +3,7 @@
 import typing
 import hashlib
 import copy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from opensearchpy import Q
 
 from maas_engine.engine.rawdata import DataEngine
@@ -103,12 +103,13 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
                 # no next report use * to get all data
                 max_date = "*"
 
-            self.logger.debug(
-                "[MP-%s] - Find a next report %s delete all data between %s and %s ",
+            self.logger.info(
+                "[MP-%s] - Find a next report %s delete all data between %s and %s (%s)",
                 sat_id,
                 next_repport_name,
                 min_date,
                 max_date,
+                self.data_time_start_field_name,
             )
 
             # Delete all consolidated data between min and max date
@@ -259,15 +260,18 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         search = self.raw_data.search().filter("term", reportName=local_report_name)
         search.aggs.metric("data_produced", "min", **data_produced_field)
+
         search = search[0]
-        self.logger.debug("[%s] min date : %s", local_report_name, search)
+
+        self.logger.debug("[%s] min date search query: %s", local_report_name, search)
 
         res = search.execute()
-        self.logger.debug("[%s] min date result: %s", local_report_name, res)
+        self.logger.info("[%s] min date result: %s", local_report_name, res)
 
         min_date_to_delete = datetime.fromtimestamp(
-            res.aggregations.data_produced["value"] / 1000
+            res.aggregations.data_produced["value"] / 1000, tz=UTC
         )
+
         return min_date_to_delete
 
     def get_next_report(self, sat_id, local_report_name):
@@ -370,6 +374,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             )
         cleaner = cleaner.params(ignore=404)
         self.logger.debug("To delete query : %s", cleaner)
+
+        # ! Memory abuse
         datatake_delete_list = list(cleaner.scan())
         self.logger.debug("To delete query result : %s", datatake_delete_list)
         return datatake_delete_list
@@ -549,7 +555,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         cds_downlink_datatake.acquisition_relative_orbit = mp_all_product.relative_orbit
         cds_downlink_datatake.channel = mp_all_product.channel
         cds_downlink_datatake.partial = mp_all_product.partial
-        cds_downlink_datatake.updateTime = datetime.now(tz=timezone.utc)
+        cds_downlink_datatake.updateTime = datetime.now(tz=UTC)
         cds_downlink_datatake.meta.id = mp_all_product.meta.id
         cds_downlink_datatake.application_date = raw_document_application_date
 
@@ -606,7 +612,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         """
         cds_hktm_acquisition_completeness = self.consolidated_data()
 
-        cds_hktm_acquisition_completeness.ingestionTime = datetime.now(tz=timezone.utc)
+        cds_hktm_acquisition_completeness.ingestionTime = datetime.now(tz=UTC)
         cds_hktm_acquisition_completeness.reportName = (
             mp_hktm_acquisition_product.reportName
         )
@@ -770,7 +776,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         raw_document_application_date = datestr_to_utc_datetime(
             mp_hktm_downlink.reportName[16:31]
         )
-        cds_hktm_production_completeness.ingestionTime = datetime.now(tz=timezone.utc)
+        cds_hktm_production_completeness.ingestionTime = datetime.now(tz=UTC)
 
         cds_hktm_production_completeness.reportName = mp_hktm_downlink.reportName
         cds_hktm_production_completeness.satellite_unit = mp_hktm_downlink.satellite_id
@@ -797,7 +803,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             mp_hktm_downlink.absolute_orbit
         )
         cds_hktm_production_completeness.partial = mp_hktm_downlink.partial
-        cds_hktm_production_completeness.updateTime = datetime.now(tz=timezone.utc)
+        cds_hktm_production_completeness.updateTime = datetime.now(tz=UTC)
         cds_hktm_production_completeness.meta.id = mp_hktm_downlink.meta.id
 
         cds_hktm_production_completeness.application_date = (
@@ -863,9 +869,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         """
         report_status = super().shall_report(document)
 
-        if getattr(document, self.data_time_start_field_name) > datetime.now(
-            tz=timezone.utc
-        ):
+        if getattr(document, self.data_time_start_field_name) > datetime.now(tz=UTC):
             # store identifier of future entities to later filter out messages
             self.future_ids.add(document.meta.id)
 

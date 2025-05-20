@@ -136,7 +136,7 @@ class InterfaceStatusConsolidatorEngine(RawDataEngine):
         status.save()
 
         remaining_status.calculate_duration()
-        remaining_status.updateTime = datetime.datetime.now(tz=datetime.timezone.utc)
+        remaining_status.updateTime = datetime.datetime.now(tz=datetime.UTC)
         remaining_status.meta.id = self.generate_status_id(remaining_status)
         remaining_status.save()
 

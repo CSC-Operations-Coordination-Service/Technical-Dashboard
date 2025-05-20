@@ -293,7 +293,7 @@ class ReadOnlySFTPCollector(FileCollector):
 
                 # convert timestamp to datetime with timezone
                 st_mdatetime = datetime.datetime.fromtimestamp(
-                    attrs.st_mtime, tz=datetime.timezone.utc
+                    attrs.st_mtime, tz=datetime.UTC
                 )
 
                 # filter on date

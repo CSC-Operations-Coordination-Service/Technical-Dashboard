@@ -59,7 +59,7 @@ class EDRSApsExtractor(BaseExtractor):
                 year=int(match.group(0)),
                 month=1,
                 day=1,
-                tzinfo=datetime.timezone.utc,
+                tzinfo=datetime.UTC,
             )
         elif date_cell.ctype is xlrd3.XL_CELL_DATE:
             # keep only the year to later add doy
@@ -77,9 +77,7 @@ class EDRSApsExtractor(BaseExtractor):
                 f"{date_cell.value} ({date_cell.ctypes}) failed"
             )
 
-
         self.logger.info("Extracted base date is %s", self._base_date)
-
 
         # the index of the row where effective data starts
         start_index = None

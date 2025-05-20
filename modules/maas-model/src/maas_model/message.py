@@ -32,7 +32,7 @@ class MAASBaseMessage:
     """
 
     date: str = dataclasses.field(
-        default_factory=lambda: datetime_to_zulu(datetime.datetime.utcnow())
+        default_factory=lambda: datetime_to_zulu(datetime.datetime.now(tz=datetime.UTC))
     )
 
     message_id: str = dataclasses.field(default_factory=lambda: str(uuid.uuid4()))

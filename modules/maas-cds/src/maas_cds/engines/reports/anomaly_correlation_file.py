@@ -216,8 +216,8 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
             ticket.meta.id = ticket.key = ticket_id
 
             # fill the created field a value for partitionning, even if static
-            ticket.created = datetime.datetime.now(tz=datetime.timezone.utc)
-            ticket.updated = datetime.datetime.now(tz=datetime.timezone.utc)
+            ticket.created = datetime.datetime.now(tz=datetime.UTC)
+            ticket.updated = datetime.datetime.now(tz=datetime.UTC)
         else:
             self.logger.debug("Search result for %s: %s", ticket_id, ticket)
 
@@ -356,9 +356,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
 
             # Since the 21/06/2024 we supporte only orbit that are prefix by satellite unit to avoid collision in the futur
             # Keep it to be retroactive
-            if report.created < datetime.datetime(
-                2024, 7, 1, tzinfo=datetime.timezone.utc
-            ):
+            if report.created < datetime.datetime(2024, 7, 1, tzinfo=datetime.UTC):
                 satellite_list = report.sattelite_unit
                 if isinstance(report.sattelite_unit, str):
                     satellite_list = [report.sattelite_unit]

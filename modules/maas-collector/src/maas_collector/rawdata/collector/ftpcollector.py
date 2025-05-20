@@ -336,7 +336,7 @@ class FTPCollector(FileCollector):
 
             # Some servers send time only for file newer than 6 months
             if ":" in tokens[7]:
-                if modification_date >= datetime.datetime.now(datetime.timezone.utc):
+                if modification_date >= datetime.datetime.now(datetime.UTC):
                     modification_date = modification_date - relativedelta(years=1)
 
             if min_date:
