@@ -1,12 +1,8 @@
 """Datatake S1 model definition"""
 
 import logging
-from typing import Callable
-from opensearchpy import Q
 
 from maas_cds.model import CdsCompleteness, CdsDatatakeS1, CdsPublication
-
-from maas_cds.lib import tolerance
 
 
 __all__ = ["CdsCompletenessS1"]
@@ -16,8 +12,9 @@ LOGGER = logging.getLogger("CdsModelCompletenessS1")
 
 
 class CdsCompletenessS1(CdsCompleteness, CdsDatatakeS1):
-    """CdsDatatake custom class for Sentinel 1"""
+    """CdsCompleteness custom class for Sentinel 1"""
 
+    # ? What is that
     REFERENCE_PRODUCT_TIME_FIELD = "publication_date"
 
     def get_slc_1s_count(self):
@@ -31,8 +28,8 @@ class CdsCompletenessS1(CdsCompleteness, CdsDatatakeS1):
             .filter("term", datatake_id=self.datatake_id)
             .filter("term", satellite_unit=self.satellite_unit)
             .filter("term", product_type=f"{self.instrument_mode}_SLC__1S")
-            .filter("term", service_type="PRIP")
-            .filter("term", service_id=self.prip_name)
+            .filter("term", service_type=self.service_type)
+            .filter("term", service_id=self.service_id)
         )
 
         count = search.count()

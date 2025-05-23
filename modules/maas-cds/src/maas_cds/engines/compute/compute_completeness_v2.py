@@ -14,7 +14,12 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
 
     ENGINE_ID = "COMPUTE_COMPLETENESS_V2"
 
-    def load_datatake_doc(self, datatake_id, satellite_unit, prip_name):
+    # When init from MP
+    #  -> check from config what is needed on this periode / satellite
+    # CdsPublication methode -> associate_completeness_index_name -> associate datatake_id doc reference
+    #
+
+    def load_datatake_doc(self, compute_key):
         """Load a datatake in the local cache
 
         Args:
@@ -22,25 +27,17 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             mission (str, optional): The mission of the datatake. Defaults to "".
         """
 
-        target_model_class = f"CdsCompleteness{satellite_unit[:2].upper()}"
-
-        # Fake doc to get index
-        # Maybe externalise this
-        target_index = CdsCompleteness(
-            satellite_unit=satellite_unit, prip_name=prip_name
-        ).partition_index_name
-
         self.logger.debug(
             "[CACHE] - Trying to add in cache: %s from %s as %s",
-            datatake_id,
-            target_index,
-            target_model_class,
+            compute_key["datatake_id"],
+            compute_key["index"],
+            compute_key["class"],
         )
 
-        # TODO FIXME MAAS_CDS-1236: single query !!
-        datatake_doc = getattr(
-            model, target_model_class, model.CdsCompleteness
-        ).get_by_id(datatake_id, [target_index])
+        # ! TODO - Optimisation to reduce and group into a single query
+        datatake_doc = compute_key["class"].get_by_id(
+            compute_key["datatake_id"], [compute_key["index"]]
+        )
 
         original_datatake_doc = None
 
@@ -49,18 +46,25 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
 
         else:
             self.logger.warning(
-                "[CACHE] - Datatake id not found in cds-datatake index "
+                "[CACHE] - Datatake id not found in %s index "
                 "can't load it into local cache: %s",
-                datatake_id,
+                compute_key["index"],
+                compute_key["datatake_id"],
             )
-        key = f"{datatake_id}-{satellite_unit}-{prip_name}"
 
-        self.local_cache_datatake[key] = (
+        self.local_cache_datatake[
+            ComputeCompletenessEngineV2.compute_key_cache(compute_key)
+        ] = (
             datatake_doc,
             original_datatake_doc,
         )
 
-    def get_datatake_doc(self, datatake_id, satellite_unit, prip_name):
+    @staticmethod
+    def compute_key_cache(compute_key):
+        # If this need to be refactor for s3-s5 we also need the product-type
+        return f"{compute_key[0]}-{compute_key[1]}"
+
+    def get_datatake_doc(self, compute_key):
         """Get a datatake doc from the local cache
 
         Args:
@@ -70,10 +74,12 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             CdsDatatake: The cds-datatake doc associate to the asked datatake_id
         """
 
-        if datatake_id not in self.local_cache_datatake:
-            self.load_datatake_doc(datatake_id, satellite_unit, prip_name)
-        key = f"{datatake_id}-{satellite_unit}-{prip_name}"
-        return self.local_cache_datatake[key][0]
+        key_in_cache = ComputeCompletenessEngineV2.compute_key_cache(compute_key)
+
+        if key_in_cache not in self.local_cache_datatake:
+            self.load_datatake_doc(compute_key)
+
+        return self.local_cache_datatake[key_in_cache][0]
 
     def action_iterator(self):
         # get the specific bulk action iterator
@@ -148,65 +154,70 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             )
             original_dict = publication_document.to_dict()
 
-            # group compute to avoid duplicate and save computation
-            key = publication_document.get_compute_key()
-
-            self.logger.debug("[ITER][Publication] - Key : %s", key)
-
-            # add the document in parrallel
+            # TODO for s2 mainly
+            # Add the document in parrallel
             if original_dict != publication_document.to_dict():
-                # convert dao to bulk payload
-                # TODO for s2 mainly
+
+                # Convert DAO to bulk payload
                 publication_document_dict = publication_document.to_bulk_action()
 
                 yield publication_document_dict
 
-            if key:
-                # TODO refactor this in a signle indentifier
-                datatake_id = publication_document.get_datatake_id()
-                if datatake_id not in self.local_cache_datatake:
-                    self.load_datatake_doc(
-                        datatake_id,
-                        publication_document.satellite_unit,
-                        publication_document.service_id,
-                    )
+            # Group compute to avoid duplicate and save computation
+            completeness_key = publication_document.completeness_key
 
-                datatake_doc = self.get_datatake_doc(
-                    datatake_id,
-                    publication_document.satellite_unit,
-                    publication_document.service_id,
+            self.logger.debug("[ITER][Publication] - Key : %s", completeness_key)
+
+            if not completeness_key:
+                self.logger.warning(
+                    "[ITER][Publication] - (%s) : No compute key",
+                    publication_document.name,
                 )
-                if datatake_doc:
-                    # TODO for s2
-                    # initially for retrieve_additional_fields_from_product
-                    datatake_doc.retrieve_additional_fields_from_publication(
-                        publication_document
-                    )
+            elif completeness_key in self.tuples_to_compute:
+                self.logger.info(
+                    "[ITER][Publication] - (%s) : Compute key already present",
+                    publication_document.name,
+                )
+            else:
+                # ! TODO refactor this in a single indentifier
+                # ? TODO difference between datatake_id and this ?
+                # datatake_id = publication_document.get_datatake_id()
 
-                if key not in self.tuples_to_compute:
-                    if datatake_doc is None:
-                        self.logger.debug(
-                            "[ITER][Publication] - Datatake is missing skip this key : %s",
-                            key,
-                        )
-                        continue
-
+                datatake_doc = self.get_datatake_doc(completeness_key)
+                if datatake_doc is None:
                     self.logger.debug(
-                        "[ITER][Publication] - Added key to compute : %s", key
+                        "[ITER][Publication] - Datatake is missing skip this key : %s",
+                        completeness_key,
                     )
-                    self.tuples_to_compute.append(key)
+                    continue
 
-                    other_calculations = datatake_doc.impact_other_calculation(key)
-                    for other_calculation in other_calculations:
-                        if other_calculation in self.tuples_to_compute:
-                            continue
+                # TODO for S2
+                # initially for retrieve_additional_fields_from_product
+                datatake_doc.retrieve_additional_fields_from_publication(
+                    publication_document
+                )
 
-                        self.logger.debug(
-                            "[ITER][Publication] - Added extra key to compute : %s",
-                            other_calculation,
-                        )
+                self.logger.debug(
+                    "[ITER][Publication] - Added key to compute : %s",
+                    completeness_key,
+                )
+                self.tuples_to_compute.append(completeness_key)
 
-                        self.tuples_to_compute.append(other_calculation)
+                other_calculations = datatake_doc.impact_other_calculation()
+                # TODO : Need to take in considertion the new format
+
+                new_calculations = [
+                    calc
+                    for calc in other_calculations
+                    if calc not in self.tuples_to_compute
+                ]
+
+                for new_calculation in new_calculations:
+                    self.logger.debug(
+                        "[ITER][Publication] - Added extra key to compute : %s",
+                        new_calculation,
+                    )
+                    self.tuples_to_compute.append(new_calculation)
 
     def action_iterator_from_publication(self):
         """Compute completeness from CdsPublication
@@ -215,76 +226,78 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             dict: bulk action
         """
 
-        # Update publications sometime s2 xctx
+        # ! Verify this - Update publications sometime S2 ctx
         yield from self.load_compute_keys_from_input_documents()
 
         # compute local completeness
-        for datatake_id, publication_type, prip_name in self.tuples_to_compute:
-            # There is a way to not find a datatake before ?
-            datatake_doc = self.get_datatake_doc(
-                datatake_id, datatake_id[:3], prip_name
-            )
+        for completeness_key in self.tuples_to_compute:
+
+            datatake_doc = self.get_datatake_doc(completeness_key)
+
+            datatake_id = completeness_key["datatake_id"]
+            product_type = completeness_key["product_type"]
 
             if datatake_doc is None:
                 self.logger.info(
                     "[ITER][Publication][%s][%s] - Datatake not find - skipping",
+                    completeness_key["index"],
                     datatake_id,
-                    publication_type,
                 )
                 continue
 
             related_publications = []
 
             local_value = datatake_doc.compute_local_value(
-                publication_type, related_publications
+                product_type, related_publications
             )
 
             datatake_doc.set_completeness(
                 CompletenessScope.LOCAL,
-                publication_type,
+                product_type,
                 local_value,
             )
 
-            datatake_doc.compute_missing_production(
-                publication_type, related_publications
-            )
+            datatake_doc.compute_missing_production(product_type, related_publications)
 
-            datatake_doc.compute_duplicated(publication_type, related_publications)
+            datatake_doc.compute_duplicated(product_type, related_publications)
 
             self.logger.info(
                 "[ITER][Publication][%s] - Compute local value : %s -> %s",
                 datatake_id,
-                publication_type,
+                product_type,
                 local_value,
             )
 
         # compute global completeness for all datatake in cache
-        for datatake_id, (
+        for completeness_cache_key, (
             datatake_doc,
             original_datatake_doc_dict,
         ) in self.local_cache_datatake.items():
+
             if datatake_doc is None:
                 self.logger.info(
                     "[ITER][Publication][%s] - Datatake not find - skipping",
-                    datatake_id,
+                    completeness_cache_key,
                 )
                 continue
 
             self.logger.info(
-                "[ITER][Publication][%s] - Compute global value", datatake_id
+                "[ITER][Publication][%s] - Compute global value",
+                datatake_doc.datatake_id,
             )
 
             datatake_doc.compute_global_completeness()
 
             new_doc_dict = datatake_doc.to_dict()
 
-            # update was made
+            # Detect if update was made
             if original_datatake_doc_dict != new_doc_dict:
-                # convert dao to bulk payload
+
+                # Convert DAO to bulk payload
                 datatake_doc_dict = datatake_doc.to_bulk_action()
 
                 self.logger.info(
-                    "[ITER][Publication][%s] - Pushing update", datatake_id
+                    "[ITER][Publication][%s] - Pushing update", datatake_doc.datatake_id
                 )
 
                 # go feed parallel_bulk
@@ -292,7 +305,7 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
 
             else:
                 self.logger.debug(
-                    "[ITER][Publication][%s] - Nothing to do", datatake_id
+                    "[ITER][Publication][%s] - Nothing to do", datatake_doc.datatake_id
                 )
 
         self.logger.info("[ITER][Publication] - end")

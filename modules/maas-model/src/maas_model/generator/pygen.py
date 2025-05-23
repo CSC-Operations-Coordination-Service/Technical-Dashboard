@@ -272,4 +272,4 @@ def generate(*path_list: str) -> str:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    print(format_str(generate(*sys.argv[1:]), mode=FileMode()))
+    print(format_str(generate(*sys.argv[1:]), mode=FileMode()), end="")

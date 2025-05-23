@@ -53,3 +53,6 @@ from maas_cds.model.acquisition_pass_status import *
 
 # HKTM completeness to feature cams tickets
 from maas_cds.model.hktm_completeness import *
+
+# Import completeness model
+from maas_cds.model.cds_completeness import *

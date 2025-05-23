@@ -4,12 +4,13 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-05-12T13:02:58.913453
+Generated date: 2025-05-22T12:19:44.461526+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
     - resources/templates/cds-cadip-acquisition-pass-status_template.json
     - resources/templates/cds-cams-tickets_template.json
+    - resources/templates/cds-completeness_template.json
     - resources/templates/cds-databudget_template.json
     - resources/templates/cds-dataflow_template.json
     - resources/templates/cds-datatake_template.json
@@ -21,6 +22,7 @@ Generated from:
     - resources/templates/cds-hktm-production-completeness_template.json
     - resources/templates/cds-interface-product-deletion_template.json
     - resources/templates/cds-interface-status_template.json
+    - resources/templates/cds-lta-download-quota_template.json
     - resources/templates/cds-metrics-product_template.json
     - resources/templates/cds-product_template.json
     - resources/templates/cds-publication_template.json
@@ -28,6 +30,7 @@ Generated from:
     - resources/templates/cds-s3-completeness_template.json
     - resources/templates/cds-s5-completeness_template.json
     - resources/templates/cds-sat-unavailability_template.json
+    - resources/templates/maas-config-completeness_template.json
     - resources/templates/raw-data-app-product_template.json
     - resources/templates/raw-data-aps-edrs_template.json
     - resources/templates/raw-data-aps-file_template.json
@@ -44,8 +47,8 @@ Generated from:
     - resources/templates/raw-data-das-product_template.json
     - resources/templates/raw-data-databudget_template.json
     - resources/templates/raw-data-dd-archive_template.json
-    - resources/templates/raw-data-ddp-data-available_template.json
     - resources/templates/raw-data-dd-product_template.json
+    - resources/templates/raw-data-ddp-data-available_template.json
     - resources/templates/raw-data-deletion-issue_template.json
     - resources/templates/raw-data-download-volume-count_template.json
     - resources/templates/raw-data-grafana-usage_template.json
@@ -53,11 +56,11 @@ Generated from:
     - resources/templates/raw-data-lta-product_template.json
     - resources/templates/raw-data-metrics-product_template.json
     - resources/templates/raw-data-mp-all-product_template.json
-    - resources/templates/raw-data-mpcip-product_template.json
     - resources/templates/raw-data-mp-hktm-acquisition-product_template.json
     - resources/templates/raw-data-mp-hktm-downlink_template.json
-    - resources/templates/raw-data-mpip-product_template.json
     - resources/templates/raw-data-mp-product_template.json
+    - resources/templates/raw-data-mpcip-product_template.json
+    - resources/templates/raw-data-mpip-product_template.json
     - resources/templates/raw-data-prip-product_template.json
     - resources/templates/raw-data-product-deletion_template.json
     - resources/templates/raw-data-sat-unavailability-product_template.json
@@ -95,6 +98,8 @@ __all__ = [
     "CdsCadipAcquisitionPassStatus",
     "CdsCadipAcquisitionPassStatusQualityInfos",
     "CdsCamsTickets",
+    "CdsCompleteness",
+    "CdsCompletenessMissingPeriods",
     "CdsDatabudget",
     "CdsDataflow",
     "CdsDatatake",
@@ -107,6 +112,7 @@ __all__ = [
     "CdsHktmProductionCompleteness",
     "CdsInterfaceProductDeletion",
     "CdsInterfaceStatus",
+    "CdsLtaDownloadQuota",
     "CdsMetricsProduct",
     "CdsProduct",
     "CdsPublication",
@@ -125,6 +131,7 @@ __all__ = [
     "GrafanaUsage",
     "InterfaceProbe",
     "LtaProduct",
+    "MaasConfigCompleteness",
     "MetricsProduct",
     "MpAllProduct",
     "MpHktmAcquisitionProduct",
@@ -1185,6 +1192,109 @@ class CdsCamsTickets(MAASDocument):
     url = Keyword()
 
 
+class CdsCompletenessMissingPeriods(InnerDoc):
+    """
+    Inner document class for parent class: CdsCompleteness
+
+    Generated from property: missing_periods
+    """
+
+    name = Keyword()
+
+    product_type = Keyword()
+
+    sensing_start_date = ZuluDate()
+
+    sensing_end_date = ZuluDate()
+
+    duration = Long()
+
+
+class CdsCompleteness(MAASDocument):
+    """
+    Mapping class for index: cds-completeness
+
+    Generated from: resources/templates/cds-completeness_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-completeness"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-completeness-")
+
+    _PARTITION_FIELD = ["mission", "satellite_unit", "service_type", "service_id"]
+
+    _PARTITION_FIELD_FORMAT = "{mission}-{satellite_unit}-{service_type}-{service_id}"
+
+    absolute_orbit = Keyword()
+
+    application_date = ZuluDate()
+
+    cams_description = Keyword()
+
+    cams_origin = Keyword()
+
+    cams_tickets = Keyword()
+
+    datastrip_ids = Keyword()
+
+    datatake_id = Keyword()
+
+    hex_datatake_id = Keyword()
+
+    instrument_mode = Keyword()
+
+    instrument_swath = Keyword()
+
+    key = Keyword()
+
+    l0_sensing_duration = Long()
+
+    l0_sensing_time_start = ZuluDate()
+
+    l0_sensing_time_stop = ZuluDate()
+
+    last_attached_ticket = Keyword()
+
+    last_attached_ticket_url = Keyword()
+
+    missing_periods = Object(CdsCompletenessMissingPeriods)
+
+    mission = Keyword()
+
+    name = Keyword()
+
+    number_of_expected_tiles = Integer()
+
+    number_of_scenes = Integer()
+
+    observation_duration = Long()
+
+    observation_time_start = ZuluDate()
+
+    observation_time_stop = ZuluDate()
+
+    polarization = Keyword()
+
+    product_group_ids = Keyword()
+
+    relative_orbit = Keyword()
+
+    satellite_unit = Keyword()
+
+    service_id = Keyword()
+
+    service_type = Keyword()
+
+    timeliness = Keyword()
+
+    updateTime = ZuluDate()
+
+
 class CdsDatabudget(MAASDocument):
     """
     Mapping class for index: cds-databudget
@@ -1798,6 +1908,33 @@ class CdsInterfaceStatus(MAASDocument):
     updateTime = ZuluDate()
 
 
+class CdsLtaDownloadQuota(MAASDocument):
+    """
+    Mapping class for index: cds-lta-download-quota
+
+    Generated from: resources/templates/cds-lta-download-quota_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-lta-download-quota"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-lta-download-quota-")
+
+    _PARTITION_FIELD = "timestamp"
+
+    _PARTITION_FIELD_FORMAT = "conf"
+
+    daily_download_quota = Long()
+
+    service_name = Keyword()
+
+    timestamp = ZuluDate()
+
+
 class CdsMetricsProduct(MAASDocument):
     """
     Mapping class for index: cds-metrics-product
@@ -1863,6 +2000,8 @@ class CdsProduct(MAASDocument):
 
     _PARTITION_FIELD_FORMAT = "%Y-%m"
 
+    EU_coverage_percentage = Float()
+
     absolute_orbit = Keyword()
 
     auxip_id = Keyword()
@@ -1908,8 +2047,6 @@ class CdsProduct(MAASDocument):
     ddip_publication_date = ZuluDate()
 
     detector_id = Keyword()
-
-    EU_percentage_coverage = Float()
 
     expected_lta_number = Integer()
 
@@ -2782,6 +2919,37 @@ class LtaProduct(MAASRawDocument):
     publication_date = ZuluDate()
 
     reportFolder = Keyword()
+
+    start_date = ZuluDate()
+
+
+class MaasConfigCompleteness(MAASDocument):
+    """
+    Mapping class for index: maas-config-completeness
+
+    Generated from: resources/templates/maas-config-completeness_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-completeness"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-completeness-")
+
+    _PARTITION_FIELD_FORMAT = "production"
+
+    activated = Boolean()
+
+    end_date = ZuluDate()
+
+    key = Keyword()
+
+    prip_name = Keyword()
+
+    satellite_unit = Keyword()
 
     start_date = ZuluDate()
 

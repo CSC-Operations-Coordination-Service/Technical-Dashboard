@@ -104,19 +104,23 @@ class ModelClassMeta:
 
                 self.field_names.append(name)
 
-        if self.partition_field and (
-            (
-                isinstance(self.partition_field, str)
-                and not self.partition_field in self.field_names
-            )
-            or (
-                isinstance(self.partition_field, list)
-                and not set(self.partition_field).issubset(set(self.field_names))
-            )
-        ):
+        missing_field = []
+
+        if self.partition_field:
+            if isinstance(self.partition_field, str):
+                if self.partition_field not in self.field_names:
+                    missing_field.append(self.partition_field)
+            elif isinstance(self.partition_field, list):
+                missing_field = [
+                    field
+                    for field in self.partition_field
+                    if field not in self.field_names
+                ]
+
+        if missing_field:
             raise ValueError(
-                f"Partition field { self.partition_field} "
-                f"does not exist in {self.index_name}"
+                f"Partition field(s) {missing_field} "
+                f"do not exist in {self.index_name} - "
             )
 
     @property
