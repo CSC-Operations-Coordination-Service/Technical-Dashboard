@@ -44,6 +44,14 @@
                     "unit": "s"
                 }
             },
+            "fos_pushing_date_backup": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "fos_pushing_date_nominal": {
+                "type": "date",
+                "locale": "utc"
+            },
             "service_type": {
                 "type": "keyword"
             },

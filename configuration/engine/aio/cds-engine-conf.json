@@ -94,6 +94,14 @@
                             "data_time_start_field_name": "execution_time",
                             "tolerance_value": 30,
                             "send_reports": false
+                        },
+                        {
+                            "id": "CONSOLIDATE_MP_FILE",
+                            "raw_data_type": "MpHktmAcquisitionProduct",
+                            "consolidated_data_type": "CdsHktmProductionCompleteness",
+                            "data_time_start_field_name": "execution_time",
+                            "tolerance_value": 5,
+                            "send_reports": false
                         }
                     ]
                 },

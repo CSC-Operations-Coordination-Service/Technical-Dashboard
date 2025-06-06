@@ -1713,6 +1713,10 @@ class CdsHktmProductionCompleteness(MAASDocument):
 
     effective_downlink_stop = ZuluDate()
 
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
+
     interface_name = Keyword()
 
     latency = Long()
@@ -1915,6 +1919,10 @@ class CdsProduct(MAASDocument):
 
     expected_tiles = Keyword()
 
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
+
     from_prip_ddcreodias_timeliness = Long()
 
     from_prip_dddas_timeliness = Long()
@@ -2035,6 +2043,10 @@ class CdsPublication(MAASDocument):
     eviction_date = ZuluDate()
 
     expected = Boolean()
+
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
 
     from_sensing_time = Long()
 
@@ -3180,6 +3192,10 @@ class PripProduct(MAASRawDocument):
     eviction_date = ZuluDate()
 
     footprint = GeoShape()
+
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
 
     interface_name = Keyword()
 

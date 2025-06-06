@@ -136,6 +136,9 @@ class ProductConsolidatorEngine(
         document.prip_service = raw_document.interface_name
         #
 
+        if document.mission == "S1" and document.product_type == "HK_RAW__0_":
+            self.hktm_related_products.append(document)
+
         if document.mission == "S2" and document.product_type == "PRD_HKTM__":
             self.hktm_related_products.append(document)
 
@@ -343,13 +346,13 @@ class ProductConsolidatorEngine(
                 len(
                     self.hktm_related_products,
                 ),
-                "CdsProductS2",
+                "CdsProduct",
             )
 
             yield EngineReport(
                 "update.hktm-products",
                 [document.meta.id for document in self.hktm_related_products],
-                "CdsProductS2",
+                "CdsProduct",
                 document_indices=self.get_index_names(self.hktm_related_products),
                 chunk_size=self.container_chunk_size,
             )

@@ -21,6 +21,11 @@ class CdsHktmAcquisitionCompleteness(
 class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
     """overide to add cams_tickets as a multi keyword"""
 
+    REFERENCE_HKTM_PRODUCT_TYPE = {
+        "S1": "HK_RAW__0_",
+        "S2": "PRD_HKTM__",
+    }
+
     def count_produced_hktm(self, tolerance_value=0):
         """
         Compute the completeness of production based on products.
@@ -35,11 +40,11 @@ class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
         """
         tolerance_value = timedelta(minutes=tolerance_value)
 
-        search = (
+        query = (
             generated.CdsProduct.search()
-            .filter("term", mission="S2")
+            .filter("term", mission=self.mission)
             .filter("term", satellite_unit=self.satellite_unit)
-            .filter("term", product_type="PRD_HKTM__")
+            .filter("term", product_type=self.REFERENCE_HKTM_PRODUCT_TYPE[self.mission])
             .filter(
                 "range",
                 sensing_start_date={
@@ -54,6 +59,6 @@ class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
             )
         )
 
-        count = search.count()
+        count = query.count()
 
         return count
