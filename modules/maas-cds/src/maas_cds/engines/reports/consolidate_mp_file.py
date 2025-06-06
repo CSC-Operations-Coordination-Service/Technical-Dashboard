@@ -132,35 +132,11 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
                 if self.should_split_mp(to_consolidate_mp):
 
                     for to_consolidate_mp_all in self.split_mp_all(to_consolidate_mp):
-
                         yield from self.process_mp(to_consolidate_mp_all)
 
-                # In nominal case, each MP produces 1 consolidateed document
+                # In nominal case, each MP produces 1 consolidated document
                 else:
-
                     yield from self.process_mp(to_consolidate_mp)
-
-    def process_mp(
-        self,
-        to_consolidate_mp: (
-            MpProduct | MpAllProduct | MpHktmDownlink | MpHktmAcquisitionProduct
-        ),
-    ):
-        """
-        Nominal processing flow for mission planning products.
-        model specific consolidation -> report -> yield
-
-        Args:
-            to_consolidate_mp (MpProduct | MpAllProduct | MpHktmDownlink | MpHktmAcquisitionProduct): raw mp
-
-        Yields:
-            CdsHktmAcquisitionCompleteness | CdsHktmProductionCompleteness | CdsDownlinkDatatake | CdsDatatake : Consolidated document
-        """
-        consolidated_doc = self.consolidate_data_from_raw_data(to_consolidate_mp)
-        if consolidated_doc is not None:
-            if self.consolidated_data_type != "CdsDownlinkDatatake":
-                self.report(consolidated_doc)
-            yield consolidated_doc.to_bulk_action()
 
     def should_split_mp(self, to_consolidate_mp: MpAllProduct):
         """Condition to identify double mp all products
@@ -391,41 +367,73 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         """
         return message.document_ids
 
-    def consolidate_data_from_raw_data(self, raw_data: MAASRawDocument) -> MAASDocument:
-        """consolidate the raw data
+    def process_mp(
+        self,
+        to_consolidate_mp: (
+            MpProduct | MpAllProduct | MpHktmDownlink | MpHktmAcquisitionProduct
+        ),
+    ):
+        """
+        Nominal processing flow for mission planning products.
+        model specific consolidation -> report -> yield
 
         Args:
-            raw_document (raw_data): the raw data to consolidate
+            to_consolidate_mp (MpProduct | MpAllProduct | MpHktmDownlink | MpHktmAcquisitionProduct): raw mp
+
+        Yields:
+            CdsHktmAcquisitionCompleteness | CdsHktmProductionCompleteness | CdsDownlinkDatatake | CdsDatatake : Consolidated document
+        """
+        consolidated_method = self.get_consolidated_method()
+
+        consolidated_doc = consolidated_method(to_consolidate_mp)
+
+        if consolidated_doc is not None:
+            # ? This can use send_reports args
+            if self.consolidated_data_type != "CdsDownlinkDatatake":
+                self.report(consolidated_doc)
+            yield consolidated_doc.to_bulk_action()
+
+    # TODO This structure can be externalize in maas-engine as Mixin ?
+    def get_consolidated_method(self):
+        """The associated consolidate method
 
         Returns:
-            consolidated_data: the consolidated data
+            consolidated_method: the method to use for consolidate the data
         """
-        consolidated_data = None
-        # use specific consolidation method depending on type
-        if self.consolidated_data_type == "CdsDatatake":
-            consolidated_data = self.consolidtate_cdsdatatake_from_mpproduct(raw_data)
-        elif self.consolidated_data_type == "CdsDownlinkDatatake":
-            consolidated_data = self.consolidate_cdsdownlinkdatatake_from_mpallproduct(
-                raw_data
-            )
-        elif self.consolidated_data_type == "CdsHktmAcquisitionCompleteness":
-            consolidated_data = self.consolidate_cdshktmacquisitioncompleteness_from_mphktmacquisitionproduct(
-                raw_data
-            )
-        elif self.consolidated_data_type == "CdsHktmProductionCompleteness":
-            consolidated_data = (
-                self.consolidate_cdshktmproductioncompleteness_from_mphktmdownlink(
-                    raw_data
-                )
-            )
-        else:
-            self.logger.warning(
-                "Unknow type for consolidation : %s", self.consolidated_data_type
-            )
-        return consolidated_data
 
+        # use specific consolidation method depending on type
+        # TODO this can be generic as consolidate_TargetModelCalss_from_InputModelClass
+        # default consolidation method
+        method = None
+
+        # model-specific consolidation method
+        # ? There is difference between self.raw_data and self.payload.document_class
+        spec_func_name = (
+            f"consolidate_{self.consolidated_data_type}_from_{self.raw_data_type}"
+        )
+
+        if hasattr(self, spec_func_name):
+            spec_func = getattr(self, spec_func_name)
+
+            # usability check
+            if callable(spec_func):
+                self.logger.debug("Found specific function %s", spec_func_name)
+                method = spec_func
+
+            elif spec_func:
+                self.logger.warning("%s is not callable")
+                raise NotImplementedError(f"{spec_func_name} is not a callable")
+
+        else:
+            self.logger.error("No custom method find for %s", spec_func_name)
+            raise NotImplementedError(f"{spec_func_name} is not implemented")
+
+        return method
+
+    # consolidate_OutputModelClass_from_InputModelClass
+    # pylint: disable=C0103
     @anomaly_link
-    def consolidtate_cdsdatatake_from_mpproduct(
+    def consolidate_CdsDatatake_from_MpProduct(
         self, mp_product: MpProduct
     ) -> MAASDocument:
         """generate a CDSDatatake from a MPProduct
@@ -512,7 +520,9 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         return cds_datatake
 
-    def consolidate_cdsdownlinkdatatake_from_mpallproduct(
+    # consolidate_OutputModelClass_from_InputModelClass
+    # pylint: disable=C0103
+    def consolidate_CdsDownlinkDatatake_from_MpAllProduct(
         self, mp_all_product: MpAllProduct
     ) -> MAASDocument:
         """generate a CDSDownlinkDatatake from a MPALLProduct
@@ -599,7 +609,9 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             md5.update(str(mp_all[id_field]).encode())
         return md5.hexdigest()
 
-    def consolidate_cdshktmacquisitioncompleteness_from_mphktmacquisitionproduct(
+    # consolidate_OutputModelClass_from_InputModelClass
+    # pylint: disable=C0103
+    def consolidate_CdsHktmAcquisitionCompleteness_from_MpHktmAcquisitionProduct(
         self, mp_hktm_acquisition_product: MpHktmAcquisitionProduct
     ) -> MAASDocument:
         """generate a CdsHktmAcquisitionCompleteness from a MpHktmAcquisitionProduct
@@ -755,7 +767,9 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         return cds_hktm_acquisition_completeness
 
-    def consolidate_cdshktmproductioncompleteness_from_mphktmdownlink(
+    # consolidate_OutputModelClass_from_InputModelClass
+    # pylint: disable=C0103
+    def consolidate_CdsHktmProductionCompleteness_from_MpHktmDownlink(
         self, mp_hktm_downlink: MpHktmDownlink
     ) -> CdsHktmProductionCompleteness:
         """generate a CdsHktmProductionCompleteness from a MpHktmDownlink
@@ -805,6 +819,61 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         cds_hktm_production_completeness.partial = mp_hktm_downlink.partial
         cds_hktm_production_completeness.updateTime = datetime.now(tz=UTC)
         cds_hktm_production_completeness.meta.id = mp_hktm_downlink.meta.id
+
+        cds_hktm_production_completeness.application_date = (
+            raw_document_application_date
+        )
+
+        count = cds_hktm_production_completeness.count_produced_hktm(
+            self.tolerance_value
+        )
+
+        cds_hktm_production_completeness.completeness = 1 if count > 0 else 0
+
+        return cds_hktm_production_completeness
+
+    # consolidate_OutputModelClass_from_InputModelClass
+    # pylint: disable=C0103
+    def consolidate_CdsHktmProductionCompleteness_from_MpHktmAcquisitionProduct(
+        self, raw_document: MpHktmAcquisitionProduct
+    ) -> CdsHktmProductionCompleteness:
+        """generate a CdsHktmProductionCompleteness from a MpHktmAcquisitionProduct
+
+        Args:
+            mp_hktm_downlink (raw_data): the MpHktmDownlink to consolidate
+
+        Returns:
+            cds_hktm_production_completeness: the consolidated CdsHktmProductionCompleteness
+        """
+
+        cds_hktm_production_completeness = self.consolidated_data()
+
+        # Get application date
+        raw_document_application_date = datestr_to_utc_datetime(
+            raw_document.reportName[16:31]
+        )
+        cds_hktm_production_completeness.ingestionTime = datetime.now(tz=UTC)
+
+        cds_hktm_production_completeness.reportName = raw_document.reportName
+        cds_hktm_production_completeness.satellite_unit = raw_document.satellite_id
+        cds_hktm_production_completeness.mission = raw_document.satellite_id[:2]
+
+        # This only for S2
+        # To keep a single reference time field
+        cds_hktm_production_completeness.effective_downlink_start = (
+            raw_document.execution_time
+        )
+        # For generic usage of start and stop
+        cds_hktm_production_completeness.effective_downlink_stop = (
+            raw_document.execution_time
+        )
+
+        cds_hktm_production_completeness.station = raw_document.ground_station
+        cds_hktm_production_completeness.downlink_absolute_orbit = (
+            raw_document.absolute_orbit
+        )
+        cds_hktm_production_completeness.updateTime = datetime.now(tz=UTC)
+        cds_hktm_production_completeness.meta.id = raw_document.meta.id
 
         cds_hktm_production_completeness.application_date = (
             raw_document_application_date

@@ -1,9 +1,9 @@
 """Update hktm completeness after related products are ingested"""
 
 from typing import Callable, List, Dict, Tuple, Generator
-from datetime import timedelta
+from datetime import timedelta, datetime
 
-from opensearchpy import MultiSearch
+from opensearchpy import Q, MultiSearch
 
 from maas_engine.engine.rawdata import DataEngine
 
@@ -21,14 +21,10 @@ class ComputeHktmRelatedEngine(DataEngine):
     ENGINE_ID = "COMPUTE_HKTM_RELATED"
     SESSION_ID_META = {
         "CdsEdrsAcquisitionPassStatus": {
-            "session_id_attr": "link_session_id",
             "hktm_completeness": "edrs_completeness",
-            "status": "total_status",
         },
         "CdsCadipAcquisitionPassStatus": {
-            "session_id_attr": "session_id",
             "hktm_completeness": "cadip_completeness",
-            "status": "global_status",
         },
     }
 
@@ -145,12 +141,13 @@ class ComputeHktmRelatedEngine(DataEngine):
         tolerance_value = timedelta(minutes=self.tolerance_value)
 
         valid_input_documents = []
-        for raw_document in documents:
-            sensing_start_date = getattr(raw_document, "sensing_start_date")
+        for cds_product in documents:
+            sensing_start_date = getattr(cds_product, "sensing_start_date")
 
-            msearch = msearch.add(
+            # ? Use of orbit but only for S1 usage of CdsProductSX can be usefull
+            search = (
                 CdsHktmProductionCompleteness.search()
-                .filter("term", satellite_unit=raw_document.satellite_unit)
+                .filter("term", satellite_unit=cds_product.satellite_unit)
                 .filter(
                     "range",
                     effective_downlink_start={
@@ -165,7 +162,14 @@ class ComputeHktmRelatedEngine(DataEngine):
                 )
             )
 
-            valid_input_documents.append(raw_document)
+            if cds_product.mission == "S1":
+                search = search.filter(
+                    "term", downlink_absolute_orbit=cds_product.absolute_orbit
+                )
+
+            msearch = msearch.add(search)
+
+            valid_input_documents.append(cds_product)
 
         return msearch, valid_input_documents
 
@@ -189,14 +193,11 @@ class ComputeHktmRelatedEngine(DataEngine):
         session_id_meta = self.SESSION_ID_META[self.input_model.__name__]
 
         for raw_document in documents:
-            if raw_document[session_id_meta["status"]] == "OK":
-                # Construct the session_id based on document class and metadata.
-                session_id = getattr(raw_document, session_id_meta["session_id_attr"])
+            # To improve : associated the product event the status is KO
+            if raw_document.get_status() == "OK":
 
                 msearch = msearch.add(
-                    CdsHktmAcquisitionCompleteness.search().filter(
-                        "term", session_id=session_id
-                    )
+                    raw_document.search_acquistion_completeness_document()
                 )
 
                 valid_input_documents.append(raw_document)
@@ -258,18 +259,27 @@ class ComputeHktmRelatedEngine(DataEngine):
                 )
 
                 # TODO adjust name repr for CdsCadipAcquisitionPassStatus
-                if hasattr(proof_document, "name"):
-                    setattr(
-                        hktm_completeness_document,
-                        "related_document_name",
-                        proof_document.name,
-                    )
+                fields_to_keep = [
+                    ["name", "related_document_name"],
+                    ["fos_pushing_date_backup"],
+                    ["fos_pushing_date_backup"],
+                ]
+
+                for field in fields_to_keep:
+                    if value := getattr(proof_document, field[0], None):
+                        setattr(
+                            hktm_completeness_document,
+                            field[-1],
+                            value,
+                        )
 
                 if initial_dict | hktm_completeness_document.to_dict() != initial_dict:
+
                     self.logger.info(
-                        "[%s] - Update : %s",
+                        "[%s] - Update (%s) with %s",
                         hktm_completeness_document.meta.id,
                         hktm_completeness_document.reportName,
+                        proof_document.name,
                     )
                     yield hktm_completeness_document.to_bulk_action()
 

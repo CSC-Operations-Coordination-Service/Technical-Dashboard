@@ -148,7 +148,7 @@ class BaseProductConsolidatorEngine(RawDataEngine):
         )
 
         document.mission = data_dict.get("mission", document.mission)
-
+        # Disable for product with different nomenclature
         if fill_name:
             document.name = raw_document.product_name
 
@@ -206,6 +206,12 @@ class BaseProductConsolidatorEngine(RawDataEngine):
 
         if getattr(raw_document, "product_group_id", ""):
             document.product_group_id = raw_document.product_group_id
+
+        if getattr(raw_document, "fos_pushing_date_nominal", ""):
+            document.fos_pushing_date_nominal = raw_document.fos_pushing_date_nominal
+
+        if getattr(raw_document, "fos_pushing_date_backup", ""):
+            document.fos_pushing_date_backup = raw_document.fos_pushing_date_backup
 
         return data_dict
 
