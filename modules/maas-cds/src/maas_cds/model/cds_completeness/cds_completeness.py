@@ -3,7 +3,6 @@
 import logging
 
 from maas_cds.model.datatake import CdsDatatake
-from maas_cds.model.publication import CdsPublication
 
 from maas_cds.model import generated
 
@@ -32,7 +31,7 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
         # tuple (datatake_id, product_type) in a dict
 
         search_request = (
-            CdsPublication.search()
+            generated.CdsPublication.search()
             .filter("term", datatake_id=self.datatake_id)
             .filter("term", satellite_unit=self.satellite_unit)
             .filter("term", product_type=product_type)
@@ -45,6 +44,8 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
 
         return query_scan
 
-    def retrieve_additional_fields_from_publication(self, product: CdsPublication):
+    def retrieve_additional_fields_from_publication(
+        self, product: generated.CdsPublication
+    ):
         """Abstract function which allow to fill additional
         datatake fields during completeness calculation"""

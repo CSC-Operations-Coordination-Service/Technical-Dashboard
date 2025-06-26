@@ -25,3 +25,7 @@ from maas_cds.engines.compute.compute_hktm_related import CdsHktmProductionCompl
 from maas_cds.engines.compute.correlate_acquisitions import (
     CorrelateAcquisitionsEngine,
 )
+
+from maas_cds.engines.compute.compute_completeness_v2 import (
+    ComputeCompletenessEngineV2,
+)

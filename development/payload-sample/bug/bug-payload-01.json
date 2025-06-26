@@ -1,0 +1,24 @@
+{
+    "date": "2025-04-25T13: 49: 12.801Z",
+    "message_id": "5a76142c-859b-4e71-9090-7770a8a78800",
+    "ancestor_ids": [
+        "95050894-4b29-4ea5-acb2-b32fec64e3b2"
+    ],
+    "pipeline": [
+        "ODataCollector",
+        "CONSOLIDATE_APS_SESSION"
+    ],
+    "force": true,
+    "document_ids": [
+        "S1A_20250425120831058913",
+        "S3B_20250425121750036457",
+        "S2B_20250425124255042492",
+        "S1C_20250425125605002050",
+        "S3A_20250425125613047851",
+        "S2C_20250425133323003326"
+    ],
+    "document_indices": [
+        "cds-cadip-acquisition-pass-status-static"
+    ],
+    "document_class": "CdsCadipAcquisitionPassStatus"
+}

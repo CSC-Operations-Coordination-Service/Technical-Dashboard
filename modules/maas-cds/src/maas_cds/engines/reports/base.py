@@ -194,24 +194,20 @@ class BaseProductConsolidatorEngine(RawDataEngine):
         if raw_document.content_length is not None:
             document.content_length = raw_document.content_length
 
-        # S2 specific
-        if getattr(raw_document, "cloud_cover", ""):
-            document.cloud_cover = raw_document.cloud_cover
+        # S2 specific attributes
+        attributes = [
+            "cloud_cover",
+            "datastrip_id",
+            "quality_status",
+            "product_group_id",
+            "fos_pushing_date_nominal",
+            "fos_pushing_date_backup",
+        ]
 
-        if getattr(raw_document, "datastrip_id", ""):
-            document.datastrip_id = raw_document.datastrip_id
-
-        if getattr(raw_document, "quality_status", ""):
-            document.quality_status = raw_document.quality_status
-
-        if getattr(raw_document, "product_group_id", ""):
-            document.product_group_id = raw_document.product_group_id
-
-        if getattr(raw_document, "fos_pushing_date_nominal", ""):
-            document.fos_pushing_date_nominal = raw_document.fos_pushing_date_nominal
-
-        if getattr(raw_document, "fos_pushing_date_backup", ""):
-            document.fos_pushing_date_backup = raw_document.fos_pushing_date_backup
+        for attr in attributes:
+            value = getattr(raw_document, attr, "")
+            if value:
+                setattr(document, attr, value)
 
         return data_dict
 

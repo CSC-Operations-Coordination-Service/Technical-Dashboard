@@ -19,10 +19,16 @@
             "activated": {
                 "type": "boolean"
             },
+            "mission": {
+                "type": "keyword"
+            },
             "satellite_unit": {
                 "type": "keyword"
             },
-            "prip_name": {
+            "service_type": {
+                "type": "keyword"
+            },
+            "service_id": {
                 "type": "keyword"
             },
             "start_date": {
@@ -35,7 +41,7 @@
             }
         },
         "_meta": {
-            "partition_format": "production"
+            "partition_format": "computation"
         }
     }
 }

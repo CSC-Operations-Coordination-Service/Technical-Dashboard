@@ -2,7 +2,8 @@
 
 import logging
 
-from maas_cds.model import CdsCompleteness, CdsDatatakeS1, CdsPublication
+from maas_cds.model.datatake_s1 import CdsDatatakeS1
+from maas_cds.model.generated import CdsCompleteness, CdsPublication
 
 
 __all__ = ["CdsCompletenessS1"]

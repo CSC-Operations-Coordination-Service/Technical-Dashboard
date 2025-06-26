@@ -343,10 +343,6 @@ class ODataCollector(HttpCollector, HttpMixin):
                 self.logger.debug(
                     "config download file_pattern :%s", config_download.file_pattern
                 )
-                self.logger.debug(
-                    "config download file_pattern :%s",
-                    config_download.file_pattern,
-                )
 
                 with open(filepath, "bw") as file_desc:
                     file_desc.write(response.content)

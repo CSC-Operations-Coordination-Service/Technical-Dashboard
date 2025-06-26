@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-05-22T12:19:44.461526+00:00
+Generated date: 2025-06-07T14:30:24.626242+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -31,6 +31,7 @@ Generated from:
     - resources/templates/cds-s5-completeness_template.json
     - resources/templates/cds-sat-unavailability_template.json
     - resources/templates/maas-config-completeness_template.json
+    - resources/templates/maas-config_template.json
     - resources/templates/raw-data-app-product_template.json
     - resources/templates/raw-data-aps-edrs_template.json
     - resources/templates/raw-data-aps-file_template.json
@@ -131,6 +132,7 @@ __all__ = [
     "GrafanaUsage",
     "InterfaceProbe",
     "LtaProduct",
+    "MaasConfig",
     "MaasConfigCompleteness",
     "MetricsProduct",
     "MpAllProduct",
@@ -2935,6 +2937,23 @@ class LtaProduct(MAASRawDocument):
     start_date = ZuluDate()
 
 
+class MaasConfig(MAASDocument):
+    """
+    Mapping class for index: maas-config
+
+    Generated from: resources/templates/maas-config_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-")
+
+
 class MaasConfigCompleteness(MAASDocument):
     """
     Mapping class for index: maas-config-completeness
@@ -2951,7 +2970,7 @@ class MaasConfigCompleteness(MAASDocument):
     def _matches(cls, hit):
         return hit["_index"].startswith("maas-config-completeness-")
 
-    _PARTITION_FIELD_FORMAT = "production"
+    _PARTITION_FIELD_FORMAT = "computation"
 
     activated = Boolean()
 
@@ -2959,9 +2978,13 @@ class MaasConfigCompleteness(MAASDocument):
 
     key = Keyword()
 
-    prip_name = Keyword()
+    misison = Keyword()
 
     satellite_unit = Keyword()
+
+    service_id = Keyword()
+
+    service_type = Keyword()
 
     start_date = ZuluDate()
 

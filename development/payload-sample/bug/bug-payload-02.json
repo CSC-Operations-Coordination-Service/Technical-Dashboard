@@ -1,0 +1,19 @@
+{
+    "date": "2025-04-25T13:38:38.416Z",
+    "message_id": "36c179fc-86cc-4f52-ae9d-35dd2ba8e649",
+    "ancestor_ids": [
+        "f486227a-7997-4420-955a-0fc13ad89f7b"
+    ],
+    "pipeline": [
+        "ODataCollector",
+        "CONSOLIDATE_APS_SESSION"
+    ],
+    "force": true,
+    "document_ids": [
+        "S1C_20250425130703002050"
+    ],
+    "document_indices": [
+        "cds-cadip-acquisition-pass-status-static"
+    ],
+    "document_class": "CdsCadipAcquisitionPassStatus"
+}
