@@ -480,6 +480,75 @@ def raw_session_missing_deliverydate():
     return raw_document
 
 
+@pytest.fixture
+def raw_data_session_not_consolidated():
+    data_dict = {
+        "reportName": "https://eg37235.psmanaged.com",
+        "session_id": "S1C_20250528043253002526",
+        "num_channels": 2,
+        "satellite_id": "S1C",
+        "publication_date": "2025-05-28T04:32:53.000Z",
+        "station_unit_id": "02",
+        "acquisition_id": "2526_1",
+        "downlink_orbit": 2526,
+        "antenna_id": "TB1",
+        "antenna_status": True,
+        "front_end_id": "F08-FPU.1, F08-FPU.2",
+        "retransfer": False,
+        "front_end_status": False,
+        "planned_data_start": "2025-05-28T04:32:53.000Z",
+        "planned_data_stop": "2025-05-28T04:39:58.000Z",
+        "downlink_status": False,
+        "delivery_push_status": True,
+        "station_id": "NSG_",
+        "ground_station": "NSG",
+        "interface_name": "CADIP_Neustrelitz_Sessions",
+        "production_service_type": "CADIP",
+        "production_service_name": "Neustrelitz",
+        "quality_infos": [
+            {
+                "UncorrectableDataTFs": 0,
+                "CorrectedTFs": 0,
+                "CorrectedDataTFs": 0,
+                "DeliveryStart": "2025-05-28T04:41:23.939Z",
+                "Channel": 2,
+                "SessionId": "S1C_20250528043253002526",
+                "ErrorTFs": 0,
+                "DataTFs": 0,
+                "AcquiredTFs": 0,
+                "DeliveryStop": "2025-05-28T04:41:23.939Z",
+                "SessionGuid": "01d39fba-3b76-11f0-8cf1-0050563f4284",
+                "UncorrectableTFs": 0,
+                "ErrorDataTFs": 0,
+                # "TotalChunks": 0,  # manually add
+                # "TotalVolume": 0,  # manually add
+            },
+            {
+                "UncorrectableDataTFs": 0,
+                "CorrectedTFs": 0,
+                "CorrectedDataTFs": 0,
+                "DeliveryStart": "2025-05-28T04:41:23.936Z",
+                "Channel": 1,
+                "SessionId": "S1C_20250528043253002526",
+                "ErrorTFs": 0,
+                "DataTFs": 0,
+                "AcquiredTFs": 0,
+                "DeliveryStop": "2025-05-28T04:41:23.936Z",
+                "SessionGuid": "01d39fba-3b76-11f0-8cf1-0050563f4284",
+                "UncorrectableTFs": 0,
+                "ErrorDataTFs": 0,
+                # "TotalChunks": 0,  # manually add
+                # "TotalVolume": 0,  # manually add
+            },
+        ],
+        "ingestionTime": "2025-05-28T08:14:25.678Z",
+    }
+    raw_document = ApsSession(**data_dict)
+    raw_document.meta.id = "eb21708d81070ea8da4e48a5efbcc335"
+    raw_document.full_clean()
+    return raw_document
+
+
 ## Unitary tests
 
 
@@ -1030,3 +1099,15 @@ def test_station_id(raw_session_s2c_station_id, init_engine):
     cds_acquisition.full_clean()
 
     assert cds_acquisition.station_id == "PAR_"
+
+
+def test_consolidation_misisng(raw_data_session_not_consolidated, init_engine):
+    engine = init_engine
+
+    cds_acquisition = engine.consolidate(
+        raw_data_session_not_consolidated, CdsCadipAcquisitionPassStatus()
+    )
+
+    cds_acquisition.full_clean()
+
+    assert cds_acquisition is not None
