@@ -1,6 +1,7 @@
 """Publication consolidation"""
 
 from maas_cds.engines.compute.compute_completeness import ComputeCompletenessEngine
+from maas_cds.lib.parsing_name import utils
 from maas_engine.engine.rawdata import DataEngine
 from maas_cds.model.cds_completeness import CdsCompleteness
 
@@ -172,7 +173,7 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             # Maybe here filter out not expected compute key
             if (
                 completeness_key["product_type"] == "AMALFI_REPORT"
-                or completeness_key["datatake_id"] == "______"
+                or completeness_key["datatake_id"] == utils.DATATAKE_ID_MISSING_VALUE
             ):
                 continue
 
