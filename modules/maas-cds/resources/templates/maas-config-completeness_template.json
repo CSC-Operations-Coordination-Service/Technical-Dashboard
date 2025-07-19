@@ -1,9 +1,6 @@
 {
-    "aliases": {
-        "maas-config-completeness": {}
-    },
     "index_patterns": [
-        "maas-config-completeness-*"
+        "maas-config-completeness*"
     ],
     "settings": {
         "index": {
@@ -40,8 +37,6 @@
                 "locale": "utc"
             }
         },
-        "_meta": {
-            "partition_format": "computation"
-        }
+        "_meta": {}
     }
 }

@@ -38,6 +38,10 @@ class CdsProduct(
         "LTA_.*_publication_date",  # Format to keep
     ]
 
+    @property
+    def publication_date(self):
+        return self.prip_publication_date
+
     def datatake_id_is_missing(self) -> bool:
         """Returns true if datatake id is missing or None
 

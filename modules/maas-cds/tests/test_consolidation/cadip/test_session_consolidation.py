@@ -1030,3 +1030,80 @@ def test_station_id(raw_session_s2c_station_id, init_engine):
     cds_acquisition.full_clean()
 
     assert cds_acquisition.station_id == "PAR_"
+
+
+def test_session_validity(init_engine):
+
+    raw_data_doc_aps_session_dict = {
+        "reportName": "https://ddp2.sscspace.com/",
+        "session_id": "S2A_20250526185831051848",
+        "num_channels": 2,
+        "satellite_id": "S2A",
+        "publication_date": "2025-05-26T18:58:48.000Z",
+        "station_unit_id": "11",
+        "acquisition_id": "01",
+        "downlink_orbit": 51848,
+        "retransfer": False,
+        "downlink_start": "2025-05-26T18:58:31.000Z",
+        "downlink_stop": "2025-05-26T19:10:45.000Z",
+        "delivery_push_status": True,
+        "station_id": "KSE_",
+        "ground_station": "INS",
+        "interface_name": "CADIP_Inuvik_Sessions",
+        "production_service_type": "CADIP",
+        "production_service_name": "Inuvik",
+        "quality_infos": [
+            {
+                "ErrorTFs": 4193,
+                "Channel": 1,
+                "SessionId": "S2A_20250526185831051848",
+                "UncorrectableTFs": 6,
+                "ErrorDataTFs": 6,
+                "UncorrectableDataTFs": 6,
+                "DeliveryStop": "2025-05-26T19:10:56.000Z",
+                "TotalChunks": 82,
+                "AcquiredTFs": 13040129,
+                "CorrectedTFs": 0,
+                "DataTFs": 12539000,
+                "CorrectedDataTFs": 0,
+                "DeliveryStart": "2025-05-26T18:58:44.000Z",
+                "TotalVolume": 25629716000,
+            },
+            {
+                "ErrorTFs": 12,
+                "Channel": 2,
+                "SessionId": "S2A_20250526185831051848",
+                "UncorrectableTFs": 6,
+                "ErrorDataTFs": 6,
+                "UncorrectableDataTFs": 6,
+                "DeliveryStop": "2025-05-26T19:10:56.000Z",
+                "TotalChunks": 82,
+                "AcquiredTFs": 13036509,
+                "CorrectedTFs": 0,
+                "DataTFs": 12542500,
+                "CorrectedDataTFs": 0,
+                "DeliveryStart": "2025-05-26T18:58:44.000Z",
+                "TotalVolume": 25636870000,
+            },
+        ],
+        "ingestionTime": "2025-05-26T19:27:10.668Z",
+        "antenna_id": "BALDER",
+        "antenna_status": False,
+        "front_end_id": "CORTEXHDR10,CORTEXHDR11,CORTEXHDR11-SEND",
+        "front_end_status": True,
+        "planned_data_start": "2025-05-26T18:58:32.000Z",
+        "planned_data_stop": "2025-05-26T19:10:45.000Z",
+        "downlink_status": False,
+    }
+
+    raw_document = ApsSession(**raw_data_doc_aps_session_dict)
+    raw_document.meta.id = "11a2d157b98ed2f583209d1ddf1ff4e3"
+    raw_document.full_clean()
+
+    engine = init_engine
+
+    cds_acquisition = engine.consolidate(raw_document, CdsCadipAcquisitionPassStatus())
+
+    cds_acquisition.full_clean()
+
+    assert cds_acquisition.global_status == "NOK"

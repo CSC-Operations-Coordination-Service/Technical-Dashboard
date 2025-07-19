@@ -57,4 +57,4 @@ from maas_cds.model.hktm_completeness import *
 # Import completeness model
 from maas_cds.model.cds_completeness import *
 
-from maas_cds.model.maas_config import *
+from maas_cds.model.configuration import *

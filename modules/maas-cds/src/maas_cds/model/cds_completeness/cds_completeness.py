@@ -14,6 +14,8 @@ LOGGER = logging.getLogger("CdsModelCompleteness")
 
 class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
 
+    DATAFLOW_CACHE = None
+
     def find_brother_products_scan(self, product_type):
         """Find products with the same datatake and the same product_type
 
@@ -49,3 +51,42 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
     ):
         """Abstract function which allow to fill additional
         datatake fields during completeness calculation"""
+        pass
+
+    def get_all_product_types(self):
+        nominal_expected = super().get_all_product_types()
+
+        applicable_config = self.get_applicable_configuration()
+        applicable_product_type = [
+            dataflow_item.product_type for dataflow_item in applicable_config
+        ]
+
+        return [
+            product_type
+            for product_type in nominal_expected
+            if product_type in applicable_product_type
+        ]
+
+    def get_applicable_configuration(self):
+        if self.DATAFLOW_CACHE is None:
+            self.DATAFLOW_CACHE = (
+                generated.MaasConfigDataflow.search()
+                .filter("term", latest=True)
+                .execute()[0]
+            )
+
+        # Filter DATAFLOW_CACHE records to match mission, satellite_unit, and service_type
+        filtered_records = [
+            record
+            for record in self.DATAFLOW_CACHE.records
+            if record.mission == self.mission
+            and self.satellite_unit in record.satellites
+            and self.service_type in record.services_config
+            and record.services_config[self.service_type]
+            and any(
+                item.startswith(("C", "P"))
+                for item in record.services_config[self.service_type]
+            )
+        ]
+
+        return filtered_records

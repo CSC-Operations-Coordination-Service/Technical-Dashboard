@@ -36,7 +36,8 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
 
         # ! TODO - Optimisation to reduce and group into a single query
         datatake_doc = compute_key["class"].get_by_id(
-            compute_key["datatake_id"], [compute_key["index"]]
+            f"{compute_key['satellite_unit']}-{compute_key['datatake_id']}",
+            [compute_key["index"]],
         )
 
         original_datatake_doc = None
@@ -62,7 +63,7 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
     @staticmethod
     def compute_key_cache(compute_key):
         # If this need to be refactor for s3-s5 we also need the product-type
-        return f"{compute_key[0]}-{compute_key[1]}"
+        return f"{compute_key['index']}-{compute_key['datatake_id']}"
 
     def get_datatake_doc(self, compute_key):
         """Get a datatake doc from the local cache
@@ -168,6 +169,13 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
 
             self.logger.debug("[ITER][Publication] - Key : %s", completeness_key)
 
+            # Maybe here filter out not expected compute key
+            if (
+                completeness_key["product_type"] == "AMALFI_REPORT"
+                or completeness_key["datatake_id"] == "______"
+            ):
+                continue
+
             if not completeness_key:
                 self.logger.warning(
                     "[ITER][Publication] - (%s) : No compute key",
@@ -203,7 +211,9 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
                 )
                 self.tuples_to_compute.append(completeness_key)
 
-                other_calculations = datatake_doc.impact_other_calculation()
+                other_calculations = datatake_doc.impact_other_calculation(
+                    completeness_key
+                )
                 # TODO : Need to take in considertion the new format
 
                 new_calculations = [

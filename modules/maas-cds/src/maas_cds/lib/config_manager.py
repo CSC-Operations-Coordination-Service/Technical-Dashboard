@@ -17,7 +17,7 @@ class MaasConfigManager:
             configs_to_load = [config_model_class]
         elif isinstance(config_model_class, list):
             if not all(issubclass(doc, MaasConfig) for doc in config_model_class):
-                raise TypeError("List contains non-MAASDocument elements")
+                raise TypeError("List contains non-MaasConfig sub class")
             configs_to_load = config_model_class
         else:
             raise TypeError(

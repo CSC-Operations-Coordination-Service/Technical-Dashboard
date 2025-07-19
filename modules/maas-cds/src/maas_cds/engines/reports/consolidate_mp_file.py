@@ -6,7 +6,7 @@ import copy
 from datetime import datetime, timedelta, UTC
 from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.model.cds_completeness.cds_completeness import CdsCompleteness
-from maas_cds.model.maas_config import MaasConfigCompleteness
+from maas_cds.model.configuration.maas_config import MaasConfigCompleteness
 from opensearchpy import Q
 
 from maas_engine.engine.rawdata import DataEngine
@@ -56,6 +56,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         chunk_size=1,
         send_reports=True,
         tolerance_value: int = 30,
+        merge_reports: bool = True,
     ):
         super().__init__(args, chunk_size=chunk_size, send_reports=send_reports)
         self.raw_data_type = raw_data_type
@@ -63,11 +64,12 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         self.raw_data = self.get_model(self.raw_data_type)
         self.consolidated_data = self.get_model(self.consolidated_data_type)
         self.data_time_start_field_name = data_time_start_field_name
-        self.future_ids = set()
         self.tolerance_value = tolerance_value
         self.config_manager = MaasConfigManager(
             config_model_class=MaasConfigCompleteness()
         )
+
+        self.merge_reports = merge_reports
 
     def action_iterator(self) -> typing.Generator:
         """override
@@ -411,8 +413,10 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
                 )
 
             # ? This can use send_reports args
-            if self.consolidated_data_type != "CdsDownlinkDatatake":
-                self.report(doc)
+            # if self.consolidated_data_type != "CdsDownlinkDatatake":
+
+            # Nominal usage if we want a report for this document
+            self.report(doc)
             yield doc.to_bulk_action()
 
     # ? This structure can be externalize in maas-engine as Mixin ?
@@ -458,13 +462,13 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
     def consolidate_CdsDatatake_from_MpProduct(
         self, mp_product: MpProduct
     ) -> MAASDocument:
-        """generate a CDSDatatake from a MPProduct
+        """generate a CDSDatatake from a MpProduct
 
         Args:
-            mp_product (raw_data): the MPProduct to consolidate
+            mp_product (raw_data): the MpProduct to consolidate
 
         Returns:
-            consolidated_data: the consolidated CDSDatatake
+            consolidated_data: the consolidated CdsDatatake
         """
 
         # NOT_RECORDING are test file
@@ -544,10 +548,11 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
     # consolidate_OutputModelClass_from_InputModelClass
     # pylint: disable=C0103
+    # TODO bring back this mixin
     # @anomaly_link
     def consolidate_CdsCompleteness_from_MpProduct(
         self, mp_product: MpProduct
-    ) -> MAASDocument:
+    ) -> typing.Generator:
         """Generate a CdsCompleteness from a MpProduct
 
         This a second implementation more generic than the one for CdsDatatake
@@ -568,9 +573,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         all_config = self.config_manager.get_config(
             MaasConfigCompleteness().__class__.__name__
         )
-        for item in all_config:
-            print(item)
-            print(item.to_dict())
+
         applicable_configs = [
             config
             for config in all_config
@@ -1068,67 +1071,78 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         return count
 
-    def shall_report(self, document: MAASDocument) -> bool:
-        """Overide to store future entity identifiers
+    # def _base_report_strategy(self):
+    #     """Base reprot strategy method to allow custom call of _generate_report_from_action_per_documents
 
-        Args:
-            document (MAASDocument): consolidated document
+    #     Note: This method must be remove in the futur and allow some custom method using the super()._generate_reports()
+    #     """
 
-        Returns:
-            bool: always True
-        """
-        report_status = super().shall_report(document)
+    #     for classname, es_result_dict in self._report_data.items():
+    #         for es_result, all_documents in es_result_dict.items():
+    #             # group documents
+    #             action_documents = {}
 
-        if getattr(document, self.data_time_start_field_name) > datetime.now(tz=UTC):
-            # store identifier of future entities to later filter out messages
-            self.future_ids.add(document.meta.id)
+    #             for document in all_documents:
+    #                 action = self.get_report_action(es_result, document)
 
-        return report_status
+    #                 if not action:
+    #                     # won't send report
+    #                     continue
 
-    def _generate_reports(self):
-        """Override to create 2 reports: one for products and one for publications
+    #                 if action not in action_documents:
+    #                     action_documents[action] = [document]
+    #                 else:
+    #                     action_documents[action].append(document)
 
-        Yields:
-            EngineReport: report
-        """
-        for report in super()._generate_reports():
+    #             for action, documents in action_documents.items():
+    #                 yield from self._generate_report_from_action_per_documents(
+    #                     classname, action, documents
+    #                 )
 
-            # TODO Arfff if in need report byt not this option how can i do ??
-            if report.action.startswith("delete."):
-                self.logger.debug("Delete actions are not reported  : %s", report)
-                continue
+    # def _generate_reports(self):
+    #     """Override to create multiple reports
 
-            # create a set of past or present identifiers
-            non_future_ids = set(report.data_ids) - self.future_ids
+    #     Note: Usage are mainly for products and publication
 
-            if non_future_ids:
-                self.logger.debug(
-                    "Create reports for past entities: %s", non_future_ids
-                )
+    #     Yields:
+    #         EngineReport: report
+    #     """
 
-                # report for product updates
-                yield EngineReport(
-                    f"{report.action}-product",
-                    list(non_future_ids),
-                    report.document_class,
-                    document_indices=report.document_indices,
-                    chunk_size=self.chunk_size,
-                )
+    #     for report in self._base_report_strategy():
 
-                # report for publication updates
-                yield EngineReport(
-                    f"{report.action}-publication",
-                    list(non_future_ids),
-                    report.document_class,
-                    document_indices=report.document_indices,
-                    chunk_size=self.chunk_size,
-                )
+    #         if self.
 
-            else:
-                self.logger.debug("All entities start in future time.")
+    #         # TODO Arfff if in need report byt not this option how can i do ??
+    #         if report.action.startswith("delete."):
+    #             self.logger.debug("Delete actions are not reported  : %s", report)
+    #             continue
 
-            # report anyway so expected can be initialized for future entities
-            yield report
+    #         # create a set of past or present identifiers
+    #         non_future_ids = set(report.data_ids) - self.future_ids
+
+    #         if non_future_ids and self.extra_routing_key_suffixes:
+
+    #             for extra_routing_key in extra_routing_key_suffixes:
+
+    #                 # Action
+    #                 new_report_action = f"{report.action}-{extra_routing_key}",
+
+    #                 self.logger.debug(
+    #                     "Create reports for past entities: %s - %", non_future_ids
+    #                 )
+    #                 yield EngineReport(
+    #                     new_report_action,
+    #                     list(non_future_ids),
+    #                     report.document_class,
+    #                     document_indices=report.document_indices,
+    #                     chunk_size=self.chunk_size,
+    #                 )
+
+    #         else:
+    #             self.logger.debug("All entities start in future time.")
+
+    #         # report anyway so expected can be initialized for future entities
+    #         yield report
 
     def _generate_report_from_action_per_documents(self, classname, action, documents):
         """Override default strategy to make report"""
@@ -1138,11 +1152,13 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             if index_name not in index_to_documents:
                 index_to_documents[index_name] = []
             index_to_documents[index_name].append(document)
+
         for index_name, docs in index_to_documents.items():
 
             self.logger.debug(
                 "Using custom report strategy: %s - %s", index_name, classname
             )
+
             yield EngineReport(
                 action,
                 [doc.meta.id for doc in docs],

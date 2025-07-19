@@ -367,11 +367,12 @@ class MaasEngineConsumer(MaasConsumerMixin):
         """
 
         self.logger.info(
-            "notify using RK: %s on Exchange : %s with payload: %s / %d ids",
+            "notify using RK: %s on Exchange : %s with payload: %s / %d ids (in %s)",
             report.action,
             exchange.name,
             report.document_class,
             len(report.data_ids),
+            report.document_indices,
         )
 
         msg = maas_model.MAASMessage(

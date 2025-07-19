@@ -446,17 +446,23 @@ class MaasMigrator:
         """
         try:
             template_data = self.load_template(index_alias)
+            meta = template_data["mappings"].get("_meta", {})
+            partition_field = meta.get("partition_field")
+            partition_format = meta.get("partition_format")
 
-            partition_format = template_data["mappings"]["_meta"]["partition_format"]
-            extension = datetime.now().strftime(partition_format)
-            index_name = f"{index_alias}-{extension}"
+            if partition_field and partition_format:
+                extension = datetime.now().strftime(partition_format)
+                index_name = f"{index_alias}-{extension}"
+            else:
+                self.logger.debug("[%s] No partition setup", index_alias)
+                index_name = index_alias
 
             self.logger.info("Create index %s", index_name)
             if self.args.dry_run:
                 return
             self.es_conn.indices.create(index_name)
         except KeyError as error:
-            self.logger.warning("Can't create index, template missing: %s", error)
+            self.logger.warning("Can't create index %s, error: %s", index_alias, error)
 
     def get_effective_template_list(
         self, template_list: list[str], allow_missing=False

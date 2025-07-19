@@ -1,0 +1,70 @@
+{
+    "index_patterns": [
+        "maas-config-dataflow*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 1,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "key": {
+                "type": "keyword"
+            },
+            "name": {
+                "type": "keyword"
+            },
+            "version": {
+                "type": "keyword"
+            },
+            "latest": {
+                "type": "boolean"
+            },
+            "metadata": {
+                "type": "object",
+                "properties": {
+                    "createAt": {
+                        "type": "date",
+                        "format": "date_time",
+                        "locale": "utc"
+                    },
+                    "updateAt": {
+                        "type": "date",
+                        "format": "date_time",
+                        "locale": "utc"
+                    }
+                }
+            },
+            "records": {
+                "type": "object",
+                "properties": {
+                    "product_type": {
+                        "type": "keyword"
+                    },
+                    "product_level": {
+                        "type": "keyword"
+                    },
+                    "description": {
+                        "type": "text"
+                    },
+                    "note": {
+                        "type": "text"
+                    },
+                    "payload": {
+                        "type": "keyword"
+                    },
+                    "mode": {
+                        "type": "keyword"
+                    },
+                    "services_config": {
+                        "type": "object",
+                        "properties": {}
+                    }
+                }
+            }
+        },
+        "_meta": {}
+    }
+}

@@ -397,6 +397,7 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
         document.from_acq_delivery_timeliness = document.calculate_timeliness()
 
         document.delivery_bitrate = document.calculate_bitrate(raw_document.meta.id)
+
         if not self.session_is_valid(raw_document):
             self.logger.info("Incomplete session: %s ", raw_document)
 

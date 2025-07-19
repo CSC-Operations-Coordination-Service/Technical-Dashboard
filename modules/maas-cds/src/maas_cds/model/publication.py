@@ -72,7 +72,10 @@ class CdsPublication(
             cds_completeness_model,
             target_model_class,
             cds_completeness_model.CdsCompleteness,
-        ).get_by_id(self.datatake_id, [self.completeness_document_index])
+        ).get_by_id(
+            f"{self.satellite_unit}-{self.datatake_id}",
+            [self.completeness_document_index],
+        )
 
         return datatake_doc
 
@@ -81,6 +84,7 @@ class CdsPublication(
         return {
             "index": self.completeness_document_index,
             "class": self.completeness_document_class,
+            "satellite_unit": self.satellite_unit,
             "datatake_id": self.datatake_id,
             "product_type": self.product_type,
         }

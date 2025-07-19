@@ -50,7 +50,7 @@ class {class_name}({base_class}):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("{index_name}-")
+        return hit["_index"].startswith("{index_name}")
 
 '''
 

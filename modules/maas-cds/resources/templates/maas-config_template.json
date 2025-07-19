@@ -1,4 +1,16 @@
 {
+    "aliases": {
+        "maas-config": {}
+    },
+    "index_patterns": [
+        "maas-config*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
     "mappings": {
         "properties": {},
         "_meta": {}
