@@ -1,13 +1,11 @@
-"""Datatake S1 model definition"""
+"""Completeness S2 model definition"""
 
-import copy
 import logging
 
 from maas_cds.lib.parsing_name import utils
 from maas_cds.model.cds_completeness.cds_completeness import CdsCompleteness
 from maas_cds.model.datatake_s2 import CdsDatatakeS2
-from maas_cds.model.generated import CdsPublication, MaasConfigDataflow
-from maas_cds.lib.config_manager import MaasConfigManager
+from maas_cds.model.generated import CdsPublication
 
 
 __all__ = ["CdsCompletenessS1"]
