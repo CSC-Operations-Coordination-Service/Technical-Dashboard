@@ -282,7 +282,7 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
         # sum all metrics across all chanels
         for metric in metrics:
             reduced_metric = sum(
-                getattr(quality_info, metric, 0) for quality_info in quality_infos
+                getattr(quality_info, metric, 0) or 0 for quality_info in quality_infos
             )
             setattr(document, metric, reduced_metric)
 
