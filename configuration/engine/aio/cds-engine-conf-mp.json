@@ -4,23 +4,13 @@
             "name": "collect-exchange",
             "queues": [
                 {
-                    "name": "collect-new.raw.data.ddp-data-available",
-                    "routing_key": "new.raw.data.ddp-data-available",
-                    "events": [
-                        {
-                            "id": "CONSOLIDATE_DDP_DATA_AVAILABLE",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
                     "name": "collect-new.raw.data.lta-product",
                     "routing_key": "new.raw.data.lta-product",
                     "events": [
-                        "CONSOLIDATE_PUBLICATION",
                         {
-                            "id": "CONSOLIDATE_LTA_PRODUCT",
-                            "send_reports": true
+                            "id": "CONSOLIDATE_PUBLICATION",
+                            "send_reports": true,
+                            "min_doi": null
                         }
                     ]
                 },
@@ -28,11 +18,10 @@
                     "name": "collect-new.raw.data.prip-product",
                     "routing_key": "new.raw.data.prip-product",
                     "events": [
-                        "CONSOLIDATE_PUBLICATION",
                         {
-                            "id": "CONSOLIDATE_PRODUCT",
+                            "id": "CONSOLIDATE_PUBLICATION",
                             "send_reports": true,
-                            "container_chunk_size": 128
+                            "min_doi": null
                         }
                     ]
                 },
@@ -44,12 +33,6 @@
                             "id": "CONSOLIDATE_PUBLICATION",
                             "send_reports": true,
                             "min_doi": null
-                        },
-                        {
-                            "id": "CONSOLIDATE_DD_PRODUCT",
-                            "output_rk": "new.container-dd-product",
-                            "send_reports": true,
-                            "container_chunk_size": 128
                         }
                     ]
                 },
@@ -60,8 +43,16 @@
                         {
                             "id": "CONSOLIDATE_MP_FILE",
                             "raw_data_type": "MpProduct",
+                            "consolidated_data_type": "CdsDatatake",
+                            "data_time_start_field_name": "observation_time_start",
+                            "send_reports": true
+                        },
+                        {
+                            "id": "CONSOLIDATE_MP_FILE",
+                            "raw_data_type": "MpProduct",
                             "consolidated_data_type": "CdsCompleteness",
-                            "data_time_start_field_name": "observation_time_start"
+                            "data_time_start_field_name": "observation_time_start",
+                            "send_reports": false
                         }
                     ]
                 },
@@ -73,7 +64,8 @@
                             "id": "CONSOLIDATE_MP_FILE",
                             "raw_data_type": "MpAllProduct",
                             "consolidated_data_type": "CdsDownlinkDatatake",
-                            "data_time_start_field_name": "acquisition_start"
+                            "data_time_start_field_name": "acquisition_start",
+                            "send_reports": false
                         }
                     ]
                 },
@@ -290,41 +282,6 @@
             "name": "etl-exchange",
             "queues": [
                 {
-                    "name": "etl-compute.cds-datatake",
-                    "routing_key": "compute.cds-datatake",
-                    "events": [
-                        "COMPUTE_COMPLETENESS"
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-product-s1",
-                    "routing_key": "new.cds-product-s1",
-                    "events": [
-                        "COMPUTE_COMPLETENESS"
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-product-s1",
-                    "routing_key": "update.cds-product-s1",
-                    "events": [
-                        "COMPUTE_COMPLETENESS"
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-product-s2",
-                    "routing_key": "new.cds-product-s2",
-                    "events": [
-                        "COMPUTE_COMPLETENESS"
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-product-s2",
-                    "routing_key": "update.cds-product-s2",
-                    "events": [
-                        "COMPUTE_COMPLETENESS"
-                    ]
-                },
-                {
                     "name": "etl-new.cds-publication-s1",
                     "routing_key": "new.cds-publication-s1",
                     "events": [
@@ -381,102 +338,6 @@
                     ]
                 },
                 {
-                    "name": "etl-new.cds-completeness-s1-product",
-                    "routing_key": "new.cds-completeness-s1-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        },
-                        {
-                            "id": "CORRELATE_ACQUISITIONS",
-                            "send_reports": false,
-                            "chunk_size": 128,
-                            "source_type": "CdsDatatake"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-completeness-s1-product",
-                    "routing_key": "update.cds-completeness-s1-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-completeness-s1-publication",
-                    "routing_key": "new.cds-completeness-s1-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-completeness-s1-publication",
-                    "routing_key": "update.cds-completeness-s1-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-completeness-s2-product",
-                    "routing_key": "new.cds-completeness-s2-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        },
-                        {
-                            "id": "CORRELATE_ACQUISITIONS",
-                            "send_reports": false,
-                            "chunk_size": 128,
-                            "source_type": "CdsDatatake"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-completeness-s2-product",
-                    "routing_key": "update.cds-completeness-s2-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-completeness-s2-publication",
-                    "routing_key": "new.cds-completeness-s2-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-completeness-s2-publication",
-                    "routing_key": "update.cds-completeness-s2-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
                     "name": "etl-new.cds-completeness-s1",
                     "routing_key": "new.cds-completeness-s1",
                     "events": [
@@ -523,105 +384,19 @@
                     ]
                 },
                 {
-                    "name": "etl-new.cds-datatake-s1-product",
-                    "routing_key": "new.cds-datatake-s1-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        },
-                        {
-                            "id": "CORRELATE_ACQUISITIONS",
-                            "send_reports": false,
-                            "chunk_size": 128,
-                            "source_type": "CdsDatatake"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-datatake-s1-product",
-                    "routing_key": "update.cds-datatake-s1-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-datatake-s1-publication",
-                    "routing_key": "new.cds-datatake-s1-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-datatake-s1-publication",
-                    "routing_key": "update.cds-datatake-s1-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-datatake-s2-product",
-                    "routing_key": "new.cds-datatake-s2-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        },
-                        {
-                            "id": "CORRELATE_ACQUISITIONS",
-                            "send_reports": false,
-                            "chunk_size": 128,
-                            "source_type": "CdsDatatake"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-datatake-s2-product",
-                    "routing_key": "update.cds-datatake-s2-product",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsProduct"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-datatake-s2-publication",
-                    "routing_key": "new.cds-datatake-s2-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-datatake-s2-publication",
-                    "routing_key": "update.cds-datatake-s2-publication",
-                    "events": [
-                        {
-                            "id": "COMPUTE_DATATAKE_RELATED",
-                            "target_model": "CdsPublication",
-                            "send_reports": false
-                        }
-                    ]
-                },
-                {
                     "name": "etl-new.cds-datatake-s1",
                     "routing_key": "new.cds-datatake-s1",
                     "events": [
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsProduct",
+                            "send_reports": false
+                        },
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsPublication",
+                            "send_reports": false
+                        },
                         {
                             "id": "COMPUTE_COMPLETENESS"
                         },
@@ -637,6 +412,16 @@
                     "routing_key": "update.cds-datatake-s1",
                     "events": [
                         {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsProduct",
+                            "send_reports": false
+                        },
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsPublication",
+                            "send_reports": false
+                        },
+                        {
                             "id": "COMPUTE_COMPLETENESS"
                         }
                     ]
@@ -645,6 +430,16 @@
                     "name": "etl-new.cds-datatake-s2",
                     "routing_key": "new.cds-datatake-s2",
                     "events": [
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsProduct",
+                            "send_reports": false
+                        },
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsPublication",
+                            "send_reports": false
+                        },
                         {
                             "id": "COMPUTE_COMPLETENESS"
                         },
@@ -659,6 +454,16 @@
                     "name": "etl-update.cds-datatake-s2",
                     "routing_key": "update.cds-datatake-s2",
                     "events": [
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsProduct",
+                            "send_reports": false
+                        },
+                        {
+                            "id": "COMPUTE_DATATAKE_RELATED",
+                            "target_model": "CdsPublication",
+                            "send_reports": false
+                        },
                         {
                             "id": "COMPUTE_COMPLETENESS"
                         }
@@ -827,7 +632,7 @@
         },
         {
             "id": "CONSOLIDATE_PUBLICATION",
-            "send_reports": false,
+            "send_reports": true,
             "min_doi": null
         },
         {

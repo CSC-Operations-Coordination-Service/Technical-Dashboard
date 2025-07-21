@@ -351,7 +351,6 @@ def test_auxip_product_consolidation_2():
     engine.on_pre_consolidate()
 
     output = engine.consolidate_from_AuxipProduct(auxip_product, model.CdsPublication())
-    print(output.to_dict())
 
     assert output.to_dict() == {
         "key": "random_id",

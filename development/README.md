@@ -283,8 +283,14 @@ cp -ar ${WORK_DIR}/modules/maas-cds/dist/ ${WORK_DIR}/modules/build/maas-cds/
 ## Build local docker image
 
 ```bash
-docker build --no-cache -t "maas-cds:2.8.1-beta" -f ./modules/Dockerfile.maas-cds ./modules
-docker build --no-cache -t "maas-collector:3.8.2-beta" -f ./modules/Dockerfile.maas-collector ./modules
+docker build --no-cache -t "maas-cds:2.8.2-beta-02-aa" -f  $WORK_DIR//modules/Dockerfile.maas-cds  $WORK_DIR/modules
+docker build --no-cache -t "maas-collector:3.8.1-beta-02-aa" -f $WORK_DIR/modules/Dockerfile.maas-collector $WORK_DIR/modules
+```
+
+## Transfer it to a other ctx
+
+```bash
+./scripts/transfer_docker_image_context.sh --sources maas-cds:2.8.2-beta-02-aa,maas-collector:3.8.1-beta-02-aa --contexts preprod-sw-ctx,preprod-sw-ctx-worker-01,preprod-sw-ctx-worker-02
 ```
 
 ## Setup run locally with docker image

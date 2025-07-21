@@ -4,6 +4,9 @@ import typing
 import hashlib
 import copy
 from datetime import datetime, timedelta, UTC
+from maas_cds.lib.config_manager import MaasConfigManager
+from maas_cds.model.cds_completeness.cds_completeness import CdsCompleteness
+from maas_cds.model.configuration.maas_config import MaasConfigCompleteness
 from opensearchpy import Q
 
 from maas_engine.engine.rawdata import DataEngine
@@ -53,6 +56,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         chunk_size=1,
         send_reports=True,
         tolerance_value: int = 30,
+        merge_reports: bool = True,
     ):
         super().__init__(args, chunk_size=chunk_size, send_reports=send_reports)
         self.raw_data_type = raw_data_type
@@ -60,8 +64,12 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         self.raw_data = self.get_model(self.raw_data_type)
         self.consolidated_data = self.get_model(self.consolidated_data_type)
         self.data_time_start_field_name = data_time_start_field_name
-        self.future_ids = set()
         self.tolerance_value = tolerance_value
+        self.config_manager = MaasConfigManager(
+            config_model_class=MaasConfigCompleteness()
+        )
+
+        self.merge_reports = merge_reports
 
     def action_iterator(self) -> typing.Generator:
         """override
@@ -134,7 +142,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
                     for to_consolidate_mp_all in self.split_mp_all(to_consolidate_mp):
                         yield from self.process_mp(to_consolidate_mp_all)
 
-                # In nominal case, each MP produces 1 consolidated document
+                # In nominal case, each Mp produces 1 consolidated document per raw data
+                # This became false since we have 1 Mp For multiple CdsCompleteness
                 else:
                     yield from self.process_mp(to_consolidate_mp)
 
@@ -387,13 +396,30 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         consolidated_doc = consolidated_method(to_consolidate_mp)
 
-        if consolidated_doc is not None:
-            # ? This can use send_reports args
-            if self.consolidated_data_type != "CdsDownlinkDatatake":
-                self.report(consolidated_doc)
-            yield consolidated_doc.to_bulk_action()
+        # Handle multiple return
+        if isinstance(consolidated_doc, MAASDocument):
+            docs = [consolidated_doc]
+        elif isinstance(consolidated_doc, typing.Iterator):
+            docs = consolidated_doc
+        else:
+            raise TypeError(
+                f"Unexpected type for consolidated_doc: {type(consolidated_doc)}"
+            )
 
-    # TODO This structure can be externalize in maas-engine as Mixin ?
+        for doc in docs:
+            if not isinstance(doc, MAASDocument):
+                raise TypeError(
+                    f"Unexpected type for consolidated_doc: {type(consolidated_doc)}"
+                )
+
+            # ? This can use send_reports args
+            # if self.consolidated_data_type != "CdsDownlinkDatatake":
+
+            # Nominal usage if we want a report for this document
+            self.report(doc)
+            yield doc.to_bulk_action()
+
+    # ? This structure can be externalize in maas-engine as Mixin ?
     def get_consolidated_method(self):
         """The associated consolidate method
 
@@ -402,7 +428,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         """
 
         # use specific consolidation method depending on type
-        # TODO this can be generic as consolidate_TargetModelCalss_from_InputModelClass
+        # ? this can be generic as consolidate_TargetModelCalss_from_InputModelClass and be externalise in maas-engine
         # default consolidation method
         method = None
 
@@ -436,13 +462,13 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
     def consolidate_CdsDatatake_from_MpProduct(
         self, mp_product: MpProduct
     ) -> MAASDocument:
-        """generate a CDSDatatake from a MPProduct
+        """generate a CDSDatatake from a MpProduct
 
         Args:
-            mp_product (raw_data): the MPProduct to consolidate
+            mp_product (raw_data): the MpProduct to consolidate
 
         Returns:
-            consolidated_data: the consolidated CDSDatatake
+            consolidated_data: the consolidated CdsDatatake
         """
 
         # NOT_RECORDING are test file
@@ -519,6 +545,124 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         cds_datatake.application_date = raw_document_application_date
 
         return cds_datatake
+
+    # consolidate_OutputModelClass_from_InputModelClass
+    # pylint: disable=C0103
+    # TODO bring back this mixin
+    # @anomaly_link
+    def consolidate_CdsCompleteness_from_MpProduct(
+        self, mp_product: MpProduct
+    ) -> typing.Generator:
+        """Generate a CdsCompleteness from a MpProduct
+
+        This a second implementation more generic than the one for CdsDatatake
+
+        Args:
+            mp_product (raw_data): the MpProduct to consolidate
+
+        Returns:
+            consolidated_data: the consolidated CdsCompleteness
+        """
+
+        # NOT_RECORDING are test file
+        if mp_product.timeliness == "NOT_RECORDING":
+            return None
+
+        # Get completeness services to compute for this MpProduct
+        # No need to use cache
+        all_config = self.config_manager.get_config(
+            MaasConfigCompleteness().__class__.__name__
+        )
+
+        applicable_configs = [
+            config
+            for config in all_config
+            if config.mission == mp_product.satellite_id[:2]
+            and config.satellite_unit == mp_product.satellite_id
+            and config.activated
+            and config.start_date <= mp_product.observation_time_start
+            and config.end_date >= mp_product.observation_time_start
+        ]
+
+        self.logger.debug(
+            "[CONFIG] - Find %s config for this datatake", len(applicable_configs)
+        )
+
+        for config in applicable_configs:
+
+            cds_datatake = CdsCompleteness(
+                service_type=config.service_type,
+                service_id=config.service_id,
+            )
+
+            # Get application date
+            raw_document_application_date = datestr_to_utc_datetime(
+                mp_product.reportName[16:31]
+            )
+
+            cds_datatake.name = mp_product.reportName
+            cds_datatake.key = f"{mp_product.satellite_id}-{mp_product.datatake_id}"
+            cds_datatake.meta.id = cds_datatake.key
+            cds_datatake.datatake_id = mp_product.datatake_id
+            if mp_product.satellite_id.startswith("S1"):
+                cds_datatake.hex_datatake_id = (
+                    hex(int(mp_product.datatake_id, 10)).replace("0x", "").upper()
+                )
+            cds_datatake.satellite_unit = mp_product.satellite_id
+            cds_datatake.mission = mp_product.satellite_id[:2]
+            cds_datatake.observation_time_start = mp_product.observation_time_start
+            cds_datatake.observation_duration = mp_product.observation_duration * 1000
+
+            # Only S2 have observation_time_stop for S1 observation_time_stop must be computed
+            if mp_product.observation_time_stop:
+                cds_datatake.observation_time_stop = mp_product.observation_time_stop
+            else:
+                cds_datatake.observation_time_stop = (
+                    mp_product.observation_time_start
+                    + timedelta(milliseconds=mp_product.observation_duration)
+                )
+
+            # Only S1 have l0_sensing
+            if mp_product.l0_sensing_duration:
+                cds_datatake.l0_sensing_duration = mp_product.l0_sensing_duration * 1000
+                cds_datatake.l0_sensing_time_start = mp_product.l0_sensing_time_start
+
+                cds_datatake.l0_sensing_time_stop = (
+                    mp_product.l0_sensing_time_start
+                    + timedelta(milliseconds=mp_product.l0_sensing_duration)
+                )
+
+            # Only S2 have number_of_scenes
+            if mp_product.number_of_scenes:
+                cds_datatake.number_of_scenes = mp_product.number_of_scenes
+
+            cds_datatake.absolute_orbit = (
+                mp_product.absolute_orbit.lstrip("0")
+                if mp_product.absolute_orbit is not None
+                else None
+            )
+            cds_datatake.relative_orbit = (
+                mp_product.relative_orbit.lstrip("0")
+                if mp_product.relative_orbit is not None
+                else None
+            )
+
+            # Only S1 have polarization
+            if mp_product.polarization:
+                cds_datatake.polarization = mp_product.polarization
+
+            if mp_product.timeliness:
+                cds_datatake.timeliness = mp_product.timeliness
+
+            cds_datatake.instrument_mode = mp_product.instrument_mode
+
+            # Only S1 have instrument_swath
+            if mp_product.instrument_swath:
+                cds_datatake.instrument_swath = mp_product.instrument_swath
+
+            cds_datatake.application_date = raw_document_application_date
+
+            yield cds_datatake
 
     # consolidate_OutputModelClass_from_InputModelClass
     # pylint: disable=C0103
@@ -927,66 +1071,101 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         return count
 
-    def shall_report(self, document: MAASDocument) -> bool:
-        """Overide to store future entity identifiers
+    # def _base_report_strategy(self):
+    #     """Base reprot strategy method to allow custom call of _generate_report_from_action_per_documents
 
-        Args:
-            document (MAASDocument): consolidated document
+    #     Note: This method must be remove in the futur and allow some custom method using the super()._generate_reports()
+    #     """
 
-        Returns:
-            bool: always True
-        """
-        report_status = super().shall_report(document)
+    #     for classname, es_result_dict in self._report_data.items():
+    #         for es_result, all_documents in es_result_dict.items():
+    #             # group documents
+    #             action_documents = {}
 
-        if getattr(document, self.data_time_start_field_name) > datetime.now(tz=UTC):
-            # store identifier of future entities to later filter out messages
-            self.future_ids.add(document.meta.id)
+    #             for document in all_documents:
+    #                 action = self.get_report_action(es_result, document)
 
-        return report_status
+    #                 if not action:
+    #                     # won't send report
+    #                     continue
 
-    def _generate_reports(self):
-        """Override to create 2 reports: one for products and one for publications
+    #                 if action not in action_documents:
+    #                     action_documents[action] = [document]
+    #                 else:
+    #                     action_documents[action].append(document)
 
+    #             for action, documents in action_documents.items():
+    #                 yield from self._generate_report_from_action_per_documents(
+    #                     classname, action, documents
+    #                 )
 
-        Yields:
-            EngineReport: report
-        """
-        for report in super()._generate_reports():
-            if report.action.startswith("delete."):
-                self.logger.debug("Delete actions are not reported  : %s", report)
-                continue
+    # def _generate_reports(self):
+    #     """Override to create multiple reports
 
-            # create a set of past or present identifiers
-            non_future_ids = set(report.data_ids) - self.future_ids
+    #     Note: Usage are mainly for products and publication
 
-            if non_future_ids:
-                self.logger.debug(
-                    "Create reports for past entities: %s", non_future_ids
-                )
+    #     Yields:
+    #         EngineReport: report
+    #     """
 
-                # report for product updates
-                yield EngineReport(
-                    f"{report.action}-product",
-                    list(non_future_ids),
-                    report.document_class,
-                    document_indices=report.document_indices,
-                    chunk_size=self.chunk_size,
-                )
+    #     for report in self._base_report_strategy():
 
-                # report for publication updates
-                yield EngineReport(
-                    f"{report.action}-publication",
-                    list(non_future_ids),
-                    report.document_class,
-                    document_indices=report.document_indices,
-                    chunk_size=self.chunk_size,
-                )
+    #         if self.
 
-            else:
-                self.logger.debug("All entities start in future time.")
+    #         # TODO Arfff if in need report byt not this option how can i do ??
+    #         if report.action.startswith("delete."):
+    #             self.logger.debug("Delete actions are not reported  : %s", report)
+    #             continue
 
-            # report anyway so expected can be initialized for future entities
-            yield report
+    #         # create a set of past or present identifiers
+    #         non_future_ids = set(report.data_ids) - self.future_ids
+
+    #         if non_future_ids and self.extra_routing_key_suffixes:
+
+    #             for extra_routing_key in extra_routing_key_suffixes:
+
+    #                 # Action
+    #                 new_report_action = f"{report.action}-{extra_routing_key}",
+
+    #                 self.logger.debug(
+    #                     "Create reports for past entities: %s - %", non_future_ids
+    #                 )
+    #                 yield EngineReport(
+    #                     new_report_action,
+    #                     list(non_future_ids),
+    #                     report.document_class,
+    #                     document_indices=report.document_indices,
+    #                     chunk_size=self.chunk_size,
+    #                 )
+
+    #         else:
+    #             self.logger.debug("All entities start in future time.")
+
+    #         # report anyway so expected can be initialized for future entities
+    #         yield report
+
+    def _generate_report_from_action_per_documents(self, classname, action, documents):
+        """Override default strategy to make report"""
+        index_to_documents = {}
+        for document in documents:
+            index_name = document.partition_index_name
+            if index_name not in index_to_documents:
+                index_to_documents[index_name] = []
+            index_to_documents[index_name].append(document)
+
+        for index_name, docs in index_to_documents.items():
+
+            self.logger.debug(
+                "Using custom report strategy: %s - %s", index_name, classname
+            )
+
+            yield EngineReport(
+                action,
+                [doc.meta.id for doc in docs],
+                document_class=classname,
+                chunk_size=self.chunk_size,
+                document_indices=[index_name],
+            )
 
     def _populate_ticket_cache(self, mp_products):
         """

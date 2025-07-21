@@ -79,6 +79,12 @@ def maas_engine_main(
     #         "tolerance_value": 30,
     #         "target_model": "CdsHktmProductionCompleteness",
     #     },
+    #     # {
+    #     #     "id": "CONSOLIDATE_MP_FILE",
+    #     #     "raw_data_type": "MpAllProduct",
+    #     #     "consolidated_data_type": "CdsDownlinkDatatake",
+    #     #     "data_time_start_field_name": "acquisition_start",
+    #     # },
     #     namespace,
     # )
 

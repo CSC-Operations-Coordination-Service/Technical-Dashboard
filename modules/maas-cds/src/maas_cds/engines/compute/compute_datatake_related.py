@@ -1,5 +1,6 @@
 """Update entities after some datatake creation or update"""
 
+from datetime import UTC, datetime
 import maas_model
 from maas_engine.engine.base import EngineReport
 from maas_engine.engine.rawdata import DataEngine
@@ -25,24 +26,6 @@ class ComputeDatatakeRelatedEngine(DataEngine):
 
         self.target_model = target_model
 
-    def run(self, routing_key: str, message: maas_model.MAASMessage):
-        """Override to forward unique message for completeness compute from datatake"""
-
-        # don't yield any report from database create or update in parent method
-        for _ in super().run(routing_key, message):
-            pass
-
-        # instead yield a specific message for product, even if any product has been
-        # updated, to trigger completeness compute
-        if self.target_model.startswith("CdsProduct"):
-            yield EngineReport(
-                "compute.cds-datatake",
-                message.document_ids,
-                document_class=message.document_class,
-                document_indices=message.document_indices,
-                chunk_size=self.chunk_size,
-            )
-
     def action_iterator(self):
         """override
 
@@ -53,6 +36,14 @@ class ComputeDatatakeRelatedEngine(DataEngine):
         target_class = self.get_model(self.target_model)
 
         for datatake in self.input_documents:
+
+            # store identifier of future entities to later filter out messages
+            if datatake.observation_time_start > datetime.now(tz=UTC):
+                self.logger.debug(
+                    "[%s] - Skipped : cause this one are planned in the futur"
+                )
+                continue
+
             search_request = (
                 target_class.search()
                 .query(datatake.get_related_documents_query())

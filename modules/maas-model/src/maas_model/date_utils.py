@@ -1,4 +1,4 @@
-"""Functions about ZULU date management """
+"""Functions about ZULU date management"""
 
 import datetime
 
@@ -8,7 +8,7 @@ __all__ = ["datetime_to_zulu", "datestr_to_zulu", "datestr_to_utc_datetime"]
 
 
 def datetime_to_zulu(datetime_object: datetime.datetime | None) -> str | None:
-    """Format a dateime object to ZULU format
+    """Format a datetime object to ZULU format
 
     Args:
         datetime_object (datetime.datetime): datetime to format
