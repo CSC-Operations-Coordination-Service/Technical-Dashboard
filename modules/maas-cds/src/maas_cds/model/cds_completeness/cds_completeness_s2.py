@@ -8,13 +8,13 @@ from maas_cds.model.datatake_s2 import CdsDatatakeS2
 from maas_cds.model.generated import CdsPublication
 
 
-__all__ = ["CdsCompletenessS1"]
+__all__ = ["CdsCompletenessS2"]
 
 
-LOGGER = logging.getLogger("CdsModelCompletenessS1")
+LOGGER = logging.getLogger("CdsModelCompletenessS2")
 
 
-class CdsCompletenessS1(CdsCompleteness, CdsDatatakeS2):
+class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
     """CdsCompleteness custom class for Sentinel 1"""
 
     # ? What is that

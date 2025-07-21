@@ -133,7 +133,7 @@ class ODataCollectorConfiguration(HttpCollectorConfiguration):
             return self.product_url
         else:
             raise ValueError(
-                "Configuration file from collector shall either contain"
+                f"[{self.interface_name}] - Configuration file from collector shall either contain"
                 " field odata_product_url or product_url and not both"
             )
 
@@ -161,7 +161,7 @@ class ODataCollectorConfiguration(HttpCollectorConfiguration):
             return self.odata_version
         else:
             raise ValueError(
-                "Configuration file from collector shall either contain"
+                f"[{self.interface_name}] - Configuration file from collector shall either contain"
                 " field protocol_version or odata_version and not both"
             )
 

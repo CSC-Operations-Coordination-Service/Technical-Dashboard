@@ -121,7 +121,7 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             # TODO for s2
             datatake_doc.load_data_before_compute()
 
-            self.logger.error("INSTANCE IS %s", type(datatake_doc))
+            self.logger.debug("Instance are %s", type(datatake_doc))
 
             datatake_doc.compute_all_local_completeness()
 

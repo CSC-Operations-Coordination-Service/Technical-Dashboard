@@ -549,8 +549,10 @@ class InterfaceMonitor(FileCollector, CredentialMixin):
         # for a response from network, the GIL is release and this does not require
         # real parallel processing
         # max pool size depend of the kernel, but 256 is a common limit
-        pool = ThreadPool(min((len(meta_list), 256)))
-
+        num_processes = min((len(meta_list), 256))
+        if num_processes < 1:
+            num_processes = 1  # Ensure at least 1 process
+        pool = ThreadPool(num_processes)
         # run all
         all_probe_data: List[InterfaceProbeData] = pool.map(self.run_probe, meta_list)
 
