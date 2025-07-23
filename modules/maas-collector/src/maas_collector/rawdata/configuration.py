@@ -1,4 +1,5 @@
 """Base classes and factory functions for mass_collector"""
+
 import os
 import json
 import logging
@@ -62,7 +63,7 @@ def build_model_class(meta: dict) -> MAASRawDocument:
 
     # make search() works with partitions
     class_dict["_matches"] = classmethod(
-        lambda cls, hit: hit["_index"].startswith(f"{meta['index']}-")
+        lambda cls, hit: hit["_index"].startswith(meta["index"])
     )
 
     # return new document class

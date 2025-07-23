@@ -1,0 +1,14 @@
+{
+    "date": "2025-01-20T13:43:32.773Z",
+    "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271",
+    "ancestor_ids": [],
+    "pipeline": [
+        "ODataCollector"
+    ],
+    "force": true,
+    "document_ids": [
+        "S1A_MP_ACQ__L0__20250530T171636_20250611T193529.csv"
+    ],
+    "document_indices": [],
+    "document_class": "MpProduct"
+}

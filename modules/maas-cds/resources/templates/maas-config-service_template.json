@@ -1,0 +1,25 @@
+{
+    "index_patterns": [
+        "maas-config-service*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 1,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "display_name": {
+                "type": "keyword"
+            },
+            "short_name": {
+                "type": "keyword"
+            },
+            "key": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {}
+    }
+}

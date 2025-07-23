@@ -29,7 +29,10 @@
             "name": {
                 "type": "keyword"
             },
-            "prip_name": {
+            "service_type": {
+                "type": "keyword"
+            },
+            "service_id": {
                 "type": "keyword"
             },
             "mission": {
@@ -140,10 +143,12 @@
         },
         "_meta": {
             "partition_field": [
+                "mission",
                 "satellite_unit",
-                "prip_name"
+                "service_type",
+                "service_id"
             ],
-            "partition_format": "{satellite_unit}-{prip_name}"
+            "partition_format": "{mission}-{satellite_unit}-{service_type}-{service_id}"
         }
     }
 }

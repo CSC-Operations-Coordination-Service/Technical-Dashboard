@@ -1,5 +1,7 @@
 """AMQP related components"""
+
 import logging
+from urllib.parse import urlparse, urlunparse
 
 import kombu
 
@@ -78,6 +80,33 @@ class AMQPSettings:
             for exchange_name in self.exchanges
         ]
 
+    @staticmethod
+    def mask_amqp_password(amqp_url):
+        # Parse the URL
+        parsed_url = urlparse(amqp_url)
+
+        # Replace the password with '**'
+        if parsed_url.password:
+            masked_netloc = f"{parsed_url.username}:**@{parsed_url.hostname}"
+            if parsed_url.port:
+                masked_netloc += f":{parsed_url.port}"
+        else:
+            masked_netloc = parsed_url.netloc
+
+        # Reconstruct the URL with the masked password
+        masked_url = urlunparse(
+            (
+                parsed_url.scheme,
+                masked_netloc,
+                parsed_url.path,
+                parsed_url.params,
+                parsed_url.query,
+                parsed_url.fragment,
+            )
+        )
+
+        return masked_url
+
     def connect(self) -> kombu.BrokerConnection:
         """initiate the connection to AMQP service
 
@@ -85,5 +114,7 @@ class AMQPSettings:
             kombu.BrokerConnection: working connection
         """
         self.connection = kombu.BrokerConnection(self.url)
-        self.logger.info("AMQP: connected to %s", self.url)
+        self.logger.info(
+            "AMQP: connected to %s", AMQPSettings.mask_amqp_password(self.url)
+        )
         return self.connection

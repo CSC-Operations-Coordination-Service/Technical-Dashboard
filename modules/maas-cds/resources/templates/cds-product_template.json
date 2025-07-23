@@ -34,6 +34,14 @@
                 "type": "date",
                 "locale": "utc"
             },
+            "fos_pushing_date_backup": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "fos_pushing_date_nominal": {
+                "type": "date",
+                "locale": "utc"
+            },
             "sensing_end_date": {
                 "type": "date",
                 "locale": "utc"

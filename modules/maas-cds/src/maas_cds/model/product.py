@@ -26,17 +26,21 @@ class CdsProduct(
     cams_tickets = Keyword(multi=True)
 
     _PARTITION_FIELDS = [
-        "PRIP_.*_publication_date",
-        "prip_publication_date",
-        "AUXIP_.*_publication_date",
-        "auxip_publication_date",
-        "DD_.*_publication_date",
-        "ddip_publication_date",
-        "dddas_publication_date",
-        "ddcreodias_publication_date",
-        "MPCIP_.*_publication_date",
-        "LTA_.*_publication_date",
+        "PRIP_.*_publication_date",  # Format to keep
+        "prip_publication_date",  # current -
+        "AUXIP_.*_publication_date",  # Format to keep
+        "auxip_publication_date",  # current -
+        "DD_.*_publication_date",  # Format to keep
+        "ddip_publication_date",  # previous
+        "dddas_publication_date",  # current -
+        "ddcreodias_publication_date",  # previous s2 repro
+        "MPCIP_.*_publication_date",  # Format to keep
+        "LTA_.*_publication_date",  # Format to keep
     ]
+
+    @property
+    def publication_date(self):
+        return self.prip_publication_date
 
     def datatake_id_is_missing(self) -> bool:
         """Returns true if datatake id is missing or None

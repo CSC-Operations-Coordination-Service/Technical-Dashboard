@@ -40,7 +40,18 @@ class MessageEmitter:
         """Init some connection needed for running"""
 
         # setup amqp connection
-        self.connection = BrokerConnection(self.url)
+        self.connection = BrokerConnection(
+            self.url,
+            heartbeat=10,
+            transport_options={
+                "retry_policy": {
+                    "interval_start": 0,
+                    "interval_step": 2,
+                    "interval_max": 30,
+                    "max_retries": 5,
+                }
+            },
+        )
 
         # init producer
         self.producer = Producer(

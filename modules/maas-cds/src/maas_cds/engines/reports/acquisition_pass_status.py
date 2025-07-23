@@ -282,7 +282,7 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
         # sum all metrics across all chanels
         for metric in metrics:
             reduced_metric = sum(
-                getattr(quality_info, metric, 0) for quality_info in quality_infos
+                getattr(quality_info, metric, 0) or 0 for quality_info in quality_infos
             )
             setattr(document, metric, reduced_metric)
 
@@ -397,6 +397,7 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
         document.from_acq_delivery_timeliness = document.calculate_timeliness()
 
         document.delivery_bitrate = document.calculate_bitrate(raw_document.meta.id)
+
         if not self.session_is_valid(raw_document):
             self.logger.info("Incomplete session: %s ", raw_document)
 

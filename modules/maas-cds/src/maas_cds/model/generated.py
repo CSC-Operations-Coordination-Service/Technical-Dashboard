@@ -4,12 +4,13 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-05-12T13:02:58.913453
+Generated date: 2025-07-18T16:09:55.311222+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
     - resources/templates/cds-cadip-acquisition-pass-status_template.json
     - resources/templates/cds-cams-tickets_template.json
+    - resources/templates/cds-completeness_template.json
     - resources/templates/cds-databudget_template.json
     - resources/templates/cds-dataflow_template.json
     - resources/templates/cds-datatake_template.json
@@ -21,6 +22,7 @@ Generated from:
     - resources/templates/cds-hktm-production-completeness_template.json
     - resources/templates/cds-interface-product-deletion_template.json
     - resources/templates/cds-interface-status_template.json
+    - resources/templates/cds-lta-download-quota_template.json
     - resources/templates/cds-metrics-product_template.json
     - resources/templates/cds-product_template.json
     - resources/templates/cds-publication_template.json
@@ -28,6 +30,12 @@ Generated from:
     - resources/templates/cds-s3-completeness_template.json
     - resources/templates/cds-s5-completeness_template.json
     - resources/templates/cds-sat-unavailability_template.json
+    - resources/templates/maas-config-completeness_template.json
+    - resources/templates/maas-config-dataflow_template.json
+    - resources/templates/maas-config-mission_template.json
+    - resources/templates/maas-config-satellite_template.json
+    - resources/templates/maas-config-service_template.json
+    - resources/templates/maas-config_template.json
     - resources/templates/raw-data-app-product_template.json
     - resources/templates/raw-data-aps-edrs_template.json
     - resources/templates/raw-data-aps-file_template.json
@@ -44,8 +52,8 @@ Generated from:
     - resources/templates/raw-data-das-product_template.json
     - resources/templates/raw-data-databudget_template.json
     - resources/templates/raw-data-dd-archive_template.json
-    - resources/templates/raw-data-ddp-data-available_template.json
     - resources/templates/raw-data-dd-product_template.json
+    - resources/templates/raw-data-ddp-data-available_template.json
     - resources/templates/raw-data-deletion-issue_template.json
     - resources/templates/raw-data-download-volume-count_template.json
     - resources/templates/raw-data-grafana-usage_template.json
@@ -53,11 +61,11 @@ Generated from:
     - resources/templates/raw-data-lta-product_template.json
     - resources/templates/raw-data-metrics-product_template.json
     - resources/templates/raw-data-mp-all-product_template.json
-    - resources/templates/raw-data-mpcip-product_template.json
     - resources/templates/raw-data-mp-hktm-acquisition-product_template.json
     - resources/templates/raw-data-mp-hktm-downlink_template.json
-    - resources/templates/raw-data-mpip-product_template.json
     - resources/templates/raw-data-mp-product_template.json
+    - resources/templates/raw-data-mpcip-product_template.json
+    - resources/templates/raw-data-mpip-product_template.json
     - resources/templates/raw-data-prip-product_template.json
     - resources/templates/raw-data-product-deletion_template.json
     - resources/templates/raw-data-sat-unavailability-product_template.json
@@ -95,6 +103,8 @@ __all__ = [
     "CdsCadipAcquisitionPassStatus",
     "CdsCadipAcquisitionPassStatusQualityInfos",
     "CdsCamsTickets",
+    "CdsCompleteness",
+    "CdsCompletenessMissingPeriods",
     "CdsDatabudget",
     "CdsDataflow",
     "CdsDatatake",
@@ -107,6 +117,7 @@ __all__ = [
     "CdsHktmProductionCompleteness",
     "CdsInterfaceProductDeletion",
     "CdsInterfaceStatus",
+    "CdsLtaDownloadQuota",
     "CdsMetricsProduct",
     "CdsProduct",
     "CdsPublication",
@@ -125,6 +136,15 @@ __all__ = [
     "GrafanaUsage",
     "InterfaceProbe",
     "LtaProduct",
+    "MaasConfig",
+    "MaasConfigCompleteness",
+    "MaasConfigDataflow",
+    "MaasConfigDataflowMetadata",
+    "MaasConfigDataflowRecords",
+    "MaasConfigDataflowRecordsServicesConfig",
+    "MaasConfigMission",
+    "MaasConfigSatellite",
+    "MaasConfigService",
     "MetricsProduct",
     "MpAllProduct",
     "MpHktmAcquisitionProduct",
@@ -152,7 +172,7 @@ class AppProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-app-product-")
+        return hit["_index"].startswith("raw-data-app-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -195,7 +215,7 @@ class ApsEdrs(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-aps-edrs-")
+        return hit["_index"].startswith("raw-data-aps-edrs")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -270,7 +290,7 @@ class ApsFile(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-aps-file-")
+        return hit["_index"].startswith("raw-data-aps-file")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -317,7 +337,7 @@ class ApsPerPass(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-aps-per-pass-")
+        return hit["_index"].startswith("raw-data-aps-per-pass")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -370,7 +390,7 @@ class ApsProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-aps-product-")
+        return hit["_index"].startswith("raw-data-aps-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -451,7 +471,7 @@ class ApsQualityInfo(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-aps-quality-info-")
+        return hit["_index"].startswith("raw-data-aps-quality-info")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -544,7 +564,7 @@ class ApsSession(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-aps-session-")
+        return hit["_index"].startswith("raw-data-aps-session")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -615,7 +635,7 @@ class AuxipProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-auxip-product-")
+        return hit["_index"].startswith("raw-data-auxip-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -660,7 +680,7 @@ class CamsAnomalyCorrelation(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-cams-anomaly-correlation-")
+        return hit["_index"].startswith("raw-data-cams-anomaly-correlation")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -699,7 +719,7 @@ class CamsCloudAnomalyCorrelation(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-cams-cloud-anomaly-correlation-")
+        return hit["_index"].startswith("raw-data-cams-cloud-anomaly-correlation")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -754,7 +774,7 @@ class CamsCloudTickets(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-cams-cloud-tickets-")
+        return hit["_index"].startswith("raw-data-cams-cloud-tickets")
 
     _PARTITION_FIELD = "created"
 
@@ -817,7 +837,7 @@ class CamsTickets(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-cams-tickets-")
+        return hit["_index"].startswith("raw-data-cams-tickets")
 
     _PARTITION_FIELD = "created"
 
@@ -876,7 +896,7 @@ class CdsAcquisitionPassStatus(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-acquisition-pass-status-")
+        return hit["_index"].startswith("cds-acquisition-pass-status")
 
     _PARTITION_FIELD = "planned_data_start"
 
@@ -1007,7 +1027,7 @@ class CdsCadipAcquisitionPassStatus(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-cadip-acquisition-pass-status-")
+        return hit["_index"].startswith("cds-cadip-acquisition-pass-status")
 
     _PARTITION_FIELD = "publication_date"
 
@@ -1124,7 +1144,7 @@ class CdsCamsTickets(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-cams-tickets-")
+        return hit["_index"].startswith("cds-cams-tickets")
 
     _PARTITION_FIELD = "created"
 
@@ -1185,6 +1205,109 @@ class CdsCamsTickets(MAASDocument):
     url = Keyword()
 
 
+class CdsCompletenessMissingPeriods(InnerDoc):
+    """
+    Inner document class for parent class: CdsCompleteness
+
+    Generated from property: missing_periods
+    """
+
+    name = Keyword()
+
+    product_type = Keyword()
+
+    sensing_start_date = ZuluDate()
+
+    sensing_end_date = ZuluDate()
+
+    duration = Long()
+
+
+class CdsCompleteness(MAASDocument):
+    """
+    Mapping class for index: cds-completeness
+
+    Generated from: resources/templates/cds-completeness_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-completeness"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-completeness")
+
+    _PARTITION_FIELD = ["mission", "satellite_unit", "service_type", "service_id"]
+
+    _PARTITION_FIELD_FORMAT = "{mission}-{satellite_unit}-{service_type}-{service_id}"
+
+    absolute_orbit = Keyword()
+
+    application_date = ZuluDate()
+
+    cams_description = Keyword()
+
+    cams_origin = Keyword()
+
+    cams_tickets = Keyword()
+
+    datastrip_ids = Keyword()
+
+    datatake_id = Keyword()
+
+    hex_datatake_id = Keyword()
+
+    instrument_mode = Keyword()
+
+    instrument_swath = Keyword()
+
+    key = Keyword()
+
+    l0_sensing_duration = Long()
+
+    l0_sensing_time_start = ZuluDate()
+
+    l0_sensing_time_stop = ZuluDate()
+
+    last_attached_ticket = Keyword()
+
+    last_attached_ticket_url = Keyword()
+
+    missing_periods = Object(CdsCompletenessMissingPeriods)
+
+    mission = Keyword()
+
+    name = Keyword()
+
+    number_of_expected_tiles = Integer()
+
+    number_of_scenes = Integer()
+
+    observation_duration = Long()
+
+    observation_time_start = ZuluDate()
+
+    observation_time_stop = ZuluDate()
+
+    polarization = Keyword()
+
+    product_group_ids = Keyword()
+
+    relative_orbit = Keyword()
+
+    satellite_unit = Keyword()
+
+    service_id = Keyword()
+
+    service_type = Keyword()
+
+    timeliness = Keyword()
+
+    updateTime = ZuluDate()
+
+
 class CdsDatabudget(MAASDocument):
     """
     Mapping class for index: cds-databudget
@@ -1199,7 +1322,7 @@ class CdsDatabudget(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-databudget-")
+        return hit["_index"].startswith("cds-databudget")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -1252,7 +1375,7 @@ class CdsDataflow(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-dataflow-")
+        return hit["_index"].startswith("cds-dataflow")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -1311,7 +1434,7 @@ class CdsDatatake(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-datatake-")
+        return hit["_index"].startswith("cds-datatake")
 
     _PARTITION_FIELD = "observation_time_start"
 
@@ -1392,7 +1515,7 @@ class CdsDdpDataAvailable(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-ddp-data-available-")
+        return hit["_index"].startswith("cds-ddp-data-available")
 
     _PARTITION_FIELD = "time_created"
 
@@ -1439,7 +1562,7 @@ class CdsDownlinkDatatake(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-downlink-datatake-")
+        return hit["_index"].startswith("cds-downlink-datatake")
 
     _PARTITION_FIELD = "effective_downlink_start"
 
@@ -1502,7 +1625,7 @@ class CdsEdrsAcquisitionPassStatus(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-edrs-acquisition-pass-status-")
+        return hit["_index"].startswith("cds-edrs-acquisition-pass-status")
 
     _PARTITION_FIELD = "planned_link_session_start"
 
@@ -1587,7 +1710,7 @@ class CdsGrafanaUsage(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-grafana-usage-")
+        return hit["_index"].startswith("cds-grafana-usage")
 
     _PARTITION_FIELD = "access_date"
 
@@ -1618,7 +1741,7 @@ class CdsHktmAcquisitionCompleteness(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-hktm-acquisition-completeness-")
+        return hit["_index"].startswith("cds-hktm-acquisition-completeness")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -1681,7 +1804,7 @@ class CdsHktmProductionCompleteness(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-hktm-production-completeness-")
+        return hit["_index"].startswith("cds-hktm-production-completeness")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -1712,6 +1835,10 @@ class CdsHktmProductionCompleteness(MAASDocument):
     effective_downlink_start = ZuluDate()
 
     effective_downlink_stop = ZuluDate()
+
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
 
     interface_name = Keyword()
 
@@ -1752,7 +1879,7 @@ class CdsInterfaceProductDeletion(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-interface-product-deletion-")
+        return hit["_index"].startswith("cds-interface-product-deletion")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -1779,7 +1906,7 @@ class CdsInterfaceStatus(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-interface-status-")
+        return hit["_index"].startswith("cds-interface-status")
 
     _PARTITION_FIELD = "status_time_start"
 
@@ -1798,6 +1925,33 @@ class CdsInterfaceStatus(MAASDocument):
     updateTime = ZuluDate()
 
 
+class CdsLtaDownloadQuota(MAASDocument):
+    """
+    Mapping class for index: cds-lta-download-quota
+
+    Generated from: resources/templates/cds-lta-download-quota_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-lta-download-quota"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-lta-download-quota")
+
+    _PARTITION_FIELD = "timestamp"
+
+    _PARTITION_FIELD_FORMAT = "conf"
+
+    daily_download_quota = Long()
+
+    service_name = Keyword()
+
+    timestamp = ZuluDate()
+
+
 class CdsMetricsProduct(MAASDocument):
     """
     Mapping class for index: cds-metrics-product
@@ -1812,7 +1966,7 @@ class CdsMetricsProduct(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-metrics-product-")
+        return hit["_index"].startswith("cds-metrics-product")
 
     _PARTITION_FIELD = "timestamp"
 
@@ -1857,11 +2011,13 @@ class CdsProduct(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-product-")
+        return hit["_index"].startswith("cds-product")
 
     _PARTITION_FIELD = "sensing_start_date"
 
     _PARTITION_FIELD_FORMAT = "%Y-%m"
+
+    EU_coverage_percentage = Float()
 
     absolute_orbit = Keyword()
 
@@ -1909,11 +2065,13 @@ class CdsProduct(MAASDocument):
 
     detector_id = Keyword()
 
-    EU_percentage_coverage = Float()
-
     expected_lta_number = Integer()
 
     expected_tiles = Keyword()
+
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
 
     from_prip_ddcreodias_timeliness = Long()
 
@@ -2000,7 +2158,7 @@ class CdsPublication(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-publication-")
+        return hit["_index"].startswith("cds-publication")
 
     _PARTITION_FIELD = "sensing_start_date"
 
@@ -2035,6 +2193,10 @@ class CdsPublication(MAASDocument):
     eviction_date = ZuluDate()
 
     expected = Boolean()
+
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
 
     from_sensing_time = Long()
 
@@ -2133,7 +2295,7 @@ class CdsS2Tilpar(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-s2-tilpar-")
+        return hit["_index"].startswith("cds-s2-tilpar")
 
     _PARTITION_FIELD = "timestamp"
 
@@ -2160,7 +2322,7 @@ class CdsS3Completeness(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-s3-completeness-")
+        return hit["_index"].startswith("cds-s3-completeness")
 
     _PARTITION_FIELD = "observation_time_start"
 
@@ -2223,7 +2385,7 @@ class CdsS5Completeness(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-s5-completeness-")
+        return hit["_index"].startswith("cds-s5-completeness")
 
     _PARTITION_FIELD = "observation_time_start"
 
@@ -2292,7 +2454,7 @@ class CdsSatUnavailability(MAASDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("cds-sat-unavailability-")
+        return hit["_index"].startswith("cds-sat-unavailability")
 
     _PARTITION_FIELD = "start_time"
 
@@ -2349,7 +2511,7 @@ class CreodiasProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-creodias-product-")
+        return hit["_index"].startswith("raw-data-creodias-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2402,7 +2564,7 @@ class DasProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-das-product-")
+        return hit["_index"].startswith("raw-data-das-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2447,7 +2609,7 @@ class Databudget(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-databudget-")
+        return hit["_index"].startswith("raw-data-databudget")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2490,7 +2652,7 @@ class DdArchive(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-dd-archive-")
+        return hit["_index"].startswith("raw-data-dd-archive")
 
     _PARTITION_FIELD = "ingestion_date"
 
@@ -2525,7 +2687,7 @@ class DdProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-dd-product-")
+        return hit["_index"].startswith("raw-data-dd-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2570,7 +2732,7 @@ class DdpDataAvailable(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-ddp-data-available-")
+        return hit["_index"].startswith("raw-data-ddp-data-available")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2611,7 +2773,7 @@ class DeletionIssue(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-deletion-issue-")
+        return hit["_index"].startswith("raw-data-deletion-issue")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2646,7 +2808,7 @@ class DownloadVolumeCount(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-download-volume-count-")
+        return hit["_index"].startswith("raw-data-download-volume-count")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2685,7 +2847,7 @@ class GrafanaUsage(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-grafana-usage-")
+        return hit["_index"].startswith("raw-data-grafana-usage")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2714,7 +2876,7 @@ class InterfaceProbe(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-interface-probe-")
+        return hit["_index"].startswith("raw-data-interface-probe")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2753,7 +2915,7 @@ class LtaProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-lta-product-")
+        return hit["_index"].startswith("raw-data-lta-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2786,6 +2948,198 @@ class LtaProduct(MAASRawDocument):
     start_date = ZuluDate()
 
 
+class MaasConfig(MAASDocument):
+    """
+    Mapping class for index: maas-config
+
+    Generated from: resources/templates/maas-config_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config")
+
+
+class MaasConfigCompleteness(MAASDocument):
+    """
+    Mapping class for index: maas-config-completeness
+
+    Generated from: resources/templates/maas-config-completeness_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-completeness"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-completeness")
+
+    activated = Boolean()
+
+    end_date = ZuluDate()
+
+    key = Keyword()
+
+    mission = Keyword()
+
+    satellite_unit = Keyword()
+
+    service_id = Keyword()
+
+    service_type = Keyword()
+
+    start_date = ZuluDate()
+
+
+class MaasConfigDataflowMetadata(InnerDoc):
+    """
+    Inner document class for parent class: MaasConfigDataflow
+
+    Generated from property: metadata
+    """
+
+    createAt = ZuluDate()
+
+    updateAt = ZuluDate()
+
+
+class MaasConfigDataflowRecordsServicesConfig(InnerDoc):
+    """
+    Inner document class for parent class: MaasConfigDataflowRecords
+
+    Generated from property: services_config
+    """
+
+
+class MaasConfigDataflowRecords(InnerDoc):
+    """
+    Inner document class for parent class: MaasConfigDataflow
+
+    Generated from property: records
+    """
+
+    product_type = Keyword()
+
+    product_level = Keyword()
+
+    description = Text()
+
+    note = Text()
+
+    payload = Keyword()
+
+    mode = Keyword()
+
+    services_config = Object(MaasConfigDataflowRecordsServicesConfig)
+
+
+class MaasConfigDataflow(MAASDocument):
+    """
+    Mapping class for index: maas-config-dataflow
+
+    Generated from: resources/templates/maas-config-dataflow_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-dataflow"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-dataflow")
+
+    key = Keyword()
+
+    latest = Boolean()
+
+    metadata = Object(MaasConfigDataflowMetadata)
+
+    name = Keyword()
+
+    records = Object(MaasConfigDataflowRecords)
+
+    version = Keyword()
+
+
+class MaasConfigMission(MAASDocument):
+    """
+    Mapping class for index: maas-config-mission
+
+    Generated from: resources/templates/maas-config-mission_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-mission"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-mission")
+
+    display_name = Keyword()
+
+    key = Keyword()
+
+    short_name = Keyword()
+
+
+class MaasConfigSatellite(MAASDocument):
+    """
+    Mapping class for index: maas-config-satellite
+
+    Generated from: resources/templates/maas-config-satellite_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-satellite"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-satellite")
+
+    display_name = Keyword()
+
+    key = Keyword()
+
+    mission = Keyword()
+
+    short_name = Keyword()
+
+
+class MaasConfigService(MAASDocument):
+    """
+    Mapping class for index: maas-config-service
+
+    Generated from: resources/templates/maas-config-service_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-service"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-service")
+
+    display_name = Keyword()
+
+    key = Keyword()
+
+    short_name = Keyword()
+
+
 class MetricsProduct(MAASRawDocument):
     """
     Mapping class for index: raw-data-metrics-product
@@ -2800,7 +3154,7 @@ class MetricsProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-metrics-product-")
+        return hit["_index"].startswith("raw-data-metrics-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2839,7 +3193,7 @@ class MpAllProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-mp-all-product-")
+        return hit["_index"].startswith("raw-data-mp-all-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2912,7 +3266,7 @@ class MpHktmAcquisitionProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-mp-hktm-acquisition-product-")
+        return hit["_index"].startswith("raw-data-mp-hktm-acquisition-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -2953,7 +3307,7 @@ class MpHktmDownlink(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-mp-hktm-downlink-")
+        return hit["_index"].startswith("raw-data-mp-hktm-downlink")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -3022,7 +3376,7 @@ class MpProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-mp-product-")
+        return hit["_index"].startswith("raw-data-mp-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -3079,7 +3433,7 @@ class MpcipProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-mpcip-product-")
+        return hit["_index"].startswith("raw-data-mpcip-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -3126,7 +3480,7 @@ class MpipProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-mpip-product-")
+        return hit["_index"].startswith("raw-data-mpip-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -3163,7 +3517,7 @@ class PripProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-prip-product-")
+        return hit["_index"].startswith("raw-data-prip-product")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -3180,6 +3534,10 @@ class PripProduct(MAASRawDocument):
     eviction_date = ZuluDate()
 
     footprint = GeoShape()
+
+    fos_pushing_date_backup = ZuluDate()
+
+    fos_pushing_date_nominal = ZuluDate()
 
     interface_name = Keyword()
 
@@ -3218,7 +3576,7 @@ class ProductDeletion(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-product-deletion-")
+        return hit["_index"].startswith("raw-data-product-deletion")
 
     _PARTITION_FIELD = "ingestionTime"
 
@@ -3245,7 +3603,7 @@ class SatUnavailabilityProduct(MAASRawDocument):
 
     @classmethod
     def _matches(cls, hit):
-        return hit["_index"].startswith("raw-data-sat-unavailability-product-")
+        return hit["_index"].startswith("raw-data-sat-unavailability-product")
 
     _PARTITION_FIELD = "ingestionTime"
 

@@ -104,6 +104,14 @@
             },
             "related_document_name": {
                 "type": "keyword"
+            },
+            "fos_pushing_date_backup": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "fos_pushing_date_nominal": {
+                "type": "date",
+                "locale": "utc"
             }
         },
         "_meta": {

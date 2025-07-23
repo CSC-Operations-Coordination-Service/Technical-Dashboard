@@ -13,3 +13,5 @@ tmp/*
 # All backup of message
 collect-*
 etl-*
+
+scripts/

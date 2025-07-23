@@ -210,8 +210,13 @@ class Engine(ABC):
 
         engine_args["args"] = args
 
+        # Remove args cause they contains password fields
+        masked_args = {
+            key: value for key, value in engine_args.items() if key != "args"
+        }
+
         logging.debug(
-            "Instanciating engine: %s with args: %s", engine_class, engine_args
+            "Instanciating engine: %s with args: %s", engine_class, masked_args
         )
 
         return cls.__ALL_ENGINES[engine_id](**engine_args)
@@ -310,7 +315,7 @@ class Engine(ABC):
         logging.info("Importing configuration from file: %s", file_path)
         config_dict = json.load(file_path)
         cls.import_general_config(config_dict)
-        # load exchanges at the end (may need modules and model imported) 
+        # load exchanges at the end (may need modules and model imported)
         cls.import_exchanges_config(config_dict)
 
     @classmethod
@@ -326,29 +331,31 @@ class Engine(ABC):
         Args:
             directory_path (str): path to directory
         """
-        
+
         logging.info("Importing configuration from directory: %s", directory_path)
-        #Store config in a "buffer" minimize fs access for multiples access
-        config_files=cls.find_configurations(directory_path)
-        config_dicts_from_files={}
+        # Store config in a "buffer" minimize fs access for multiples access
+        config_files = cls.find_configurations(directory_path)
+        config_dicts_from_files = {}
         for path in config_files:
             with open(path, "r", encoding="utf-8") as config_file:
                 config_file_dict = json.load(config_file)
-                config_dicts_from_files[path]=config_file_dict
-        for path,config_dict in config_dicts_from_files.items():
-            logging.info("Loading modules, model, defaults, logging configs from file: %s", path)
+                config_dicts_from_files[path] = config_file_dict
+        for path, config_dict in config_dicts_from_files.items():
+            logging.info(
+                "Loading modules, model, defaults, logging configs from file: %s", path
+            )
             cls.import_general_config(config_dict)
-        # load exchanges at the end (may need modules and model imported) 
-        for path,config_dict in config_dicts_from_files.items():
+        # load exchanges at the end (may need modules and model imported)
+        for path, config_dict in config_dicts_from_files.items():
             logging.info("Loading exchange configs from file: %s", path)
             cls.import_exchanges_config(config_dict)
 
     @classmethod
-    def import_general_config(cls,config_dict):
+    def import_general_config(cls, config_dict):
         if "modules" in config_dict:
             cls.import_modules(config_dict)
         if "model" in config_dict:
-            cls.import_models(config_dict) 
+            cls.import_models(config_dict)
         if "defaults" in config_dict:
             cls.import_defaults(config_dict)
         if "logging" in config_dict:
@@ -372,25 +379,22 @@ class Engine(ABC):
         logging.info("Importing models.")
         logging.info(" - importing model: %s", config_dict["model"])
         cls.MODEL_MODULE = importlib.import_module(config_dict["model"])
-        
-    
+
     @classmethod
     def import_defaults(cls, config_dict):
         logging.info("Importing default configuration.")
         cls.set_default_arguments(config_dict["defaults"])
-        
+
     @classmethod
     def import_logging(cls, config_dict):
         logging.info("Importing logging.")
         # override some logger verbosity level
         for name, level_name in config_dict["logging"].items():
             if not hasattr(logging, level_name):
-                raise ValueError(
-                    f"Invalid logging level for {name} : {level_name}"
-                )
+                raise ValueError(f"Invalid logging level for {name} : {level_name}")
             logging.debug("Set logging level of %s to %s", name, level_name)
             logging.getLogger(name).setLevel(getattr(logging, level_name))
-            
+
     @classmethod
     def import_exchanges(cls, config_dict):
         """
@@ -402,23 +406,23 @@ class Engine(ABC):
         logging.info("Importing exchanges.")
         for exchange_dict in config_dict["amqp"]:
             configured_exchange = None
-            logging.info(" - importing/ merging exchange: %s",exchange_dict["name"])
-            
+            logging.info(" - importing/ merging exchange: %s", exchange_dict["name"])
+
             for exchange in cls.CONFIG_DICT["amqp"]:
                 if exchange_dict["name"] == exchange["name"]:
-                    # the exchange has already been added so should be "configured" avoid queue multiple definition  
+                    # the exchange has already been added so should be "configured" avoid queue multiple definition
                     configured_exchange = exchange
                     break
-                
+
             if not configured_exchange:
-                # if there is no exchange to "configure" adding it as is 
+                # if there is no exchange to "configure" adding it as is
                 cls.CONFIG_DICT["amqp"].append(exchange_dict)
             else:
                 # queue updates
                 existing_queues = {
                     queue["name"]: queue for queue in configured_exchange["queues"]
                 }
-                
+
                 for queue in exchange_dict["queues"]:
                     if queue["name"] in existing_queues:
                         logging.warning(
@@ -430,7 +434,7 @@ class Engine(ABC):
                     else:
                         logging.debug("Add queue: %s", queue["name"])
                         configured_exchange["queues"].append(queue)
-                        
+
         # a set of all engine identifiers in the configuration
         declared_engine_ids = set()
         for exchange_dict in cls.CONFIG_DICT["amqp"]:
