@@ -55,3 +55,31 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
                         self.datatake_id,
                     )
                     yield product
+
+    def impact_other_calculation(self, compute_key):
+        """MSI_L1C_DS provide footprint to evaluated expected tiles
+
+        Args:
+            compute_key (tuple): the key of the compute that will be execute
+
+        Returns:
+            list(tuple): compute keys default: []
+        """
+        compute_product_type = compute_key["product_type"]
+
+        if self.REFERENCE_PRODUCT_TYPE_SENSING in compute_product_type:
+            # build compute key to process
+
+            self.number_of_expected_tiles = len(self.search_expected_tiles())
+
+            product_types_to_compute = [
+                product_type
+                for product_type in self.get_all_product_types()
+                if "TL" in product_type or "TC" in product_type
+            ]
+
+            return [
+                {**compute_key, "product_type": product_type}
+                for product_type in product_types_to_compute
+            ]
+        return []
