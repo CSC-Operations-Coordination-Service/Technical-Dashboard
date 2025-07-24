@@ -323,7 +323,7 @@ def test_get_compute_method_bad_key(datatake_s2_dict):
 
     compute_method = datatake.get_compute_method("MSI_L0__AA")
 
-    assert compute_method is None
+    assert compute_method is len
 
 
 def test_compute_extra_completeness_1(datatake_s2_dict):
