@@ -16,13 +16,14 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
 
     DATAFLOW_CACHE = None
 
-    def find_brother_products_scan(self, product_type):
+    def find_brother_products_scan(self, product_type, indices=None):
         """Find products with the same datatake and the same product_type
 
         Note: Common method to extract publication associated on the same completeness key
 
         Args:
             product_type (str): product_type searched
+            indices (): list of indices generated to find with more precision
 
         Returns:
             list(CdsPublication): list of products matching datatake_id and product_type
