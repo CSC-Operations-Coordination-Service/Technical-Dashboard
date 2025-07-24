@@ -379,7 +379,7 @@ class CdsDatatakeS2(CdsDatatake):
         """
         key_field = self.get_global_key_field(product_type)
 
-        compute_method = None
+        compute_method = len
 
         if key_field in ["TL", "TC", "GR"]:
             compute_method = len
@@ -403,7 +403,7 @@ class CdsDatatakeS2(CdsDatatake):
             key_field (str): the product type who is also a part of a compute key
 
         Returns:
-            list: products with the same key_field
+            iterable: products with the same key_field
         """
         # for s2 key_field is the product_type
         product_type = key_field
@@ -417,7 +417,7 @@ class CdsDatatakeS2(CdsDatatake):
         products_scan = self.find_brother_products_scan(
             product_type, self.get_product_partitionning(day_precision=1)
         )
-        brother_of_datatake_documents = None
+        brother_of_datatake_documents = []
 
         key_field = self.get_global_key_field(product_type)
 
