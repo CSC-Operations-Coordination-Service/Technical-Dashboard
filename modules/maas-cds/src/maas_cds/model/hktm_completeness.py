@@ -21,6 +21,8 @@ class CdsHktmAcquisitionCompleteness(
 class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
     """overide to add cams_tickets as a multi keyword"""
 
+    cams_tickets = Keyword(multi=True)
+
     REFERENCE_HKTM_PRODUCT_TYPE = {
         "S1": "HK_RAW__0_",
         "S2": "PRD_HKTM__",

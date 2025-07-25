@@ -5,6 +5,8 @@ from itertools import groupby
 import string
 from typing import Dict
 
+from maas_cds import model
+from maas_cds.model.s2_tilpar_tiles import S2Tiles
 from opensearchpy import MultiSearch
 from collections import defaultdict
 
@@ -169,6 +171,10 @@ class BaseProductConsolidatorEngine(RawDataEngine):
 
         document.site_center = data_dict.get("site_center", document.site_center)
 
+        # S2 Specific
+        document.detector_id = data_dict.get("detector_id")
+        document.tile_number = data_dict.get("tile_number")
+
         # S3 Specific
         document.platform = data_dict.get("platform", None)
         document.centre = data_dict.get("centre", None)
@@ -208,6 +214,23 @@ class BaseProductConsolidatorEngine(RawDataEngine):
             value = getattr(raw_document, attr, "")
             if value:
                 setattr(document, attr, value)
+
+        if (
+            document.mission == "S2"
+            and document.product_type in model.CdsProductS2.PRODUCT_TYPES_WITH_TILES
+            and raw_document.footprint
+        ):
+
+            footprint = S2Tiles.clean_footprint(raw_document.footprint)
+            if footprint:
+                # Store expected tiles
+                document.expected_tiles = S2Tiles.intersection(footprint)
+                self.logger.debug(
+                    "Adding expected tiles to %s: %s (%s)",
+                    document,
+                    document.expected_tiles,
+                    footprint,
+                )
 
         return data_dict
 

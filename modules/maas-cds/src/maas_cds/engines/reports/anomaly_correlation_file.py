@@ -28,10 +28,10 @@ from maas_cds.model import (
     CdsCadipAcquisitionPassStatus,
     CdsEdrsAcquisitionPassStatus,
     CdsHktmAcquisitionCompleteness,
+    CdsHktmProductionCompleteness,
     CdsProduct,
     CdsPublication,
 )
-from maas_cds.model.generated import CamsCloudTickets
 
 
 class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
@@ -48,6 +48,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         CdsCadipAcquisitionPassStatus,
         CdsEdrsAcquisitionPassStatus,
         CdsHktmAcquisitionCompleteness,
+        CdsHktmProductionCompleteness,
         CdsProduct,
         CdsPublication,
     )
@@ -81,6 +82,16 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 .filter("term", session_id=identifier)
                 .filter("term", ground_station=ground_station.upper()),
             },
+            {
+                "class": CdsHktmProductionCompleteness,
+                "search": lambda satellite_id, identifier, ground_station: CdsHktmProductionCompleteness.search()
+                .query()
+                .filter("term", satellite_unit=satellite_id.upper())
+                .filter("term", downlink_absolute_orbit=identifier)
+                .filter(
+                    "prefix", station="EDRS"
+                ),  # Mp are created with station like EDRS-A not the receptor like HDGS
+            },
         ],
         "X-Band": [
             {
@@ -104,8 +115,16 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 "search": lambda satellite_id, identifier, ground_station: CdsHktmAcquisitionCompleteness.search()
                 .query()
                 .filter("term", satellite_unit=satellite_id.upper())
-                .filter("term", absolute_orbit=identifier)
+                .filter("term", session_id=identifier)
                 .filter("term", ground_station=ground_station.upper()),
+            },
+            {
+                "class": CdsHktmProductionCompleteness,
+                "search": lambda satellite_id, identifier, ground_station: CdsHktmProductionCompleteness.search()
+                .query()
+                .filter("term", satellite_unit=satellite_id.upper())
+                .filter("term", downlink_absolute_orbit=identifier)
+                .filter("term", station=ground_station.upper()),
             },
         ],
     }
@@ -338,6 +357,13 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 ticket.acquisition_pass = []
 
                 return
+            # Whitelsit station
+            edrs_station = ["HDGS", "RDGS", "BFLGS", "FLGS"]
+            gs_station = ["SGS", "MTI", "INS", "NSG", "MPS", "KSE", "PAR"]
+            allowed_station = edrs_station + gs_station
+
+            impacted_stations = [st for st in allowed_station if st in report.station]
+
             # Impacted pass must contains satellite like S1A-orbit
             for impacted_passe in report.impacted_passes:
                 try:
@@ -350,9 +376,10 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                     )
                     continue
 
-                acquisition_pass_keys.append(
-                    "_".join([satellite, report.station_type, orbit, report.station])
-                )
+                for station in impacted_stations:
+                    acquisition_pass_keys.append(
+                        "_".join([satellite, report.station_type, orbit, station])
+                    )
 
             # Since the 21/06/2024 we supporte only orbit that are prefix by satellite unit to avoid collision in the futur
             # Keep it to be retroactive

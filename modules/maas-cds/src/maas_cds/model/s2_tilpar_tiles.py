@@ -1,5 +1,6 @@
 """Custom CDS model definition for s2 tiles"""
 
+import geomet
 import logging, copy, opensearchpy
 from itertools import groupby
 from maas_cds.model.generated import CdsS2Tilpar
@@ -13,6 +14,27 @@ class S2Tiles(CdsS2Tilpar):
     """
 
     DLON_THRESHOLD: float = 180.0
+
+    @staticmethod
+    def clean_footprint(footprint) -> dict:
+        if isinstance(footprint, opensearchpy.AttrDict):
+            # GeoShape database convertion
+            return footprint.to_dict()
+
+        elif isinstance(footprint, dict):
+            # Geojson noconvertion
+            return footprint
+
+        elif isinstance(footprint, str):
+            # Convert WKT footprint to geojson
+            return geomet.wkt.loads(footprint.replace("geography'", "").upper())
+        else:
+            LOGGER.warning(
+                "[FOOTPRINT] - Unhandle footprint format  : %s",
+                footprint,
+            )
+
+        return None
 
     @staticmethod
     def intersection(footprint: dict) -> list[str]:
