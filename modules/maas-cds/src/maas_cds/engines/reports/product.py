@@ -105,10 +105,6 @@ class ProductConsolidatorEngine(
 
         self.consolidate_service_information(raw_document, document)
 
-        # S2 Specific
-        document.detector_id = new_data_dict.get("detector_id", None)
-        document.tile_number = new_data_dict.get("tile_number", None)
-
         return new_data_dict
 
     # consolidate_from_ModelClass
@@ -142,41 +138,6 @@ class ProductConsolidatorEngine(
         if document.mission == "S2" and document.product_type == "PRD_HKTM__":
             self.hktm_related_products.append(document)
 
-        if (
-            document.mission == "S2"
-            and document.product_type in model.CdsProductS2.PRODUCT_TYPES_WITH_TILES
-            and raw_document.footprint
-        ):
-            footprint = None
-            # get footprint has geojson heithe source is wkt or geojson
-
-            if isinstance(raw_document.footprint, AttrDict):
-                # GeoShape database convertion
-                footprint = raw_document.footprint.to_dict()
-
-            elif isinstance(raw_document.footprint, dict):
-                # Geojson noconvertion
-                footprint = raw_document.footprint
-
-            elif isinstance(raw_document.footprint, str):
-                # Convert WKT footprint to geojson
-                footprint = geomet.wkt.loads(
-                    raw_document.footprint.replace("geography'", "").upper()
-                )
-            else:
-                self.logger.warning(
-                    "[FOOTPRINT] - Unhandle footprint format  : %s",
-                    raw_document.footprint,
-                )
-            if footprint:
-                # Store expected tiles
-                document.expected_tiles = S2Tiles.intersection(footprint)
-                self.logger.debug(
-                    "Adding expected tiles to %s: %s (%s)",
-                    document,
-                    document.expected_tiles,
-                    footprint,
-                )
         if (
             document.mission == "S2"
             and document.tile_number
