@@ -338,6 +338,13 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 ticket.acquisition_pass = []
 
                 return
+            # Whitelsit station
+            edrs_station = ["HDGS", "RDGS", "BFLGS", "FLGS"]
+            gs_station = ["SGS", "MTI", "INS", "NSG", "MPS", "KSE", "PAR"]
+            allowed_station = edrs_station + gs_station
+
+            impacted_stations = [st for st in allowed_station if st in report.station]
+
             # Impacted pass must contains satellite like S1A-orbit
             for impacted_passe in report.impacted_passes:
                 try:
@@ -350,9 +357,10 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                     )
                     continue
 
-                acquisition_pass_keys.append(
-                    "_".join([satellite, report.station_type, orbit, report.station])
-                )
+                for station in impacted_stations:
+                    acquisition_pass_keys.append(
+                        "_".join([satellite, report.station_type, orbit, station])
+                    )
 
             # Since the 21/06/2024 we supporte only orbit that are prefix by satellite unit to avoid collision in the futur
             # Keep it to be retroactive
