@@ -913,6 +913,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
     # consolidate_OutputModelClass_from_InputModelClass
     # pylint: disable=C0103
+    # TODO Enable anomaly correlation backway
+    # @anomaly_link
     def consolidate_CdsHktmProductionCompleteness_from_MpHktmDownlink(
         self, mp_hktm_downlink: MpHktmDownlink
     ) -> CdsHktmProductionCompleteness:
@@ -978,6 +980,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
     # consolidate_OutputModelClass_from_InputModelClass
     # pylint: disable=C0103
+    # TODO Enable anomaly correlation backway
+    # @anomaly_link
     def consolidate_CdsHktmProductionCompleteness_from_MpHktmAcquisitionProduct(
         self, raw_document: MpHktmAcquisitionProduct
     ) -> CdsHktmProductionCompleteness:
