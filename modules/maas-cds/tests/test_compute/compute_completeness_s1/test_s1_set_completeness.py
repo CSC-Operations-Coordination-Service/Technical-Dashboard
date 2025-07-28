@@ -1,6 +1,5 @@
 """Tests for MP consolidation into datatake"""
 
-
 from unittest.mock import patch
 
 import maas_cds.model as model
@@ -60,7 +59,7 @@ def test_set_completeness_2():
     assert datatake_doc.WV_OCN_0_local_status == model.CompletenessStatus.PARTIAL.value
 
 
-def test_fill_global_completeness_1():
+def test_fill_global_completeness_2():
     """fill_global_completeness test"""
 
     datatake_doc = CdsDatatakeS1()
@@ -72,6 +71,7 @@ def test_fill_global_completeness_1():
     datatake_doc.sensing_global_status = model.CompletenessStatus.MISSING.value
 
     datatake_doc.instrument_mode = "RFC"
+    datatake_doc.polarization = "DV"
 
     setattr(
         datatake_doc,

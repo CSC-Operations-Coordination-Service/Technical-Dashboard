@@ -23,6 +23,7 @@ def test_fill_global_completeness_1():
     datatake_doc.sensing_global_status = model.CompletenessStatus.MISSING.value
 
     datatake_doc.instrument_mode = "RFC"
+    datatake_doc.polarization = "DV"
 
     setattr(
         datatake_doc,

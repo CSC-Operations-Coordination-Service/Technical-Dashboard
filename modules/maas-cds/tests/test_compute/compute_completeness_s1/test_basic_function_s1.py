@@ -80,7 +80,7 @@ def test_get_all_product_types_rfc(s1_datatake_rfc):
 
     list_product_type = s1_datatake_rfc.get_all_product_types()
 
-    assert list_product_type == ["RF_RAW__0S"]
+    assert list_product_type == ["RF_RAW__0S", "AMH_ERRMAT"]
 
 
 def test_get_all_product_types_s1_not_exist(s1_datatake_ew):
@@ -92,7 +92,14 @@ def test_get_all_product_types_s1_not_exist(s1_datatake_ew):
 
 
 def test_add_prefix_instrument(
-    s1_datatake_ew, s1_datatake_iw, s1_datatake_rfc, s1_datatake_sm, s1_datatake_wv, s1_datatake_an, s1_datatake_zs, s1_datatake_en
+    s1_datatake_ew,
+    s1_datatake_iw,
+    s1_datatake_rfc,
+    s1_datatake_sm,
+    s1_datatake_wv,
+    s1_datatake_an,
+    s1_datatake_zs,
+    s1_datatake_en,
 ):
     assert s1_datatake_ew.add_prefix_instrument("RAW__0S") == "EW_RAW__0S"
     assert s1_datatake_iw.add_prefix_instrument("RAW__0S") == "IW_RAW__0S"

@@ -1033,7 +1033,8 @@ def test_whole_action_iterator(
     cs.scan_return_list_delete = [del_doc]
 
     mock_search.return_value = cs
-    engine.data_time_start_field_name = "acquisition_start"
+    engine.raw_data_time_start_field_name = "acquisition_start"
+    engine.consolidated_data_time_start_field_name = "acquisition_start"
 
     retval = list(engine.action_iterator())
 
@@ -1083,7 +1084,8 @@ def test_whole_action_iterator_max_date_defined(
     cs.scan_return_list_delete = [rawdel]
 
     mock_search.return_value = cs
-    engine.data_time_start_field_name = "acquisition_start"
+    engine.raw_data_time_start_field_name = "acquisition_start"
+    engine.consolidated_data_time_start_field_name = "acquisition_start"
 
     retval = list(engine.action_iterator())
 
@@ -1113,11 +1115,13 @@ def test_whole_action_iterator_related_function(
     now = datetime.datetime.now(datetime.timezone.utc)
     past = now.replace(year=2000)
     futur = now.replace(year=3000)
-    engine.data_time_start_field_name = "acquisition_start"
+    engine.raw_data_time_start_field_name = "acquisition_start"
+    engine.consolidated_data_time_start_field_name = "acquisition_start"
 
     raw1 = model.MpAllProduct(**MP_ALL_DICT)
     raw1.meta.id = "rawID"
-    raw1[engine.data_time_start_field_name] = past
+    raw1[engine.raw_data_time_start_field_name] = past
+    raw1[engine.consolidated_data_time_start_field_name] = past
 
     engine.shall_report(raw1)
 
@@ -1136,7 +1140,8 @@ def test_whole_action_iterator_related_function(
     # We also test 'delete' report does not generate additional reports
     raw2 = model.MpAllProduct(**MP_ALL_DICT)
     raw2.meta.id = "rawID2"
-    raw2[engine.data_time_start_field_name] = futur
+    raw2[engine.raw_data_time_start_field_name] = futur
+    raw2[engine.consolidated_data_time_start_field_name] = futur
     engine.shall_report(raw2)
     res = set()
     res.add(raw2.meta.id)
