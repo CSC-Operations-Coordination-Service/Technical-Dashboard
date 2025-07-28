@@ -87,7 +87,7 @@ class CdsProductS1(CdsProduct):
                 if len(datatake_doc) > 1:
                     LOGGER.warning("Too much datatake for product %s", self.name)
                 datatake_doc = datatake_doc[0]
-                setattr("datatake_id", datatake_doc.meta.id)
+                setattr(self, "datatake_id", datatake_doc.meta.id)
             else:
                 LOGGER.warning("No datatake for product %s", self.name)
                 return None
