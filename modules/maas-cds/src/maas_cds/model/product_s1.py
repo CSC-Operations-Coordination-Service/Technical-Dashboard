@@ -28,6 +28,14 @@ class CdsProductS1(CdsProduct):
         # Corner case
         if CdsDatatakeS1.is_product_type_without_datatake_id(self.product_type):
             if self.product_type == "AI_RAW__0_":
+
+                start_date = self.sensing_end_date + timedelta(
+                    seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS
+                )
+                end_date = self.sensing_end_date - timedelta(
+                    seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS
+                )
+
                 search = (
                     CdsDatatakeS1.search()
                     .filter(
@@ -37,15 +45,11 @@ class CdsProductS1(CdsProduct):
                                 Q("term", satellite_unit=self.satellite_unit),
                                 Q(
                                     "range",
-                                    observation_time_start={
-                                        "lte": self.sensing_start_date
-                                    },
+                                    observation_time_start={"lte": start_date},
                                 ),
                                 Q(
                                     "range",
-                                    observation_time_stop={
-                                        "gte": self.sensing_end_date
-                                    },
+                                    observation_time_stop={"gte": end_date},
                                 ),
                             ],
                         )
@@ -86,7 +90,17 @@ class CdsProductS1(CdsProduct):
             if datatake_doc:
                 if len(datatake_doc) > 1:
                     LOGGER.warning("Too much datatake for product %s", self.name)
+
+                datatake_doc.sort(
+                    key=lambda d: (
+                        min(self.sensing_end_date, d.observation_time_stop)
+                        - max(self.sensing_start_date, d.observation_time_start)
+                    ).total_seconds(),
+                    reverse=True,
+                )
+
                 datatake_doc = datatake_doc[0]
+
                 setattr(self, "datatake_id", datatake_doc.datatake_id)
             else:
                 LOGGER.warning("No datatake for product %s", self.name)
