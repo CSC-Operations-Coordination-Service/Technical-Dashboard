@@ -117,6 +117,7 @@ class ComputeCompletenessEngine(DataEngine):
             original_datatake_dict = datatake_doc.to_dict()
 
             datatake_doc.purge_dynamic_fields()
+            datatake_doc.missing_periods = None
 
             datatake_doc.load_data_before_compute()
 
