@@ -1,5 +1,6 @@
 """Datatake S1 model definition"""
 
+from datetime import timedelta
 import logging
 from typing import Callable
 from opensearchpy import Q
@@ -25,6 +26,9 @@ class CdsDatatakeS1(CdsDatatake):
 
     EXCLUDES_PRODUCTED_TYPES = ["AMALFI_REPORT"]
 
+    # Take care of this some datatake are near less than 3s
+    MATCHING_DELTA_PRODUCTS = 60
+
     MINIMUM_PERCENTAGE_OVERLAPPING_AREA = {
         "OCN": {"0": 20, "2024-06-06T13:20:00.000Z": 17},
         "SLC": {"0": 0},
@@ -46,6 +50,15 @@ class CdsDatatakeS1(CdsDatatake):
     L1_GRDM_PRODUCT_TYPE = ["GRDM_1A", "GRDM_1S"]
     L2_OCN__PRODUCT_TYPE = ["OCN__2A", "OCN__2S"]
     LA__PRODUCT_TYPE = ["ETA__AX"]
+
+    @staticmethod
+    def is_product_type_without_datatake_id(product_type):
+        if product_type == "AI_RAW__0_":
+            return True
+        elif "ERRMAT" in product_type:
+            return True
+        else:
+            return False
 
     def product_type_with_missing_periods(self, product_type: str) -> bool:
         """Do we want missing periods for this product type ?"""
@@ -100,7 +113,8 @@ class CdsDatatakeS1(CdsDatatake):
         if "ETA" in product_type:
             # number of brother files
             compute_method = len
-
+        elif "ERRMAT" in product_type:
+            compute_method = len
         else:
             # compute total sensing product
             compute_method = compute_total_sensing_product
@@ -287,6 +301,9 @@ class CdsDatatakeS1(CdsDatatake):
             etad = self.get_slc_1s_count()
             return {"etad": etad}
 
+        if "ERRMAT" in product_type:
+            return {"errmat": 1}
+
         sensing_value = 0
 
         # nominal
@@ -381,6 +398,9 @@ class CdsDatatakeS1(CdsDatatake):
                 self.instrument_mode,
             )
 
+        if self.instrument_mode == "RFC":
+            expected_product_type.append(f"AM{self.polarization[1]}_ERRMAT")
+
         return expected_product_type
 
     def evaluate_local_expected(self, key_field):
@@ -400,6 +420,75 @@ class CdsDatatakeS1(CdsDatatake):
 
         return expected_value
 
+    def find_product_without_datatake_id(self, product_type):
+        # We match all product between observation ± delta in seconds
+        if product_type == "AI_RAW__0_":
+            query = Q(
+                "bool",
+                filter=[
+                    Q("term", satellite_unit=self.satellite_unit),
+                    Q("term", instrument_mode="AI"),
+                    Q("term", product_type=product_type),
+                    Q("term", absolute_orbit=self.absolute_orbit),
+                    Q(
+                        "range",
+                        sensing_start_date={"gte": self.observation_time_start},
+                    ),
+                    Q(
+                        "range",
+                        sensing_end_date={"lte": self.observation_time_stop},
+                    ),
+                ],
+            )
+
+        elif "ERRMAT" in product_type:
+            start_date = self.observation_time_stop - timedelta(
+                seconds=self.MATCHING_DELTA_PRODUCTS
+            )
+            end_date = self.observation_time_stop + timedelta(
+                seconds=self.MATCHING_DELTA_PRODUCTS
+            )
+
+            query = Q(
+                "bool",
+                filter=[
+                    Q("term", satellite_unit=self.satellite_unit),
+                    Q("term", product_type=product_type),
+                    Q(
+                        "range",
+                        sensing_end_date={"gte": start_date},
+                    ),
+                    Q(
+                        "range",
+                        sensing_end_date={"lte": end_date},
+                    ),
+                ],
+            )
+        else:
+            LOGGER.warning("Unhandle product_type %s", product_type)
+
+        completeness_service = self.get_service_for_completeness()
+
+        if not completeness_service:
+            LOGGER.warning(
+                "Try to compute completess but no service identified : %s %s",
+                self.satellite_unit,
+                product_type,
+            )
+            completeness_service = ["NO_SERVICE_FOR_THIS"]
+
+        search_request = (
+            CdsProduct.search()
+            .filter("terms", prip_service=completeness_service)
+            .filter("exists", field="prip_id")
+            .query(query)
+            .params(ignore=404, ignore_unavailable=True)
+        )
+
+        query_scan = search_request.scan()
+
+        return query_scan
+
     def get_datatake_product_type_brother(self, product_type):
         """Get CdsProduct whith the same product type and the same datatake_id
 
@@ -411,8 +500,10 @@ class CdsDatatakeS1(CdsDatatake):
         """
         # TODO MAAS_CDS-1236: make a single query to find all the whole brotherhood
 
-        # get document with same datatake_id and product_type and with a prip_id
-        query_scan = self.find_brother_products_scan(product_type)
+        if CdsDatatakeS1.is_product_type_without_datatake_id(product_type):
+            query_scan = self.find_product_without_datatake_id(product_type)
+        else:
+            query_scan = self.find_brother_products_scan(product_type)
 
         brother_of_datatake_documents = []
 
@@ -458,6 +549,9 @@ class CdsDatatakeS1(CdsDatatake):
         if "ETA" in product_type:
             return "etad"
 
+        if "ERRMAT" in product_type:
+            return "errmat"
+
         # Unique aggregation in s1
         return "sensing"
 
@@ -493,4 +587,6 @@ class CdsDatatakeS1(CdsDatatake):
 
     def get_related_documents_query(self) -> Q:
         """override"""
+
+        # Default behaviour
         return Q("term", datatake_id=self.datatake_id)
