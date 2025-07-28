@@ -1,8 +1,6 @@
 """Update entities after some datatake creation or update"""
 
 from datetime import UTC, datetime
-import maas_model
-from maas_engine.engine.base import EngineReport
 from maas_engine.engine.rawdata import DataEngine
 
 

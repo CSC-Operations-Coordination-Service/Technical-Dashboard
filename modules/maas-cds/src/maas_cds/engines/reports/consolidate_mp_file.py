@@ -52,7 +52,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         args=None,
         raw_data_type=None,
         consolidated_data_type=None,
-        data_time_start_field_name=None,
+        raw_data_time_start_field_name=None,
+        consolidated_data_time_start_field_name=None,
         chunk_size=1,
         send_reports=True,
         tolerance_value: int = 30,
@@ -63,7 +64,10 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         self.consolidated_data_type = consolidated_data_type
         self.raw_data = self.get_model(self.raw_data_type)
         self.consolidated_data = self.get_model(self.consolidated_data_type)
-        self.data_time_start_field_name = data_time_start_field_name
+        self.raw_data_time_start_field_name = raw_data_time_start_field_name
+        self.consolidated_data_time_start_field_name = (
+            consolidated_data_time_start_field_name
+        )
         self.tolerance_value = tolerance_value
         self.config_manager = MaasConfigManager(
             config_model_class=MaasConfigCompleteness()
@@ -117,7 +121,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
                 next_repport_name,
                 min_date,
                 max_date,
-                self.data_time_start_field_name,
+                self.raw_data_time_start_field_name,
             )
 
             # Delete all consolidated data between min and max date
@@ -241,7 +245,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             min_date_to_delete: str date of the min start date
         """
         min_date_to_delete = None
-        data_produced_field = {"field": self.data_time_start_field_name}
+        data_produced_field = {"field": self.raw_data_time_start_field_name}
 
         search = self.raw_data.search().filter("term", reportName=local_report_name)
         search.aggs.metric("data_produced", "min", **data_produced_field)
@@ -298,7 +302,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         Returns:
             list: a list of raw data
         """
-        data_time_start_range = {self.data_time_start_field_name: {"lt": max_date}}
+        data_time_start_range = {self.raw_data_time_start_field_name: {"lt": max_date}}
 
         if max_date == "*":
             search = self.raw_data.search().filter("term", reportName=report_name)
@@ -333,7 +337,9 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             list: a list of consolidated data
         """
         if max_date == "*":
-            data_time_start_range = {self.data_time_start_field_name: {"gte": min_date}}
+            data_time_start_range = {
+                self.consolidated_data_time_start_field_name: {"gte": min_date}
+            }
             cleaner = (
                 self.consolidated_data.search()
                 .filter("term", satellite_unit=sat_id)
@@ -344,7 +350,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             )
         else:
             data_time_start_range = {
-                self.data_time_start_field_name: {
+                self.consolidated_data_time_start_field_name: {
                     "gte": min_date,
                     "lt": max_date,
                 }
