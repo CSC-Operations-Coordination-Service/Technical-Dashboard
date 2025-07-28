@@ -89,7 +89,7 @@ class CdsProductS1(CdsProduct):
                 datatake_doc = datatake_doc[0]
             else:
                 LOGGER.warning("No datatake for product %s", self.name)
-
+                return None
             return (datatake_doc.meta.id, self.product_type)
 
         # Protective behaviour
