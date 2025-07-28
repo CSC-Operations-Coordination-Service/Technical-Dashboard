@@ -102,6 +102,8 @@ class CdsProductS1(CdsProduct):
                 datatake_doc = datatake_doc[0]
 
                 setattr(self, "datatake_id", datatake_doc.datatake_id)
+                setattr(self, "timeliness", datatake_doc.timeliness)
+
             else:
                 LOGGER.warning("No datatake for product %s", self.name)
                 return None

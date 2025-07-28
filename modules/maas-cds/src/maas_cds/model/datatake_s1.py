@@ -500,10 +500,7 @@ class CdsDatatakeS1(CdsDatatake):
         """
         # TODO MAAS_CDS-1236: make a single query to find all the whole brotherhood
 
-        if CdsDatatakeS1.is_product_type_without_datatake_id(product_type):
-            query_scan = self.find_product_without_datatake_id(product_type)
-        else:
-            query_scan = self.find_brother_products_scan(product_type)
+        query_scan = self.find_brother_products_scan(product_type)
 
         brother_of_datatake_documents = []
 
