@@ -19,6 +19,7 @@ class ComputeHktmRelatedEngine(DataEngine):
     """Update documents related to hktm creation or update"""
 
     ENGINE_ID = "COMPUTE_HKTM_RELATED"
+
     SESSION_ID_META = {
         "CdsEdrsAcquisitionPassStatus": {
             "hktm_completeness": "edrs_completeness",
