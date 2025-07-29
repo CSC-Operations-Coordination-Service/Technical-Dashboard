@@ -55,7 +55,6 @@ class CdsProductS1(CdsProduct):
                         )
                     )
                     .filter("term", instrument_mode="AIS")
-                    .filter("term", absolute_orbit=self.absolute_orbit)
                 )
             if "ERRMAT" in self.product_type:
                 start_date = self.sensing_end_date + timedelta(
