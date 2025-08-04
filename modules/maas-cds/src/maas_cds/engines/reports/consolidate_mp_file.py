@@ -402,13 +402,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         consolidated_doc = consolidated_method(to_consolidate_mp)
 
-        # Avoid None report
-        if consolidated_doc is None:
-            yield None
-            return
-
         # Handle multiple return
-        if isinstance(consolidated_doc, MAASDocument):
+        if consolidated_doc is None or isinstance(consolidated_doc, MAASDocument):
             docs = [consolidated_doc]
         elif isinstance(consolidated_doc, typing.Iterator):
             docs = consolidated_doc
