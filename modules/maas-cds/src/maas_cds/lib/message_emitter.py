@@ -127,6 +127,7 @@ class MessageEmitter:
             max_offset = min(min_offset + self.chunk_size, report_size)
 
             yield MAASMessage(
+                document_indices=report.document_indices,
                 document_class=report.document_class,
                 document_ids=report.data_ids[min_offset:max_offset],
                 pipeline=["BornFromTheMordor"],

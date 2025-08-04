@@ -56,8 +56,8 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
 
     def get_all_product_types(self):
         nominal_expected = super().get_all_product_types()
-
         applicable_config = self.get_applicable_configuration()
+
         applicable_product_type = [
             dataflow_item.product_type for dataflow_item in applicable_config
         ]
