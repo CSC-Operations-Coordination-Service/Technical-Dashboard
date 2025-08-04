@@ -263,7 +263,7 @@ class ComputeHktmRelatedEngine(DataEngine):
                 fields_to_keep = [
                     ["name", "related_document_name"],
                     ["fos_pushing_date_backup"],
-                    ["fos_pushing_date_backup"],
+                    ["fos_pushing_date_nominal"],
                 ]
 
                 for field in fields_to_keep:
