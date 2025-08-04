@@ -1,6 +1,7 @@
 """S3 Completeness calculation"""
 
 from datetime import timedelta
+import logging
 import re
 import typing
 from maas_engine.engine.rawdata import DataEngine
@@ -11,6 +12,8 @@ from maas_cds.lib.parsing_name.utils import DATATAKE_ID_MISSING_VALUE
 from maas_cds.model.cds_s3_completeness import CdsS3Completeness
 from maas_cds.model.product_s3 import CdsProductS3
 
+LOGGER = logging.getLogger("ComputeS3CompletenessEngine")
+
 
 class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
     """Consolidate cds S3 completeness"""
@@ -19,7 +22,7 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
     ORBIT_DURATION_IN_MINUTES = 101
     PRODUCT_TYPE_TO_USE_FOR_MISSING_ORBIT_DETECTION = "TM_0_NAT___"
     TARGET_MODEL = "CdsS3Completeness"
-    DATATAKE_ID_REGEX_FORMAT = r"S3[A-Z]-\d+-\d\d\d"
+    DATATAKE_ID_REGEX_FORMAT = r"S3[A-Z]-\d\d\d-\d\d\d"
 
     def __init__(self, args=None, completeness_tolerance=None):
 
@@ -349,13 +352,13 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
 
             # Keep the closest between local and db
             if closest_local and closest_db:
-                closest_dtk_id = ComputeS3CompletenessEngine.sort_datatake_id(
+                closest_datatake_id = ComputeS3CompletenessEngine.sort_datatake_id(
                     closest_local.datatake_id, closest_db.datatake_id
                 )[1]
             elif closest_local:
-                closest_dtk_id = closest_local.datatake_id
+                closest_datatake_id = closest_local.datatake_id
             elif closest_db:
-                closest_dtk_id = closest_db.datatake_id
+                closest_datatake_id = closest_db.datatake_id
             else:
                 self.logger.warning(
                     "Could not find any previous datatake_id for product"
@@ -366,18 +369,24 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
                 )
                 continue
 
-            missing_dtk_list = self.generate_datatake_ids_list_between_2_ids(
-                closest_dtk_id, product.datatake_id
+            missing_datatake_list = self.generate_datatake_ids_list_between_2_ids(
+                closest_datatake_id, product.datatake_id
+            )
+
+            self.logger.debug(
+                "Missing datataje identify:(%s) %s",
+                len(missing_datatake_list),
+                missing_datatake_list,
             )
             identified_missing_previous_orbits.extend(
                 (
-                    dtk,
+                    datatake,
                     product.sensing_start_date
                     - i * timedelta(minutes=self.ORBIT_DURATION_IN_MINUTES),
                     product.sensing_end_date
                     - i * timedelta(minutes=self.ORBIT_DURATION_IN_MINUTES),
                 )
-                for i, dtk in enumerate(missing_dtk_list, 1)
+                for i, datatake in enumerate(missing_datatake_list, 1)
             )
 
         return identified_missing_previous_orbits
@@ -403,17 +412,18 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
         filtered_map = {}
         filtered_list = []
         for product in products:
+            # Use (datatake_id, satellite_unit) as key to consider both
+            key = (product.datatake_id, product.satellite_unit)
             if (
-                product.datatake_id not in filtered_map
-                or filtered_map[product.datatake_id].sensing_duration
-                < product.sensing_duration
+                key not in filtered_map
+                or filtered_map[key].sensing_duration < product.sensing_duration
             ):
-                filtered_map[product.datatake_id] = product
+                filtered_map[key] = product
 
         filtered_list = list(filtered_map.values())
 
         # Sort in sensing start date order
-        filtered_list.sort(key=lambda doc: doc.sensing_start_date)
+        filtered_list.sort(key=lambda doc: (doc.satellite_unit, doc.sensing_start_date))
 
         # We shall eliminate from our analysis the product which have
         # an immediate precedent product in the list
@@ -425,13 +435,20 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
         for i, _ in enumerate(filtered_list):
             if i == 0:
                 products_for_gap_analysis.append((filtered_list[i], None))
-            elif self.generate_datatake_ids_list_between_2_ids(
-                filtered_list[i].datatake_id,
-                filtered_list[i - 1].datatake_id,
-            ):
-                products_for_gap_analysis.append(
-                    (filtered_list[i], filtered_list[i - 1])
-                )
+            else:
+                prev = filtered_list[i - 1]
+                curr = filtered_list[i]
+                # Only compare within the same satellite
+                if (
+                    curr.satellite_unit == prev.satellite_unit
+                    and self.generate_datatake_ids_list_between_2_ids(
+                        curr.datatake_id,
+                        prev.datatake_id,
+                    )
+                ):
+                    products_for_gap_analysis.append((curr, prev))
+                elif curr.satellite_unit != prev.satellite_unit:
+                    products_for_gap_analysis.append((curr, None))
 
         return products_for_gap_analysis
 
@@ -466,6 +483,9 @@ class ComputeS3CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
         minref, maxref = ComputeS3CompletenessEngine.sort_datatake_id(
             datatake_ref_1, datatake_ref_2
         )
+
+        LOGGER.debug("Generate missing datatake between %s and %s", minref, maxref)
+
         while True:
             satellite, cycle_count, relative_orbit = maxref.split("-")
             cycle_count = int(cycle_count)

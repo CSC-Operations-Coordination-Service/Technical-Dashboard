@@ -402,6 +402,11 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
 
         consolidated_doc = consolidated_method(to_consolidate_mp)
 
+        # Avoid None report
+        if consolidated_doc is None:
+            yield None
+            return
+
         # Handle multiple return
         if isinstance(consolidated_doc, MAASDocument):
             docs = [consolidated_doc]
@@ -413,10 +418,13 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             )
 
         for doc in docs:
+            if doc is None:
+                continue
             if not isinstance(doc, MAASDocument):
-                raise TypeError(
-                    f"Unexpected type for consolidated_doc: {type(consolidated_doc)}"
+                self.logger.warning(
+                    "Unexpected type for consolidated_doc: %s", type(consolidated_doc)
                 )
+                continue
 
             # ? This can use send_reports args
             # if self.consolidated_data_type != "CdsDownlinkDatatake":
