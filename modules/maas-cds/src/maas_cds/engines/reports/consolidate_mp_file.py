@@ -936,7 +936,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             cds_hktm_production_completeness: the consolidated CdsHktmProductionCompleteness
         """
 
-        if mp_hktm_downlink.downlink_mode != "DOWNLINK_HKTM_SAD":
+        if mp_hktm_downlink.downlink_mode not in ["DOWNLINK_HKTM_SAD", "DOWNLINK_HKTM"]:
             return
 
         cds_hktm_production_completeness = self.consolidated_data()
