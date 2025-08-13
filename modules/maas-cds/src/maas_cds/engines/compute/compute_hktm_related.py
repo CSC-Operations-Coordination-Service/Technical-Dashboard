@@ -284,7 +284,7 @@ class ComputeHktmRelatedEngine(DataEngine):
                         "[%s] - Update (%s) with %s",
                         hktm_completeness_document.meta.id,
                         hktm_completeness_document.reportName,
-                        proof_document.key,
+                        proof_document,
                     )
                     yield hktm_completeness_document.to_bulk_action()
 
