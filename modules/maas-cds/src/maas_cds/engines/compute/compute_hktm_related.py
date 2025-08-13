@@ -259,15 +259,19 @@ class ComputeHktmRelatedEngine(DataEngine):
                     proof_document.meta.id,
                 )
 
-                # TODO adjust name repr for CdsCadipAcquisitionPassStatus
                 fields_to_keep = [
+                    # CdsProduct
                     ["name", "related_document_name"],
                     ["fos_pushing_date_backup"],
                     ["fos_pushing_date_nominal"],
+                    # CdsCadipAcquisitionPassStatus
+                    ["acquisition_id", "related_cadip_acquisition_id"],
                 ]
 
                 for field in fields_to_keep:
-                    if value := getattr(proof_document, field[0], None):
+                    if hasattr(proof_document, field[0]) and (
+                        value := getattr(proof_document, field[0], None)
+                    ):
                         setattr(
                             hktm_completeness_document,
                             field[-1],
