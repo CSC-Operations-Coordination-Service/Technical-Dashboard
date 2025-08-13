@@ -98,7 +98,7 @@ class CdsEdrsAcquisitionPassStatus(
     cams_tickets = Keyword(multi=True)
 
     def get_status(self):
-        return self.status
+        return self.total_status
 
     def search_acquistion_completeness_document(self):
         """Return the search method to find the associated completeness document for EDRS
