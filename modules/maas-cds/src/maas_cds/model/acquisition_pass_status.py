@@ -54,6 +54,8 @@ class CdsCadipAcquisitionPassStatus(
     def search_acquistion_completeness_document(self):
         """Return the search method to find the associated completeness document for CADIP
 
+        Currently this work only for S1 as there is not HKTM acquisition Completeness on S2
+
         Returns:
             Search: The search query
         """
@@ -81,7 +83,7 @@ class CdsCadipAcquisitionPassStatus(
 
         search = (
             generated.CdsHktmAcquisitionCompleteness.search()
-            .filter("term", downlink_orbit=session_id[18:])
+            .filter("term", absolute_orbit=str(int(session_id[18:])))
             .query(range_query)
         )
 
