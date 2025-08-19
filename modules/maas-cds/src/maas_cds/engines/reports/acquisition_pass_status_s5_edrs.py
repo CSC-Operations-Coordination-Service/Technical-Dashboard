@@ -62,13 +62,11 @@ class AcquisitionPassStatusConsolidatorS5AndEDRS(AnomalyImpactMixinEngine, DataE
         args=None,
         send_reports=False,
         chunk_size=128,
-        hktm_chunk_size=128,
     ):
         super().__init__(args, send_reports=send_reports, chunk_size=chunk_size)
         self.periodicity_dict = {"daily": 1, "weekly": 2, "monthly": 3}
         self.extra_document_to_consolidate: Dict[Dict[List]] = {}
         self.hktm_related_products = []
-        self.hktm_chunk_size = hktm_chunk_size
 
     def get_consolidated_aps_documents(
         self, consolidated_id_list: List[str]
@@ -287,34 +285,6 @@ class AcquisitionPassStatusConsolidatorS5AndEDRS(AnomalyImpactMixinEngine, DataE
 
         return consolidated_document
 
-    def _generate_reports(self):
-        """Override to additionnaly report product attachement to container
-
-
-        Yields:
-            EngineReport: report
-        """
-        yield from super()._generate_reports()
-
-        # yield product reports to calculate completeness
-        if self.hktm_related_products:
-            self.logger.debug(
-                "Sending custom reports to %s of %s %s instances",
-                "update.hktm-acquisition",
-                len(
-                    self.hktm_related_products,
-                ),
-                "CdsEdrsAcquisitionPassStatus",
-            )
-
-            yield EngineReport(
-                "update.hktm-acquisition",
-                [document.meta.id for document in self.hktm_related_products],
-                "CdsEdrsAcquisitionPassStatus",
-                document_indices=self.get_index_names(self.hktm_related_products),
-                chunk_size=self.hktm_chunk_size,
-            )
-
 
 class S5AcquisitionPassStatusConsolidatorEngine(
     AcquisitionPassStatusConsolidatorS5AndEDRS
@@ -409,14 +379,11 @@ class EDRSAcquisitionPassStatusConsolidatorEngine(
         "S2B": ("FLGS", "BFLGS"),
     }
 
-    def __init__(
-        self, args=None, send_reports=False, chunk_size=128, hktm_chunk_size=None
-    ):
+    def __init__(self, args=None, send_reports=False, chunk_size=128):
         super().__init__(
             args,
             send_reports=send_reports,
             chunk_size=chunk_size,
-            hktm_chunk_size=hktm_chunk_size,
         )
         self.deduced_ground_station = {}
 

@@ -41,7 +41,6 @@ class AcquisitionPassStatusConsolidatorEngine(
         exclude_fields=None,
         send_reports=False,
         min_doi=None,
-        hktm_chunk_size: int = None,
     ):
         if exclude_fields is None:
             exclude_fields = [
@@ -58,10 +57,6 @@ class AcquisitionPassStatusConsolidatorEngine(
             send_reports=send_reports,
             min_doi=min_doi,
         )
-
-        self.hktm_related_products = []
-
-        self.hktm_chunk_size = hktm_chunk_size
 
     def action_iterator(self) -> Iterator[Dict[str, Any]]:
         """elastic search bulk actions generator"""
@@ -114,35 +109,6 @@ class AcquisitionPassStatusConsolidatorEngine(
 
         return document
 
-    def _generate_reports(self):
-        """Override to additionnaly report product attachement to container
-
-
-        Yields:
-            EngineReport: report
-        """
-
-        yield from super()._generate_reports()
-
-        # yield product reports to calculate completeness
-        if self.hktm_related_products:
-            self.logger.debug(
-                "Sending custom reports to %s of %s %s instances",
-                "update.hktm-acquisition",
-                len(
-                    self.hktm_related_products,
-                ),
-                "CdsCadipAcquisitionPassStatus",
-            )
-
-            yield EngineReport(
-                "update.hktm-acquisition",
-                [document.meta.id for document in self.hktm_related_products],
-                "CdsCadipAcquisitionPassStatus",
-                document_indices=self.get_index_names(self.hktm_related_products),
-                chunk_size=self.hktm_chunk_size,
-            )
-
 
 class XBandAcquisitionPassStatusConsolidatorEngine(
     AcquisitionPassStatusConsolidatorEngine
@@ -164,7 +130,6 @@ class XBandAcquisitionPassStatusConsolidatorEngine(
         exclude_fields=None,
         send_reports=False,
         min_doi=None,
-        hktm_chunk_size=None,
     ):
         super().__init__(
             args,
@@ -172,7 +137,6 @@ class XBandAcquisitionPassStatusConsolidatorEngine(
             exclude_fields=exclude_fields,
             send_reports=send_reports,
             min_doi=min_doi,
-            hktm_chunk_size=hktm_chunk_size,
         )
 
     def consolidate(
@@ -212,7 +176,6 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
         exclude_fields=None,
         send_reports=False,
         min_doi=None,
-        hktm_chunk_size=None,
     ):
         super().__init__(
             args,
@@ -220,7 +183,6 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
             exclude_fields=exclude_fields,
             send_reports=send_reports,
             min_doi=min_doi,
-            hktm_chunk_size=hktm_chunk_size,
         )
 
     @staticmethod
@@ -383,8 +345,6 @@ class XBandV2AcquisitionPassStatusConsolidatorEngine(
         if raw_document.publication_date < document.publication_date:
             self.logger.warning("Raw document is too old : %s ", raw_document)
             return None
-
-        self.hktm_related_products.append(document)
 
         # List of metrics from quality to aggregate (sum) across all channels
         quality_infos = raw_document.quality_infos
