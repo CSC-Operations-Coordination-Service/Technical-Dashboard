@@ -37,19 +37,17 @@ class CdsProductS1(CdsProduct):
                     seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS
                 )
 
-                ai_filters = (
-                    [
-                        Q("term", satellite_unit=self.satellite_unit),
-                        Q(
-                            "range",
-                            observation_time_start={"lte": start_date},
-                        ),
-                        Q(
-                            "range",
-                            observation_time_stop={"gte": end_date},
-                        ),
-                    ],
-                )
+                ai_filters = [
+                    Q("term", satellite_unit=self.satellite_unit),
+                    Q(
+                        "range",
+                        observation_time_start={"lte": start_date},
+                    ),
+                    Q(
+                        "range",
+                        observation_time_stop={"gte": end_date},
+                    ),
+                ]
 
                 if (
                     self.timeliness is not None
