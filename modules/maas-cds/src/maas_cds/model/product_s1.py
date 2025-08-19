@@ -30,7 +30,7 @@ class CdsProductS1(CdsProduct):
         if CdsDatatakeS1.is_product_type_without_datatake_id(self.product_type):
             if self.product_type == "AI_RAW__0_":
 
-                start_date = self.sensing_end_date + timedelta(
+                start_date = self.sensing_start_date + timedelta(
                     seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS
                 )
                 end_date = self.sensing_end_date - timedelta(
