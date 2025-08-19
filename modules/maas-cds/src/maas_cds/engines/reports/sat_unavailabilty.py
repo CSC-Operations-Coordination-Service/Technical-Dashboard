@@ -122,4 +122,16 @@ class SatUnavailabilityConsolidatorEngine(RawDataEngine):
         document.unavailability_reference = raw_document.unavailability_reference
         document.raw_data_ingestion_time = raw_document.ingestionTime
 
+        # Check if there is a SatUnavailabilityProduct with the same filename and subsystem 'PDHT'
+        if document.subsystem in ("OCP", "SAR") and document.mission == "S1":
+            number_of_pdht_in_file = (
+                model.SatUnavailabilityProduct.search()
+                .filter("term", file_name=document.file_name)
+                .filter("term", subsystem="PDHT")
+                .count()
+            )
+
+            if number_of_pdht_in_file > 0:
+                document.real_causal_anomaly = "PDHT"
+
         return document

@@ -427,9 +427,9 @@ class CdsDatatakeS1(CdsDatatake):
                 "bool",
                 filter=[
                     Q("term", satellite_unit=self.satellite_unit),
+                    Q("term", timeliness=self.timeliness),
                     Q("term", instrument_mode="AI"),
-                    Q("term", product_type=product_type),
-                    Q("term", absolute_orbit=self.absolute_orbit),
+                    Q("term", product_type="AI_RAW__0_"),
                     Q(
                         "range",
                         sensing_start_date={"gte": self.observation_time_start},

@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-07-18T16:09:55.311222+00:00
+Generated date: 2025-08-19T13:15:29.789598+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -2476,6 +2476,8 @@ class CdsSatUnavailability(MAASDocument):
 
     raw_data_ingestion_time = ZuluDate()
 
+    real_causal_anomaly = Keyword()
+
     satellite_unit = Keyword()
 
     start_anx_offset = Integer()
@@ -3542,6 +3544,8 @@ class PripProduct(MAASRawDocument):
     interface_name = Keyword()
 
     origin_date = ZuluDate()
+
+    packet_store_id = Keyword()
 
     product_group_id = Keyword()
 

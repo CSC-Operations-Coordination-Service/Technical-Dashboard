@@ -30,6 +30,9 @@
             "product_name": {
                 "type": "keyword"
             },
+            "packet_store_id": {
+                "type": "keyword"
+            },
             "content_length": {
                 "type": "long"
             },

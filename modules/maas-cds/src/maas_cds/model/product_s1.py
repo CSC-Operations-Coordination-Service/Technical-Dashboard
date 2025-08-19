@@ -3,6 +3,7 @@
 from datetime import timedelta
 import logging
 
+from maas_cds.lib.parsing_name import utils
 from maas_cds.model.product import CdsProduct, DynamicPartitionMixin
 from maas_cds.model.datatake_s1 import CdsDatatakeS1
 from opensearchpy import Q
@@ -29,33 +30,41 @@ class CdsProductS1(CdsProduct):
         if CdsDatatakeS1.is_product_type_without_datatake_id(self.product_type):
             if self.product_type == "AI_RAW__0_":
 
-                start_date = self.sensing_end_date + timedelta(
+                start_date = self.sensing_start_date + timedelta(
                     seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS
                 )
                 end_date = self.sensing_end_date - timedelta(
                     seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS
                 )
 
+                ai_filters = (
+                    [
+                        Q("term", satellite_unit=self.satellite_unit),
+                        Q(
+                            "range",
+                            observation_time_start={"lte": start_date},
+                        ),
+                        Q(
+                            "range",
+                            observation_time_stop={"gte": end_date},
+                        ),
+                    ],
+                )
+
+                if (
+                    self.timeliness is not None
+                    and self.timeliness != utils.TIMELINESS_NULL_VALUE
+                ):
+                    ai_filters.append(
+                        Q("term", timeliness=self.timeliness),
+                    )
+
                 search = (
                     CdsDatatakeS1.search()
-                    .filter(
-                        Q(
-                            "bool",
-                            filter=[
-                                Q("term", satellite_unit=self.satellite_unit),
-                                Q(
-                                    "range",
-                                    observation_time_start={"lte": start_date},
-                                ),
-                                Q(
-                                    "range",
-                                    observation_time_stop={"gte": end_date},
-                                ),
-                            ],
-                        )
-                    )
+                    .filter(Q("bool", filter=ai_filters))
                     .filter("term", instrument_mode="AIS")
                 )
+
             if "ERRMAT" in self.product_type:
                 start_date = self.sensing_end_date + timedelta(
                     seconds=CdsDatatakeS1.MATCHING_DELTA_PRODUCTS

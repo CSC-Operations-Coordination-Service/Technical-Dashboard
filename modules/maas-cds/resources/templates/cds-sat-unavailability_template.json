@@ -71,6 +71,9 @@
             },
             "unavailability_duration": {
                 "type": "long"
+            },
+            "real_causal_anomaly": {
+                "type": "keyword"
             }
         },
         "_meta": {
