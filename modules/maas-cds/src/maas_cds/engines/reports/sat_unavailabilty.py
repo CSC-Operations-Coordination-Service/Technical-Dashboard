@@ -123,7 +123,7 @@ class SatUnavailabilityConsolidatorEngine(RawDataEngine):
         document.raw_data_ingestion_time = raw_document.ingestionTime
 
         # Check if there is a SatUnavailabilityProduct with the same filename and subsystem 'PDHT'
-        if document.subsystem in ("OCP", "SAR"):
+        if document.subsystem in ("OCP", "SAR") and document.mission == "S1":
             number_of_pdht_in_file = (
                 model.SatUnavailabilityProduct.search()
                 .filter("term", file_name=document.file_name)
