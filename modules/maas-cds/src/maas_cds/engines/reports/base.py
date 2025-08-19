@@ -27,6 +27,8 @@ class BaseProductConsolidatorEngine(RawDataEngine):
 
     LEVEL_TYPE_MAPPING = None
 
+    PACKET_STORE_ID_MAPPING = {"43": "NRT-PT", "44": "NTC"}
+
     # a value in seconds to find the datatake of a product from sensing
     S2_DATATAKE_ATTACHEMENT_DELTA = 15
 
@@ -192,6 +194,14 @@ class BaseProductConsolidatorEngine(RawDataEngine):
         # Timeliness for S1 & S2 is deduced from datatake later in on_post_consolidate()
         if document.mission in ("S3", "S5"):
             document.timeliness = data_dict.get("timeliness", document.timeliness)
+
+        if (
+            document.product_type == "AI_RAW__0_"
+            and raw_document.packet_store_id in self.PACKET_STORE_ID_MAPPING
+        ):
+            document.timeliness = self.PACKET_STORE_ID_MAPPING[
+                raw_document.packet_store_id
+            ]
 
         # MAAS_CDS-526 set a value different of None so grafana can display it
         if document.timeliness is None:
