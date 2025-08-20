@@ -107,7 +107,18 @@ def test_no_end_update(s2_sat_unavailability_product):
 
     engine._existing = {"620f65f2818f1cfdd4e38e052f94e633": satu_product}
 
-    # Check that consolidating same product is skipped
+    # Check that consolidating same product is not skipped
+    satu_product = engine.consolidate_from_SatUnavailabilityProduct(
+        s2_sat_unavailability_product, model.CdsSatUnavailability()
+    )
+
+    assert satu_product is not None
+
+    # Check that old ingested product are skipped
+    satu_product.raw_data_ingestion_time = "2999-01-01T00:00:00.000Z"
+    satu_product.full_clean()
+    engine._existing = {"620f65f2818f1cfdd4e38e052f94e633": satu_product}
+
     satu_product = engine.consolidate_from_SatUnavailabilityProduct(
         s2_sat_unavailability_product, model.CdsSatUnavailability()
     )
@@ -191,13 +202,6 @@ def test_update(s2_sat_unavailability_product):
     }
 
     engine._existing = {"620f65f2818f1cfdd4e38e052f94e633": satu_product}
-    s2_sat_unavailability_product.end_time = "UTC=2022-09-12T19:25:44"
-
-    satu_product = engine.consolidate_from_SatUnavailabilityProduct(
-        s2_sat_unavailability_product, model.CdsSatUnavailability()
-    )
-
-    assert satu_product is None
 
     s2_sat_unavailability_product.end_time = "UTC=2022-09-12T19:25:44"
     s2_sat_unavailability_product.ingestionTime = "2023-09-05T16:10:47.970Z"
