@@ -84,7 +84,8 @@ class SatUnavailabilityConsolidatorEngine(RawDataEngine):
                 if isinstance(raw_document.ingestionTime, str)
                 else raw_document.ingestionTime
             )
-            is_update = ingestion_time > existing.raw_data_ingestion_time
+            # This to avoid impact of older report we keep the "=" to allow re treatment on update and message emition
+            is_update = ingestion_time >= existing.raw_data_ingestion_time
             if less_complete or (not more_complete and not is_update):
                 return None
 
