@@ -216,6 +216,8 @@ class ComputeHktmRelatedEngine(DataEngine):
         search_method = self.search_hktm_factory()
         msearch, valid_input_documents = search_method(self.input_documents)
 
+        self.logger("[%s] - Running engine", self.input_model)
+
         if valid_input_documents:
             # contained identifier to container instance as MultiSearch does not support
             # metadata like params(version=True, seq_no_primary_term=True)
