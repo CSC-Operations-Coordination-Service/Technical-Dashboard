@@ -154,6 +154,8 @@ class DataEngine(Engine):
         else:
             self.logger.debug("Won't load input documents: reuse from session")
 
+        self.input_model = self.get_input_model(payload)
+
         # store time info for performance logging
         self._stats = DataEngineStatistics(logger=self.logger)
 
