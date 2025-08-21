@@ -191,7 +191,6 @@ class ComputeHktmRelatedEngine(DataEngine):
         msearch = MultiSearch()
 
         valid_input_documents = []
-        session_id_meta = self.SESSION_ID_META[self.input_model.__name__]
 
         for raw_document in documents:
             # To improve : associated the product event the status is KO
