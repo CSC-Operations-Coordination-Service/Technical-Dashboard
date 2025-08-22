@@ -9,6 +9,9 @@ from maas_cds.engines.reports.sat_unavailabilty import (
     SatUnavailabilityConsolidatorEngine,
 )
 from maas_cds.engines.reports.consolidate_mp_file import ConsolidateMpFileEngine
+from maas_cds.engines.reports.post_consolidate_mp_file import (
+    PostConsolidateMpFileEngine,
+)
 
 from maas_cds.engines.reports.consolidate_hktm import HktmConsolidatorEngine
 
