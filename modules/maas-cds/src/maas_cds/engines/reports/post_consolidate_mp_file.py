@@ -102,6 +102,8 @@ class PostConsolidateMpFileEngine(
             # retrieve satelite id from report
             sat_id = local_report_name[0:3]
 
+            if sat_id != "S1C":
+                continue
             # Get the next reportName
             previous_repport_name = self.get_previous_report(sat_id, local_report_name)
 
