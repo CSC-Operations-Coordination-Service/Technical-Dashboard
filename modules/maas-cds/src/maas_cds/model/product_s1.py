@@ -95,7 +95,10 @@ class CdsProductS1(CdsProduct):
             datatake_doc = list(search.execute())
             if datatake_doc:
                 if len(datatake_doc) > 1:
-                    LOGGER.warning("Too much datatake for product %s", self.name)
+                    LOGGER.warning(
+                        "Too much datatake for product %s using the nearest one",
+                        self.name,
+                    )
 
                 datatake_doc.sort(
                     key=lambda d: (
