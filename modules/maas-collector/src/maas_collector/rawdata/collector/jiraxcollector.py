@@ -238,11 +238,10 @@ class JIRAExtendedCollector(FileCollector):
 
             # ingest tickets
             if payload_dict["issues"]:
-                page_id = int(round(start_at / len(issues))) + 1
 
                 filename = os.path.join(
                     self.args.working_directory,
-                    f"{filename_prefix}_{page_id}.json",
+                    f"{filename_prefix}.json",
                 )
 
                 self._healthcheck.tick()
@@ -268,7 +267,6 @@ class JIRAExtendedCollector(FileCollector):
 
             journal.tick()
 
-            start_at += len(issues)
         finally:
             # clean http session
             client.close()
