@@ -55,6 +55,7 @@ class ComputeDatatakeRelatedEngine(DataEngine):
                     document.timeliness = datatake.timeliness
 
                 document.absolute_orbit = datatake.absolute_orbit
+                document.relative_orbit = datatake.relative_orbit
 
                 document.instrument_mode = datatake.instrument_mode
 
