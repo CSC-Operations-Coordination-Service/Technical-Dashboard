@@ -185,8 +185,6 @@ class JIRAExtendedCollector(FileCollector):
 
         self.logger.info("Querying %s with request: %s", config.interface_name, jql_str)
 
-        start_at = total = 0
-
         filename_prefix = "_".join(
             (
                 config.interface_name,
@@ -197,105 +195,80 @@ class JIRAExtendedCollector(FileCollector):
         )
 
         try:
-            while start_at == 0 or start_at < total:
+
+            # a pseudo full payload to store raw issue json for later ingestion
+            # by json extractor (for backward compatibility and replay)
+            payload_dict = {"issues": []}
+
+            issues_attachments = []
+
+            last_date = None
+
+            issues = client.enhanced_search_issues(jql_str, maxResults=False)
+
+            # iterate other issues to populate tickets and attachements
+            for issue in issues:
                 if self.should_stop_loop:
                     break
+                self._healthcheck.tick()
+
+                issue_date = dateutil.parser.parse(issue.fields.updated)
+                # JQL does not support seconds in its date format
+                # 10 years people want it
+                # https://jira.atlassian.com/browse/JRASERVER-31250
+                # so additionnal check is required with the real issue date
+
+                # if journal.last_date and not issue_date > journal.last_date:
+                #     self.logger.debug(
+                #         "Skipping %s: too old (%s)", issue, issue.fields.updated
+                #     )
+                #     continue
+
+                if config.extractor:
+                    # conventional ticket ingestion if performed with JSON extractor
+                    # for backward compatibility
+                    payload_dict["issues"].append(issue.raw)
+
+                if config.ingest_attachements and issue.fields.attachment:
+                    self.logger.debug("Attachment found: %s", issue.fields.attachment)
+                    # ingest attachements
+                    issues_attachments.append((issue, issue.fields.attachment))
+
+                last_date = issue_date
+
+            # ingest tickets
+            if payload_dict["issues"]:
+                page_id = int(round(start_at / len(issues))) + 1
+
+                filename = os.path.join(
+                    self.args.working_directory,
+                    f"{filename_prefix}_{page_id}.json",
+                )
 
                 self._healthcheck.tick()
 
-                # a pseudo full payload to store raw issue json for later ingestion
-                # by json extractor (for backward compatibility and replay)
-                payload_dict = {"issues": []}
+                self.ingest_issues_payload(config, payload_dict, filename)
 
-                issues_attachments = []
+            # ingest attachments
+            for issue, attachments in issues_attachments:
+                if config.attachement_prefix:
+                    prefix = f"{issue.key}_"
 
-                last_date = None
+                else:
+                    prefix = ""
 
-                issues = client.search_issues(jql_str, startAt=start_at)
-
-                if issues.total == 0:
-                    self.logger.info("%s returned no new issue", jql_str)
-                    break
-
-                if total == 0:
-                    self.logger.info(
-                        "%s returned a total of %s issues", jql_str, issues.total
-                    )
-                    total = issues.total
-                elif total != issues.total:
-                    # prevent infinite loop when a ticket is deleted
-                    self.logger.warning(
-                        "total number of tickets changed during ingestion loop "
-                        "from %s to %s. "
-                        "Remaining tickets will be ingested at next loop.",
-                        total,
-                        issues.total,
-                    )
-                    break
-
-                # iterate other issues to populate tickets and attachements
-                for issue in issues:
+                for attachment in attachments:
                     self._healthcheck.tick()
+                    self.ingest_attachement(attachment, prefix)
 
-                    issue_date = dateutil.parser.parse(issue.fields.updated)
-                    # JQL does not support seconds in its date format
-                    # 10 years people want it
-                    # https://jira.atlassian.com/browse/JRASERVER-31250
-                    # so additionnal check is required with the real issue date
+            # save only at the end of the page cause of compatibility with
+            # json extractor
+            if last_date:
+                journal.last_date = last_date
 
-                    # if journal.last_date and not issue_date > journal.last_date:
-                    #     self.logger.debug(
-                    #         "Skipping %s: too old (%s)", issue, issue.fields.updated
-                    #     )
-                    #     continue
+            journal.tick()
 
-                    if config.extractor:
-                        # conventional ticket ingestion if performed with JSON extractor
-                        # for backward compatibility
-                        payload_dict["issues"].append(issue.raw)
-
-                    if config.ingest_attachements and issue.fields.attachment:
-                        self.logger.debug(
-                            "Attachment found: %s", issue.fields.attachment
-                        )
-                        # ingest attachements
-                        issues_attachments.append((issue, issue.fields.attachment))
-
-                    last_date = issue_date
-
-                # ingest tickets
-                if payload_dict["issues"]:
-                    page_id = int(round(start_at / len(issues))) + 1
-
-                    filename = os.path.join(
-                        self.args.working_directory,
-                        f"{filename_prefix}_{page_id}.json",
-                    )
-
-                    self._healthcheck.tick()
-
-                    self.ingest_issues_payload(config, payload_dict, filename)
-
-                # ingest attachments
-                for issue, attachments in issues_attachments:
-                    if config.attachement_prefix:
-                        prefix = f"{issue.key}_"
-
-                    else:
-                        prefix = ""
-
-                    for attachment in attachments:
-                        self._healthcheck.tick()
-                        self.ingest_attachement(attachment, prefix)
-
-                # save only at the end of the page cause of compatibility with
-                # json extractor
-                if last_date:
-                    journal.last_date = last_date
-
-                journal.tick()
-
-                start_at += len(issues)
+            start_at += len(issues)
         finally:
             # clean http session
             client.close()
