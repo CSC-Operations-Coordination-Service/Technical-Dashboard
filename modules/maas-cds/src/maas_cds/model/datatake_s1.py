@@ -27,7 +27,7 @@ class CdsDatatakeS1(CdsDatatake):
     EXCLUDES_PRODUCTED_TYPES = ["AMALFI_REPORT"]
 
     # Take care of this some datatake are near less than 3s
-    MATCHING_DELTA_PRODUCTS = 60
+    MATCHING_DELTA_PRODUCTS = 300
 
     MINIMUM_PERCENTAGE_OVERLAPPING_AREA = {
         "OCN": {"0": 20, "2024-06-06T13:20:00.000Z": 17},
