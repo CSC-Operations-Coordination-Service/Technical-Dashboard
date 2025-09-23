@@ -559,6 +559,20 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             .filter("term", product_type=product_type)
             .filter("terms", prip_service=completeness_service)
             .filter("exists", field="prip_id")
+            .filter(
+                "bool",
+                should=[
+                    {"bool": {"must_not": {"exists": {"field": "nb_dd_deleted"}}}},
+                    {"term": {"nb_dd_deleted": 0}},
+                ],
+            )
+            .filter(
+                "bool",
+                should=[
+                    {"bool": {"must_not": {"exists": {"field": "nb_lta_deleted"}}}},
+                    {"term": {"nb_lta_deleted": 0}},
+                ],
+            )
             .params(ignore=404, ignore_unavailable=True)
         )
 
