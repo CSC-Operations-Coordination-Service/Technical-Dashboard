@@ -68,6 +68,16 @@ def maas_engine_main(
     if namespace.config_directory:
         Engine.load_config_directory(namespace.config_directory)
 
+    namespace.es_url = engine_args.get_es_credentials_url(namespace)
+    logging.info("Setup connection to Database")
+    db_connections.create_connection(
+        hosts=[namespace.es_url],
+        retry_on_timeout=True,
+        max_retries=namespace.es_retries,
+        verify_certs=not namespace.es_ignore_certs_verification,
+        ssl_show_warn=not namespace.es_ignore_certs_verification,
+    )
+
     engine = Engine.get(engine_id, namespace)
 
     # ? TODO Need here to get default configuration if exist else run using only the engine id
@@ -101,16 +111,6 @@ def maas_engine_main(
     logging.info("Using maas-model %s", maas_model.__version__)
 
     # Add calculated arguments
-    namespace.es_url = engine_args.get_es_credentials_url(namespace)
-
-    logging.info("Setup connection to Database")
-    db_connections.create_connection(
-        hosts=[engine_args.get_es_credentials_url(namespace)],
-        retry_on_timeout=True,
-        max_retries=namespace.es_retries,
-        verify_certs=not namespace.es_ignore_certs_verification,
-        ssl_show_warn=not namespace.es_ignore_certs_verification,
-    )
 
     # namespace.amqp_url = engine_args.get_amqp_credentials_url(namespace)
 
