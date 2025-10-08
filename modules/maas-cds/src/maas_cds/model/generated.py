@@ -4,10 +4,11 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-08-19T13:15:29.789598+00:00
+Generated date: 2025-10-01T13:07:58.357222+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
+    - resources/templates/cds-anomaly-correlation_template.json
     - resources/templates/cds-cadip-acquisition-pass-status_template.json
     - resources/templates/cds-cams-tickets_template.json
     - resources/templates/cds-completeness_template.json
@@ -100,6 +101,7 @@ __all__ = [
     "CamsCloudTickets",
     "CamsTickets",
     "CdsAcquisitionPassStatus",
+    "CdsAnomalyCorrelation",
     "CdsCadipAcquisitionPassStatus",
     "CdsCadipAcquisitionPassStatusQualityInfos",
     "CdsCamsTickets",
@@ -975,6 +977,57 @@ class CdsAcquisitionPassStatus(MAASDocument):
     stop_delivery = ZuluDate()
 
     updateTime = ZuluDate()
+
+
+class CdsAnomalyCorrelation(MAASDocument):
+    """
+    Mapping class for index: cds-anomaly-correlation
+
+    Generated from: resources/templates/cds-anomaly-correlation_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-anomaly-correlation"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-anomaly-correlation")
+
+    created = ZuluDate()
+
+    description = Keyword()
+
+    impacted_observations = Keyword()
+
+    impacted_passes = Keyword()
+
+    issue = Keyword()
+
+    key = Keyword()
+
+    origin = Keyword()
+
+    products = Keyword()
+
+    satellite_unit = Keyword()
+
+    station = Keyword()
+
+    station_type = Keyword()
+
+    status = Keyword()
+
+    summary = Keyword()
+
+    ticket_id = Keyword()
+
+    title = Keyword()
+
+    updateTime = ZuluDate()
+
+    updated = ZuluDate()
 
 
 class CdsCadipAcquisitionPassStatusQualityInfos(InnerDoc):

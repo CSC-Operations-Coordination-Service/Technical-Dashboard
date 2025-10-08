@@ -1,8 +1,6 @@
 """Maintain cams anomalies impact over entities"""
 
-import datetime
-import re
-from typing import Any, Dict, List, Iterator
+from typing import Any, Dict, Iterator
 from collections import defaultdict
 
 from opensearchpy import NotFoundError, Keyword
@@ -11,14 +9,8 @@ from maas_model import MAASDocument
 
 from maas_engine.engine.rawdata import DataEngine
 
-from maas_cds.lib.parsing_name.utils import (
-    normalize_product_name_list,
-    generate_publication_names,
-)
 
 from maas_cds.model import (
-    CamsAnomalyCorrelation,
-    CamsCloudAnomalyCorrelation,
     CdsCamsTickets,
     CdsDatatakeS1,
     CdsDatatakeS2,
@@ -34,10 +26,10 @@ from maas_cds.model import (
 )
 
 
-class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
+class CorrelateAnomalyTicketEngine(DataEngine):
     """Consolidate anomaly correlation info to various entities"""
 
-    ENGINE_ID = "CONSOLIDATE_ANOMALY_CORRELATION_FILE"
+    ENGINE_ID = "CORRELATE_ANOMALY_TICKET"
 
     IMPACTED_CLASSES = (
         CdsDatatakeS1,
@@ -52,6 +44,10 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         CdsProduct,
         CdsPublication,
     )
+
+    # To ease the extendability of these we maybe need to
+    # add a custom Mixin to put the attachement strategy in different impactedclasses
+    # Other strategy can be to pre compile the query, but avoiding this splitted strategy over multiple dict
 
     # this dictionnary maps mission to document class and retrieval method: direct
     # document identifiers for S1 & S2, or search on the datatake_id field for S3 & S5
@@ -129,118 +125,75 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         ],
     }
 
-    INUVIK_STATION = "Inuvik Station"
-    NEUSTRELITZ_STATION = "Neustrelitz Station"
-    SVALBARD_STATION = "Svalbard Station"
-
     # pylint: enable=C0301
 
     PRODUCT_IMPACTED = (CdsProduct, CdsPublication)
 
-    # pylint: disable=R0913
-    # engine contructor shall have many arguments
-    def __init__(
-        self,
-        args=None,
-        send_reports=False,
-        max_datatakes=10000,
-        max_acquisitions=10000,
-        max_products=10000,
-        base_url="https://esa-cams.atlassian.net/browse/",
-    ):
-        super().__init__(args, send_reports=send_reports)
-        # max_* attribute are here to fill size parameter of search request
-        self.max_datatakes = max_datatakes
-        self.max_acquisitions = max_acquisitions
-        self.max_products = max_products
-
-        # base url for link rendering
-        self.base_url: str = base_url
-
-        # a flag to tell to update all entities because source or description changed
-        self.update_all_entities = False
-
     def action_iterator(self) -> Iterator[Dict[str, Any]]:
 
-        # setup specific settings depending input
-        match self.payload.document_class:
-            case "CamsAnomalyCorrelation":
-                consolidate_method = self.consolidate_cams_ticket
-                issue_attrname = "cams_issue"
-            case "CamsCloudAnomalyCorrelation":
-                consolidate_method = self.consolidate_cams_cloud_ticket
-                issue_attrname = "issue"
-            case _:
-                raise TypeError(
-                    "Cannot correlate objects of type %s", self.payload.document_class
-                )
-
+        self.logger.debug("START ACTION ITERATR")
+        # Retrieve all ticket impact by the AN
+        ticket_with_an_payloads = {}
         for report in self.input_documents:
-            ticket_id = getattr(report, issue_attrname, "")
+            ticket_id = report.ticket_id
+            if ticket_id not in ticket_with_an_payloads:
+                ticket_with_an_payloads[ticket_id] = []
+            ticket_with_an_payloads[ticket_id].append(report)
 
-            if not ticket_id:
-                # Try to guess the ticket_id from the title
-                if match := re.search(r"GSANOM-\d+", report.title):
-                    ticket_id = match.group(0)
-                else:
-                    self.logger.warning(
-                        "No related ticket found for Anomaly Correlation %s",
-                        report.reportName,
-                    )
-                    continue
+        # Next get the tickets to avoid duplicated impact and centralize information
+        self.logger.debug(
+            "Load %s tickets",
+            len(ticket_with_an_payloads.keys()),
+        )
 
-            ticket_id = ticket_id.strip()
-            ticket = self.get_ticket(ticket_id)
+        tickets = CdsCamsTickets.mget_by_ids(list(ticket_with_an_payloads.keys()))
+
+        for ticket, ticket_id in zip(tickets, ticket_with_an_payloads.keys()):
+
+            if ticket is None:
+                self.logger.warning(
+                    "[%s] - Can't find ticket for the following %s",
+                    ticket_id,
+                    ticket_with_an_payloads[ticket_id],
+                )
+                continue
 
             self.logger.info(
-                "Consolidating file %s for ticket %s",
-                report.reportName,
-                ticket.key,
+                "Consolidating file %s for updated anomalies %s",
+                ticket_id,
+                ticket_with_an_payloads[ticket_id],
             )
 
-            initial_ticket_dict = ticket.to_dict()
+            for an_payload in ticket_with_an_payloads[ticket_id]:
+                # Field to aggregate
+                fields_to_merge = [
+                    "products",
+                    "publications",
+                    "datatake_ids",
+                    "acquisition_pass",
+                ]
 
-            # first, consolidate cams ticket
-            consolidate_method(report, ticket)
+                for field in fields_to_merge:
 
-            if not ticket.to_dict() != initial_ticket_dict:
-                self.logger.info(
-                    "No modification for correlation %s", ticket.correlation_file_id
-                )
-                return
+                    # Merge and avoid duplicates
+                    setattr(
+                        ticket,
+                        field,
+                        list(
+                            set(
+                                list(getattr(ticket, field, []) or [])
+                                + list(getattr(an_payload, field, []) or [])
+                            )
+                        ),
+                    )
 
-            yield ticket.to_bulk_action()
+                # Correlate ticket from report (keep origin and description of the latest ingested)
+                ticket.origin = an_payload.origin
+                ticket.description = an_payload.description
 
             yield from self.correlate_ticket(ticket)
 
-    def get_ticket(self, ticket_id: str | Keyword) -> CdsCamsTickets:
-        """
-        Get or create a CdsCamsTickets
-
-        Args:
-            ticket_id (str): ticket identifier
-
-        Returns:
-            CdsCamsTickets: initialized ticket
-        """
-        ticket = CdsCamsTickets.get_by_id(ticket_id)
-
-        if not ticket:
-            self.logger.warning(
-                "Creating CamsTickets %s. "
-                "In normal flow, the ticket shall be created before correlation !",
-                ticket_id,
-            )
-            ticket = CdsCamsTickets()
-            ticket.meta.id = ticket.key = ticket_id
-
-            # fill the created field a value for partitionning, even if static
-            ticket.created = datetime.datetime.now(tz=datetime.UTC)
-            ticket.updated = datetime.datetime.now(tz=datetime.UTC)
-        else:
-            self.logger.debug("Search result for %s: %s", ticket_id, ticket)
-
-        return ticket
+            yield ticket.to_bulk_action()
 
     def correlate_ticket(self, ticket: CdsCamsTickets) -> Iterator[Dict[str, Any]]:
         """Correlate all entities described in the ticket
@@ -257,7 +210,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         for correlate_method, identifiers in [
             (self.correlate_datatakes, ticket.datatake_ids),
             (self.correlate_acquisitions, ticket.acquisition_pass),
-            (self.correlate_products, normalize_product_name_list(ticket.products)),
+            (self.correlate_products, ticket.products),
         ]:
             self.logger.debug(
                 "Calling %s with args: ids=%s, linked_documents=%s",
@@ -267,184 +220,6 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
             )
 
             yield from correlate_method(ticket, linked_documents)
-
-    def fill_common_attributes(
-        self,
-        report: CamsAnomalyCorrelation | CamsCloudAnomalyCorrelation,
-        ticket: CdsCamsTickets,
-    ):
-        """
-        Consolidate basic attribute and detect origin or description changes to plan
-        attribute updates on impacted entities
-
-        Args:
-            report (CamsAnomalyCorrelation | CamsCloudAnomalyCorrelation): input
-            ticket (CdsCamsTickets): output
-        """
-        # consolidate attributes
-        ticket.correlation_file_id = report.meta.id
-
-        for attrname, value in (
-            ("origin", report.origin),
-            ("description", report.description),
-        ):
-            if getattr(ticket, attrname) != value:
-                setattr(ticket, attrname, value)
-                # propagated attribute changed: all impacted entities shall be updated
-                self.update_all_entities = True
-
-        ticket.url = self.base_url + ticket.meta.id
-
-        ticket.products = normalize_product_name_list(report.products)
-
-        # Depending on the sources, publications will have different file extensions
-        # we generate all possible combinations to be able to correlate anomalies with them later
-
-        ticket.publications = [
-            publication_name
-            for product_name in ticket.products
-            for publication_name in generate_publication_names(product_name)
-        ]
-
-    def consolidate_cams_cloud_ticket(
-        self, report: CamsCloudAnomalyCorrelation, ticket: CdsCamsTickets
-    ):
-        """Consolidate ticket with report informations
-
-        Args:
-            report (CamsCloudAnomalyCorrelation): anam
-            ticket (CdsCamsTickets): _description_
-        """
-        self.fill_common_attributes(report, ticket)
-
-        if (
-            "DLR Acquisition Service" == ticket.entity
-            and not self.NEUSTRELITZ_STATION in ticket.assigned_element
-        ):
-            ticket.assigned_element.append(self.NEUSTRELITZ_STATION)
-
-        if (
-            "SSC Acquisition Service" == ticket.entity
-            and not self.INUVIK_STATION in ticket.assigned_element
-        ):
-            ticket.assigned_element.append(self.INUVIK_STATION)
-
-        if isinstance(ticket.affected_systems, str):
-            ticket.affected_systems = [ticket.affected_systems]
-
-        if "S-5p" in ticket.affected_systems:
-            if (
-                "INU" in ticket.title
-                and self.INUVIK_STATION not in ticket.assigned_element
-            ):
-                ticket.assigned_element.append(self.INUVIK_STATION)
-            if (
-                "SGS" in ticket.title
-                and self.SVALBARD_STATION not in ticket.assigned_element
-            ):
-                ticket.assigned_element.append(self.SVALBARD_STATION)
-
-        # consolidate report informations
-        ticket.datatake_ids = report.impacted_observations
-
-        if report.impacted_passes:
-            acquisition_pass_keys = []
-            if not report.station or not report.station_type:
-                self.logger.warning(
-                    "No station or station type provided in anomaly report %s",
-                    report.key,
-                )
-                ticket.acquisition_pass = []
-
-                return
-            # Whitelsit station
-            edrs_station = ["HDGS", "RDGS", "BFLGS", "FLGS"]
-            gs_station = ["SGS", "MTI", "INS", "NSG", "MPS", "KSE", "PAR"]
-            allowed_station = edrs_station + gs_station
-
-            impacted_stations = [st for st in allowed_station if st in report.station]
-
-            # Impacted pass must contains satellite like S1A-orbit
-            for impacted_passe in report.impacted_passes:
-                try:
-                    (satellite, orbit) = impacted_passe.split("-")
-                except ValueError as _not_enough_values_to_unpack:
-                    self.logger.warning(
-                        "Wrong format of passes type provided in anomaly report %s - %s | expected SXX-orbit",
-                        report.key,
-                        impacted_passe,
-                    )
-                    continue
-
-                for station in impacted_stations:
-                    acquisition_pass_keys.append(
-                        "_".join([satellite, report.station_type, orbit, station])
-                    )
-
-            # Since the 21/06/2024 we supporte only orbit that are prefix by satellite unit to avoid collision in the futur
-            # Keep it to be retroactive
-            if report.created < datetime.datetime(2024, 7, 1, tzinfo=datetime.UTC):
-                satellite_list = report.sattelite_unit
-                if isinstance(report.sattelite_unit, str):
-                    satellite_list = [report.sattelite_unit]
-                for satellite in satellite_list:
-                    for impacted_passe in report.impacted_passes:
-                        acquisition_pass_keys.append(
-                            "_".join(
-                                [
-                                    satellite,
-                                    report.station_type,
-                                    impacted_passe,
-                                    report.station,
-                                ]
-                            )
-                        )
-
-            # remove duplicated
-            ticket.acquisition_pass = list(dict.fromkeys(acquisition_pass_keys).keys())
-
-        else:
-            ticket.acquisition_pass = []
-
-    def consolidate_cams_ticket(self, report: CamsAnomalyCorrelation, ticket):
-        """Consolidate correlation info to the matching CdsCamsTickets.
-
-        Args:
-            report (CamsAnomalyCorrelation): data to consolidate
-
-        Yields:
-            Iterator[Dict]: bulk action
-        """
-
-        self.fill_common_attributes(report, ticket)
-
-        # consolidate report informations
-        ticket.datatake_ids = report.datatake_ids
-
-        if report.acquisition_pass:
-            acquisition_pass_keys = []
-
-            for satellite, acq_type, orbit, station in report.acquisition_pass:
-                if not all((satellite, acq_type, orbit, station)):
-                    self.logger.warning(
-                        "Imcompleted pass data: %s",
-                        (satellite, acq_type, orbit, station),
-                    )
-                    continue
-
-                if not isinstance(orbit, str) and isinstance(orbit, float):
-                    orbit = str(int(orbit))
-
-                # create a key for further search as opensearchpy does not allow to search
-                # for array in array field
-                acquisition_pass_keys.append(
-                    "_".join([satellite, acq_type, orbit, station])
-                )
-            # remove duplicated
-            ticket.acquisition_pass = list(dict.fromkeys(acquisition_pass_keys).keys())
-
-        else:
-            ticket.acquisition_pass = []
 
     def get_linked_documents(self, ticket_id: str | Keyword) -> dict:
         """Search all impacted entities that are linked to a ticket
@@ -465,9 +240,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 documents = (
                     document_class.search()
                     .query("term", cams_tickets=ticket_id)
-                    .params(
-                        version=True, seq_no_primary_term=True, size=self.max_datatakes
-                    )
+                    .params(version=True, seq_no_primary_term=True, size=10000)
                     .execute()
                 )
 
@@ -546,10 +319,8 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
         else:
             target_ids = set()
 
-        if self.update_all_entities:
-            to_link_ids = target_ids
-        else:
-            to_link_ids = target_ids - existing_ids
+        # systematic update
+        to_link_ids = target_ids
 
         to_unlink_ids = existing_ids - target_ids
 
@@ -666,7 +437,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                 results = search.params(
                     version=True,
                     seq_no_primary_term=True,
-                    size=self.max_datatakes,
+                    size=10000,
                 ).execute()
 
                 correlate_arg = list(results)
@@ -731,7 +502,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                     results = search.params(
                         version=True,
                         seq_no_primary_term=True,
-                        size=self.max_acquisitions,
+                        size=10000,
                     ).execute()
 
                     if not results:
@@ -797,7 +568,7 @@ class ConsolidateAnomalyCorrelationFileEngine(DataEngine):
                     .params(
                         version=True,
                         seq_no_primary_term=True,
-                        size=self.max_products,
+                        size=10000,
                     )
                     .execute()
                 )

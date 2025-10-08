@@ -211,6 +211,8 @@ class CdsS3Completeness(AnomalyMixin, generated.CdsS3Completeness):
     COMPLETENESS_TOLERANCE = {}
 
     cams_tickets = Keyword(multi=True)
+    cams_origin = Keyword(multi=True)
+    cams_descriptions = Keyword(multi=True)
 
     def compute_values(self):
         """Retrieve implied products to compute completeness"""
@@ -250,7 +252,7 @@ class CdsS3Completeness(AnomalyMixin, generated.CdsS3Completeness):
         # for product in query_scan:
         #     implied_documents.append(Period(product.sensing_start_date, product.sensing_end_date))
         #     getattr(self, "products_list").append(product.name)
-
+        # TODO Dangerous memory abuse
         implied_documents = [
             Period(product.sensing_start_date, product.sensing_end_date)
             for product in query_scan

@@ -1,0 +1,70 @@
+{
+    "index_patterns": [
+        "cds-anomaly-correlation*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "updateTime": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "key": {
+                "type": "keyword"
+            },
+            "title": {
+                "type": "keyword"
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "created": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "updated": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "issue": {
+                "type": "keyword"
+            },
+            "summary": {
+                "type": "keyword"
+            },
+            "description": {
+                "type": "keyword"
+            },
+            "station_type": {
+                "type": "keyword"
+            },
+            "station": {
+                "type": "keyword"
+            },
+            "ticket_id": {
+                "type": "keyword"
+            },
+            "impacted_passes": {
+                "type": "keyword"
+            },
+            "impacted_observations": {
+                "type": "keyword"
+            },
+            "origin": {
+                "type": "keyword"
+            },
+            "satellite_unit": {
+                "type": "keyword"
+            },
+            "products": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {}
+    }
+}

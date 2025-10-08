@@ -26,9 +26,12 @@ from maas_cds.engines.reports.interface_status import InterfaceStatusConsolidato
 from maas_cds.engines.reports.ddp_data_available import (
     DdpDataAvailableConsolidatorEngine,
 )
-from maas_cds.engines.reports.anomaly_correlation_file import (
-    ConsolidateAnomalyCorrelationFileEngine,
+
+# Ticket / Anomaly Stuff
+from maas_cds.engines.reports.cams_anomaly_correlation import (
+    AnomalyCorrelationConsolidatorEngine,
 )
+from maas_cds.engines.reports.cams_ticket import CamsTicketConsolidatorEngine
 
 
 from maas_cds.engines.reports.acquisition_pass_status import (
