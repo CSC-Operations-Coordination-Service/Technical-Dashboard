@@ -29,3 +29,7 @@ from maas_cds.engines.compute.correlate_acquisitions import (
 from maas_cds.engines.compute.compute_completeness_v2 import (
     ComputeCompletenessEngineV2,
 )
+
+from maas_cds.engines.compute.anomaly_correlation_ticket import (
+    CorrelateAnomalyTicketEngine,
+)
