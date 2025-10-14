@@ -39,6 +39,11 @@ class GeoMaskUtils:
                 "2025-05-07T10:00:00.000Z": "EW_SLC_area_v2.geojson",
             }
         },
+        "S1D": {
+            "SLC": {
+                "0": "world.geojson",
+            }
+        },
     }
 
     COVERING_AREA_FIELD = "_coverage_percentage"
