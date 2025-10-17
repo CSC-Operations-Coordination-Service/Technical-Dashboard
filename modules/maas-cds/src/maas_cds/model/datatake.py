@@ -95,10 +95,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 "0": ["PRIP_S1C_Serco", "PRIP_S1C_Werum"],
                 "2025-02-17T11:00:00.000Z": ["PRIP_S1C_Werum"],
             },
-            # Coming sooon
-            # "S1D": {
-            #     "0": ["PRIP_S1D_XXX"],
-            # },
+            "S1D": {
+                "0": ["PRIP_S1C_Serco"],
+            },
             "S2A": {
                 "0": ["S2-legacy"],
                 "2022-04-01T00:00:00.000Z": ["PRIP_S2A_ATOS"],
