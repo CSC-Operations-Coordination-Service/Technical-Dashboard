@@ -507,6 +507,83 @@ def product_gr_with_overlap():
         yield product
 
 
+product_datatake_gr_overlaps_dict_v2 = [
+    {
+        "absolute_orbit": "36249",
+        "datatake_id": "36249-4",
+        "key": "a92e445bc0f2cd276e839792984fff60",
+        "instrument_mode": "NOBS",
+        "mission": "S2",
+        "name": "S2A_OPER_MSI_L1B_GR_ATOS_20220601T011327_S20220601T000444_D12_N04.00.tar",
+        "product_level": "L1B",
+        "product_type": "MSI_L1B_GR",
+        "satellite_unit": "S2A",
+        "site_center": "ATOS",
+        "sensing_start_date": "2022-06-01T00:04:44.000Z",
+        "sensing_end_date": "2022-06-01T00:04:44.000Z",
+        "sensing_duration": 0,
+        "timeliness": "NOMINAL",
+        "detector_id": "12",
+        "prip_id": "af928b8d-5d49-406f-b5ba-81ac4a60d90c",
+        "prip_publication_date": "2022-06-01T02:04:44.714Z",
+        "prip_service": "PRIP_S2A_ATOS",
+        "updateTime": "2022-06-01T02:27:15.581Z",
+        "datastrip_id": "a",
+    },
+    {
+        "absolute_orbit": "36249",
+        "datatake_id": "36249-4",
+        "key": "a92e445bc0f2cd276e839792984fff60",
+        "instrument_mode": "NOBS",
+        "mission": "S2",
+        "name": "S2A_OPER_MSI_L1B_GR_ATOS_20220601T011327_S20220601T000444_D12_N04.00.tar",
+        "product_level": "L1B",
+        "product_type": "MSI_L1B_GR",
+        "satellite_unit": "S2A",
+        "site_center": "ATOS",
+        "sensing_start_date": "2022-06-01T00:04:45.000Z",
+        "sensing_end_date": "2022-06-01T00:04:45.000Z",
+        "sensing_duration": 0,
+        "timeliness": "NOMINAL",
+        "detector_id": "12",
+        "prip_id": "af928b8d-5d49-406f-b5ba-81ac4a60d90c",
+        "prip_publication_date": "2022-06-01T02:04:44.714Z",
+        "prip_service": "PRIP_S2A_ATOS",
+        "updateTime": "2022-06-01T02:27:15.581Z",
+        "datastrip_id": "a",
+    },
+    {
+        "absolute_orbit": "36249",
+        "datatake_id": "36249-4",
+        "key": "a92e445bc0f2cd276e839792984fff60",
+        "instrument_mode": "NOBS",
+        "mission": "S2",
+        "name": "S2A_OPER_MSI_L1B_GR_ATOS_20220601T011327_S20220601T000444_D12_N04.00.tar",
+        "product_level": "L1B",
+        "product_type": "MSI_L1B_GR",
+        "satellite_unit": "S2A",
+        "site_center": "ATOS",
+        "sensing_start_date": "2022-06-01T00:04:44.999Z",
+        "sensing_end_date": "2022-06-01T00:04:44.999Z",
+        "sensing_duration": 0,
+        "timeliness": "NOMINAL",
+        "detector_id": "12",
+        "prip_id": "af928b8d-5d49-406f-b5ba-81ac4a60d90c",
+        "prip_publication_date": "2022-06-01T02:04:44.714Z",
+        "prip_service": "PRIP_S2A_ATOS",
+        "updateTime": "2022-06-01T02:27:15.581Z",
+        "datastrip_id": "b",
+    },
+]
+
+
+def product_gr_with_overlap_v2():
+    for dict_product in product_datatake_gr_overlaps_dict_v2:
+        product = CdsProductS2(**dict_product)
+        product.full_clean()
+        yield product
+
+
 @patch(
     "maas_cds.model.datatake_s2.CdsDatatakeS2.find_brother_products_scan",
     return_value=product_gr_with_overlap(),
@@ -532,6 +609,33 @@ def test_compute_overlap_gr(mock_find_brother_products_scan):
     datatake.full_clean()
 
     assert len(datatake.get_product_compute_brother("GR")) == 2
+
+
+@patch(
+    "maas_cds.model.datatake_s2.CdsDatatakeS2.find_brother_products_scan",
+    return_value=product_gr_with_overlap_v2(),
+)
+def test_compute_overlap_gr_v2(mock_find_brother_products_scan):
+    """test that check if granule overlaps are resolved using tolerance on sensing_start_time and different datastrip_id"""
+    datatake_s2_gr_overlap_dict = {
+        "name": "S2B_MP_ACQ__MTL_20220331T120000_20220418T150000.csv",
+        "key": "S2B-26586-2",
+        "datatake_id": "36249-4",
+        "satellite_unit": "S2B",
+        "mission": "S2",
+        "observation_time_start": "2022-06-01T00:04:44.000Z",
+        "observation_duration": 64944000,
+        "observation_time_stop": "2022-06-01T00:04:45.000Z",
+        "number_of_scenes": 18,
+        "absolute_orbit": "26586",
+        "relative_orbit": "105",
+        "timeliness": "NOMINAL",
+        "instrument_mode": "NOBS",
+    }
+    datatake = CdsDatatakeS2(**datatake_s2_gr_overlap_dict)
+    datatake.full_clean()
+
+    assert len(datatake.get_product_compute_brother("GR")) == 3
 
 
 @patch("maas_cds.model.datatake_s2.CdsDatatakeS2.search_expected_tiles")
