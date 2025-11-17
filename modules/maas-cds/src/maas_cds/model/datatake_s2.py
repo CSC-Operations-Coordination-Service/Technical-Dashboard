@@ -427,24 +427,27 @@ class CdsDatatakeS2(CdsDatatake):
             intermediary_buffer = {}
             for product in products_scan:
                 if product.sensing_start_date and product.detector_id:
-                    if product.detector_id not in intermediary_buffer:
-                        intermediary_buffer[product.detector_id] = []
+                    key = (product.detector_id, product.datastrip_id)
+                    if key not in intermediary_buffer:
+                        intermediary_buffer[key] = []
 
-                    # Group Sensing per detector id
-                    intermediary_buffer[product.detector_id].append(
-                        product.sensing_start_date
-                    )
+                    # Group Sensing per detector id and datastrip_id
+                    intermediary_buffer[key].append(product.sensing_start_date)
                 else:
                     LOGGER.warning(
-                        "[%s][%s] - Failed to add it in document brothers [ %s, %s]",
+                        "[%s][%s] - Failed to add it in document brothers [ %s, %s, %s]",
                         self.datatake_id,
                         product.key,
                         product.sensing_start_date,
                         product.detector_id,
+                        product.datastrip_id,
                     )
 
-            # Group by detector id and ± tolerance on sensing_start_date
-            for detector_id, sensing_start_date_list in intermediary_buffer.items():
+            # Group by detector id, datastrip_id and ± tolerance on sensing_start_date
+            for (
+                detector_id,
+                datastrip_id,
+            ), sensing_start_date_list in intermediary_buffer.items():
                 ordered_sensing = sorted(sensing_start_date_list)
                 prev = None
                 for product_date in ordered_sensing:
@@ -454,9 +457,10 @@ class CdsDatatakeS2(CdsDatatake):
                         <= self.TOLERENCE_SENSING_START_GRANULE
                     ):
                         LOGGER.warning(
-                            "[%s] - Potential duplicate GR for datatake detector_id %s sensing %s",
+                            "[%s] - Potential duplicate GR for datatake detector_id %s datastrip_id %s sensing %s",
                             self.datatake_id,
                             detector_id,
+                            datastrip_id,
                             product_date,
                         )
 
@@ -466,6 +470,7 @@ class CdsDatatakeS2(CdsDatatake):
                             (
                                 product_date,
                                 detector_id,
+                                datastrip_id,
                             )
                         )
 
