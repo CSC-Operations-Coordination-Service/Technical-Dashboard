@@ -45,13 +45,13 @@ def find_datatake_from_product_group_id(
         .filter(
             "range",
             observation_time_start={
-                "lte": product_id_data["date"] + datetime.timedelta(seconds=15)
+                "lte": product_id_data["date"] + datetime.timedelta(seconds=20)
             },
         )
         .filter(
             "range",
             observation_time_stop={
-                "gte": product_id_data["date"] - datetime.timedelta(seconds=15)
+                "gte": product_id_data["date"] - datetime.timedelta(seconds=20)
             },
         )
         .params(ignore=404)
