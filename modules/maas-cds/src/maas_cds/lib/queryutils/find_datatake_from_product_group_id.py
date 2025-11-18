@@ -37,11 +37,12 @@ def find_datatake_from_product_group_id(
         return []
 
     # nominal use for search datake with product date information expected one datatake only
+
     search_request = (
         CdsDatatake.search()
         .filter("term", mission=mission)
         .filter("term", satellite_unit=satellite)
-        .filter("term", absolut_orbit=product_id_data["absolute_orbit"])
+        .filter("term", absolute_orbit=product_id_data["absolute_orbit"])
         .filter(
             "range",
             observation_time_start={
@@ -86,13 +87,13 @@ def extract_data_from_product_id(
     """
     try:
         # Expecting the following format GS2A_20240207T101201_045064_N05.10"
-        sat_unit, date_str, absolut_orbit, instrument = product_group_id.split("_")
+        sat_unit, date_str, absolute_orbit, instrument = product_group_id.split("_")
 
         # Remove G prefix in front of sat unit
         sat_unit = sat_unit[1:]
 
         # Remove trailing 0
-        absolut_orbit = str(int(absolut_orbit))
+        absolute_orbit = str(int(absolute_orbit))
 
         product_id_date = datetime.datetime.strptime(date_str, r"%Y%m%dT%H%M%S")
 
@@ -104,6 +105,6 @@ def extract_data_from_product_id(
         return {
             "satellite_unit": sat_unit,
             "date": product_id_date,
-            "absolute_orbit": absolut_orbit,
+            "absolute_orbit": absolute_orbit,
             "instrument": instrument,
         }

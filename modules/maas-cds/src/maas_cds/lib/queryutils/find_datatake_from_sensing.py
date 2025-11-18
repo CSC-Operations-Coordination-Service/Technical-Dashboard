@@ -12,7 +12,7 @@ __all__ = ["find_datatake_from_sensing"]
 LOGGER = logging.getLogger("QueryUtils")
 
 
-def find_datatake_from_sensing(mission, satellite, start_date, end_date, delta=15):
+def find_datatake_from_sensing(mission, satellite, start_date, end_date, delta=20):
     """find datatake_doc function from sensing date
 
     Args:
