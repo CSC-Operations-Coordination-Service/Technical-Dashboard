@@ -141,7 +141,6 @@ class CdsDatatakeS1(CdsDatatake):
 
         if related_documents is not None:
             related_documents.extend(brother_of_datatake_documents)
-
         return value
 
     def add_prefix_instrument(self, product_type):
@@ -315,7 +314,7 @@ class CdsDatatakeS1(CdsDatatake):
 
         # specific
         if product_type == "RF_RAW__0S":
-            if self.satellite_unit == "S1C":
+            if self.satellite_unit in ("S1C", "S1D"):
                 sensing_value = 2690000
             else:
                 sensing_value = 2800000
