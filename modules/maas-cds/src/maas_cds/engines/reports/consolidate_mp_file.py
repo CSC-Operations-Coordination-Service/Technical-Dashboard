@@ -935,7 +935,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         Returns:
             cds_hktm_production_completeness: the consolidated CdsHktmProductionCompleteness
         """
-
+        # S2
         if mp_hktm_downlink.downlink_mode not in ["DOWNLINK_HKTM_SAD", "DOWNLINK_HKTM"]:
             return
 
@@ -945,7 +945,9 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         raw_document_application_date = datestr_to_utc_datetime(
             mp_hktm_downlink.reportName[16:31]
         )
-        cds_hktm_production_completeness.ingestionTime = datetime.now(tz=UTC)
+        cds_hktm_production_completeness.ingestionTime = datetime.now(
+            tz=UTC
+        )  # Not the place
 
         cds_hktm_production_completeness.reportName = mp_hktm_downlink.reportName
         cds_hktm_production_completeness.satellite_unit = mp_hktm_downlink.satellite_id
@@ -979,11 +981,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             raw_document_application_date
         )
 
-        count = cds_hktm_production_completeness.count_produced_hktm(
-            self.tolerance_value
-        )
-
-        cds_hktm_production_completeness.completeness = 1 if count > 0 else 0
+        cds_hktm_production_completeness.evaluated_produced_hktm(self.tolerance_value)
 
         return cds_hktm_production_completeness
 
@@ -1036,11 +1034,7 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             raw_document_application_date
         )
 
-        count = cds_hktm_production_completeness.count_produced_hktm(
-            self.tolerance_value
-        )
-
-        cds_hktm_production_completeness.completeness = 1 if count > 0 else 0
+        cds_hktm_production_completeness.evaluated_produced_hktm(self.tolerance_value)
 
         return cds_hktm_production_completeness
 
@@ -1083,79 +1077,6 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
             count = len(filtered_orbits)
 
         return count
-
-    # def _base_report_strategy(self):
-    #     """Base reprot strategy method to allow custom call of _generate_report_from_action_per_documents
-
-    #     Note: This method must be remove in the futur and allow some custom method using the super()._generate_reports()
-    #     """
-
-    #     for classname, es_result_dict in self._report_data.items():
-    #         for es_result, all_documents in es_result_dict.items():
-    #             # group documents
-    #             action_documents = {}
-
-    #             for document in all_documents:
-    #                 action = self.get_report_action(es_result, document)
-
-    #                 if not action:
-    #                     # won't send report
-    #                     continue
-
-    #                 if action not in action_documents:
-    #                     action_documents[action] = [document]
-    #                 else:
-    #                     action_documents[action].append(document)
-
-    #             for action, documents in action_documents.items():
-    #                 yield from self._generate_report_from_action_per_documents(
-    #                     classname, action, documents
-    #                 )
-
-    # def _generate_reports(self):
-    #     """Override to create multiple reports
-
-    #     Note: Usage are mainly for products and publication
-
-    #     Yields:
-    #         EngineReport: report
-    #     """
-
-    #     for report in self._base_report_strategy():
-
-    #         if self.
-
-    #         # TODO Arfff if in need report byt not this option how can i do ??
-    #         if report.action.startswith("delete."):
-    #             self.logger.debug("Delete actions are not reported  : %s", report)
-    #             continue
-
-    #         # create a set of past or present identifiers
-    #         non_future_ids = set(report.data_ids) - self.future_ids
-
-    #         if non_future_ids and self.extra_routing_key_suffixes:
-
-    #             for extra_routing_key in extra_routing_key_suffixes:
-
-    #                 # Action
-    #                 new_report_action = f"{report.action}-{extra_routing_key}",
-
-    #                 self.logger.debug(
-    #                     "Create reports for past entities: %s - %", non_future_ids
-    #                 )
-    #                 yield EngineReport(
-    #                     new_report_action,
-    #                     list(non_future_ids),
-    #                     report.document_class,
-    #                     document_indices=report.document_indices,
-    #                     chunk_size=self.chunk_size,
-    #                 )
-
-    #         else:
-    #             self.logger.debug("All entities start in future time.")
-
-    #         # report anyway so expected can be initialized for future entities
-    #         yield report
 
     def _generate_report_from_action_per_documents(self, classname, action, documents):
         """Override default strategy to make report"""
