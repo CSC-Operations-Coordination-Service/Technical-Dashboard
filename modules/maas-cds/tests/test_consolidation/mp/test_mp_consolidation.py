@@ -927,7 +927,7 @@ def test_consolidate_cds_hktm_production_completeness_from_mphktmdownlink(
 
     mock_search.return_value = CustomSearch(count_value=1)
 
-    fake_hktm = CdsProduct(name="HKTM_PRODUCT_NAME")
+    fake_hktm = model.CdsProduct(name="HKTM_PRODUCT_NAME")
     mock_search_product_hktm.return_value = [fake_hktm]
 
     ConsolidateMpFileEngine.MODEL_MODULE = model
