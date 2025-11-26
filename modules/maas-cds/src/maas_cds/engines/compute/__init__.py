@@ -30,6 +30,15 @@ from maas_cds.engines.compute.compute_completeness_v2 import (
     ComputeCompletenessEngineV2,
 )
 
+from maas_cds.engines.compute.compute_completeness_splitted import (
+    ComputeCompletenessSplitted,
+)
+
+from maas_cds.engines.compute.compute_missing_completeness_splitted import (
+    ComputeMissingCompletenessSplitted,
+)
+
+
 from maas_cds.engines.compute.anomaly_correlation_ticket import (
     CorrelateAnomalyTicketEngine,
 )

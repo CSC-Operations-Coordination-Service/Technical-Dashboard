@@ -1,0 +1,110 @@
+{
+    "aliases": {
+        "cds-completeness-splitted": {}
+    },
+    "index_patterns": [
+        "cds-completeness-splitted*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "updateTime": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "key": {
+                "type": "keyword"
+            },
+            "mission": {
+                "type": "keyword"
+            },
+            "satellite_unit": {
+                "type": "keyword"
+            },
+            "datatake_id": {
+                "type": "keyword"
+            },
+            "observation_time_start": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "observation_time_stop": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "observation_duration": {
+                "type": "long"
+            },
+            "timeliness": {
+                "type": "keyword"
+            },
+            "product_type": {
+                "type": "keyword"
+            },
+            "product_level": {
+                "type": "keyword"
+            },
+            "absolute_orbit": {
+                "type": "keyword"
+            },
+            "relative_orbit": {
+                "type": "keyword"
+            },
+            "expected": {
+                "type": "long"
+            },
+            "value": {
+                "type": "long"
+            },
+            "value_adjusted": {
+                "type": "long"
+            },
+            "percentage": {
+                "type": "long",
+                "meta": {
+                    "metric_type": "gauge",
+                    "unit": "percent"
+                }
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "cams_tickets": {
+                "type": "keyword"
+            },
+            "last_attached_ticket": {
+                "type": "keyword"
+            },
+            "last_attached_ticket_url": {
+                "type": "keyword"
+            },
+            "cams_origin": {
+                "type": "keyword"
+            },
+            "cams_description": {
+                "type": "keyword"
+            },
+            "service_type": {
+                "type": "keyword"
+            },
+            "service_id": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {
+            "partition_field": [
+                "mission",
+                "satellite_unit",
+                "service_type",
+                "service_id"
+            ],
+            "partition_format": "{mission}-{satellite_unit}-{service_type}-{service_id}"
+        }
+    }
+}

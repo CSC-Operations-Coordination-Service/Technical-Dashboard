@@ -9,9 +9,7 @@ from maas_cds.model.product_s5 import CdsProductS5
 from maas_cds.model.enumeration import CompletenessStatus
 from maas_cds.model.enumeration import CompletenessScope
 
-from maas_cds.model.datatake import (
-    evaluate_completeness_status,
-)
+from maas_cds.lib.status import evaluate_completeness_status
 
 from maas_cds.lib.periodutils import (
     compute_total_sensing_product,
@@ -531,6 +529,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
                 .filter("term", datatake_id=self.datatake_id)
                 .filter("term", mission=self.mission)
                 .filter("term", product_type=self.product_type)
+                .filter("term", timeliness=self.timeliness)
             )
         else:
             search_request = (
@@ -538,6 +537,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
                 .filter("term", datatake_id=self.datatake_id)
                 .filter("term", mission=self.mission)
                 .filter("term", product_type=self.product_type)
+                .filter("term", timeliness=self.timeliness)
                 .filter("exists", field="prip_id")
             )
 
@@ -666,7 +666,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
             int: The local slice expected value of this datatake and the given product_type
         """
 
-        expected_slices = self.included_types_for_completeness()[self.product_type][
+        expected_slices = self.included_types_for_completeness()[self.old_product_type][
             "slices"
         ]
 

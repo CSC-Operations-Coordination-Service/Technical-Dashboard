@@ -50,7 +50,7 @@ def test_s5p_extracting_consolidation_publication(lta_product_1):
         "mission": "S5",
         "name": "S5P_OFFL_L1B_IR_SIR_20171115T103323_20171115T121452_00469_01_001200_20171115T143947.nc",
         "product_level": "L1_",
-        "product_type": "OFFL_L1B_IR_SIR",
+        "product_type": "L1B_IR_SIR",
         "satellite_unit": "S5P",
         "sensing_start_date": "2017-11-15T10:32:23.000Z",
         "sensing_end_date": "2017-11-15T12:15:52.000Z",
@@ -76,13 +76,15 @@ def test_lta_product_consolidation(lta_product_1):
 
     product.full_clean()
 
+    assert product.old_product_type == "OFFL_L1B_IR_SIR"
+
     assert product.to_dict() == {
         "absolute_orbit": "469",
         "key": "59f5375b291bda5643dbe95f1f1b8890",
         "mission": "S5",
         "name": "S5P_OFFL_L1B_IR_SIR_20171115T103323_20171115T121452_00469_01_001200_20171115T143947.nc",
         "product_level": "L1_",
-        "product_type": "OFFL_L1B_IR_SIR",
+        "product_type": "L1B_IR_SIR",
         "satellite_unit": "S5P",
         "sensing_start_date": "2017-11-15T10:32:23.000Z",
         "sensing_end_date": "2017-11-15T12:15:52.000Z",
@@ -119,7 +121,7 @@ def test_lta_l5p_product_consolidation(s5_lta_product_l0):
         "mission": "S5",
         "LTA_S5P_DLR_id": "501e0178-5a04-4ada-8beb-d04094bebb24",
         "name": "S5P_OPER_L0__SAT_A__20220701T051131_20220701T053148_24429_05.RAW",
-        "product_type": "OPER_L0__SAT_A_",
+        "product_type": "L0__SAT_A_",
         "product_level": "L0_",
         "satellite_unit": "S5P",
         "collection_number": "05",

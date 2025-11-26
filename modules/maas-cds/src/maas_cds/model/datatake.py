@@ -10,6 +10,7 @@ from maas_model.date_utils import datetime_to_zulu
 from opensearchpy import Keyword, Q
 from maas_cds.lib import tolerance
 from maas_cds.lib.dateutils import get_microseconds_delta
+from maas_cds.lib.status import evaluate_completeness_status
 from maas_cds.lib.periodutils import (
     Period,
     compute_duplicated_indicator,
@@ -24,18 +25,6 @@ __all__ = ["CdsDatatake"]
 
 
 LOGGER = logging.getLogger("CdsModelDatatake")
-
-
-def evaluate_completeness_status(value):
-    """Compute completeness status"""
-    value_completeness_status = None
-    if value == 0:
-        value_completeness_status = CompletenessStatus.MISSING.value
-    elif value >= 100:
-        value_completeness_status = CompletenessStatus.COMPLETE.value
-    else:
-        value_completeness_status = CompletenessStatus.PARTIAL.value
-    return value_completeness_status
 
 
 class CdsDatatake(AnomalyMixin, generated.CdsDatatake):

@@ -9,7 +9,8 @@ from maas_cds.model.product import CdsProduct
 
 from opensearchpy import Q
 
-from maas_cds.model.datatake import CdsDatatake, evaluate_completeness_status
+from maas_cds.model.datatake import CdsDatatake
+from maas_cds.lib.status import evaluate_completeness_status
 
 from maas_cds.lib.periodutils import compute_total_sensing_product, Period
 

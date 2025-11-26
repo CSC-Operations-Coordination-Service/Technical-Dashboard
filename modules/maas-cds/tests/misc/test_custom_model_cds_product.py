@@ -67,7 +67,7 @@ def test_cds_s2_custom_model_part2(
     product = s2_product_l0_gr
     product.datatake_id = "AZERTY"
     product.find_datatake_id()
-    assert product.datatake_id is None
+    assert product.datatake_id is "______"
     assert product.nb_datatake_document_that_match == 0
 
     # Check that when multiple document are found using find_datatake_from_sensing then only the
@@ -179,7 +179,7 @@ def test_cds_s5_custom_model(
         "mission": "S5",
         "name": "S5P_NRTI_L1B_ENG_DB_20220817T134212_20220817T134724_25100_03_020100_20220817T143010.nc",
         "product_level": "L1_",
-        "product_type": "NRTI_L1B_ENG_DB",
+        "product_type": "L1B_ENG_DB",
         "satellite_unit": "S5P",
         "collection_number": "03",
         "processor_version": "020100",
@@ -196,6 +196,7 @@ def test_cds_s5_custom_model(
     product = CdsProductS5(**dict_data)
     product.meta.id = "test_meta_id_value"
 
+    assert product.old_product_type == "NRTI_L1B_ENG_DB"
     # Check get_datatake_id return field datatake_id
     product.datatake_id = "TESTVAL"
     assert product.get_datatake_id() == "TESTVAL"
@@ -230,7 +231,7 @@ def test_cds_s5_custom_model(
     # Check data_for_completeness return a subset of keys
     res = product.data_for_completeness()
     assert res == {
-        "key": f"{product.datatake_id}-{product.product_type}",
+        "key": f"{product.datatake_id}-{product.old_product_type}",
         "datatake_id": product["datatake_id"],
         "mission": product["mission"],
         "absolute_orbit": product["absolute_orbit"],
