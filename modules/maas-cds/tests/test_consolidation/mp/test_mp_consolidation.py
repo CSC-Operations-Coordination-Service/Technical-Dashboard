@@ -436,6 +436,22 @@ MpHktmDownlink = {
     "reportName": "S2A_MP_DWL__MTL_20231130T120000_20231218T150000.csv",
 }
 
+MpHktmAcquisitionProduct = {
+    "satellite_id": "S1A",
+    "session_id": "DCS_0X_S1A_20251126082813062046",
+    "ground_station": "MPS_",
+    "channel": 1,
+    "execution_time": datetime.datetime(
+        2025, 11, 26, 8, 28, 15, 898, tzinfo=datetime.timezone.utc
+    ),
+    "absolute_orbit": "62046",
+    "interface_name": "S1MissionPlanning",
+    "production_service_type": "AUXIP",
+    "production_service_name": "CGS",
+    "reportName": "S1A_MP_HKTM_MTL_20251125T181603_20251207T193147.csv",
+    "ingestionTime": "2025-11-25T12:13:40.959Z",
+}
+
 MP_DICT_HktmAcquisitionProduct = {
     "absolute_orbit": "1234",
     "channel": 1,
@@ -902,13 +918,17 @@ def test_consolidate_CdsDownlinkDatatake_from_MpAllProduct():
 #             assert hktm.edrs_completeness is None
 
 
+@patch("maas_cds.model.hktm_completeness.CdsHktmProductionCompleteness")
 @patch("maas_model.document.Document.search")
 def test_consolidate_cds_hktm_production_completeness_from_mphktmdownlink(
-    mock_search,
+    mock_search, mock_search_product_hktm
 ):
     """Test CdsHktmProductionCompleteness consolidation from a MpHktmDownlink"""
 
     mock_search.return_value = CustomSearch(count_value=1)
+
+    fake_hktm = CdsProduct(name="HKTM_PRODUCT_NAME")
+    mock_search_product_hktm.return_value = [fake_hktm]
 
     ConsolidateMpFileEngine.MODEL_MODULE = model
     engine = ConsolidateMpFileEngine(
@@ -950,9 +970,45 @@ def test_consolidate_cds_hktm_production_completeness_from_mphktmdownlink(
     assert consolidated.meta.id == raw.meta.id
     assert consolidated.completeness == 1
 
-    mock_search.return_value = CustomSearch(count_value=0)
     consolidated = consolidated_method(raw)
     assert consolidated.completeness == 0
+
+
+@patch("opensearchpy.Search.execute")
+def test_consolidate_CdsHktmProductionCompleteness_from_MpHktmAcquisitionProduct(
+    mock_execute,
+):
+    ConsolidateMpFileEngine.MODEL_MODULE = model
+
+    engine = ConsolidateMpFileEngine(
+        raw_data_type="MpHktmAcquisitionProduct",
+        consolidated_data_type="CdsHktmProductionCompleteness",
+    )
+
+    raw = model.MpHktmAcquisitionProduct(**MpHktmAcquisitionProduct)
+    raw.meta.id = "198b68322b37e66f7f107bb3802c2968"
+
+    fake_hktm = model.CdsProduct(name="HKTM_PRODUCT_NAME")
+    mock_execute.return_value = [fake_hktm]
+
+    consolidated = (
+        engine.consolidate_CdsHktmProductionCompleteness_from_MpHktmAcquisitionProduct(
+            raw
+        )
+    )
+
+    assert consolidated.completeness == 1
+    assert consolidated.related_document_name == "HKTM_PRODUCT_NAME"
+
+    mock_execute.return_value = []
+    consolidated = (
+        engine.consolidate_CdsHktmProductionCompleteness_from_MpHktmAcquisitionProduct(
+            raw
+        )
+    )
+
+    assert consolidated.completeness == 0
+    assert consolidated.related_document_name is None
 
 
 def test_unsupported_consolidated_type():

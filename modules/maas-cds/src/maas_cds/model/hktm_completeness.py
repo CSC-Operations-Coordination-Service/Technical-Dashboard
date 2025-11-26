@@ -34,19 +34,7 @@ class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
         ["fos_pushing_date_nominal"],
     ]
 
-    def evaluated_produced_hktm(self, tolerance_value=0):
-        """
-        Compute the completeness of production based on products.
-
-
-        Args:
-            tolerance_value (int): The shift of the sensing start date in minutes
-
-        Returns:
-            int: The count of document that met the criteria
-
-        """
-        tolerance_value = timedelta(minutes=tolerance_value)
+    def find_related_document(self, tolerance_value):
 
         query = (
             generated.CdsProduct.search()
@@ -68,6 +56,24 @@ class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
         )
 
         proof_documents = list(query.execute())
+
+        return proof_documents
+
+    def evaluated_produced_hktm(self, tolerance_value=0):
+        """
+        Compute the completeness of production based on products.
+
+
+        Args:
+            tolerance_value (int): The shift of the sensing start date in minutes
+
+        Returns:
+            int: The count of document that met the criteria
+
+        """
+        timedelta_tolerance_value = timedelta(minutes=tolerance_value)
+
+        proof_documents = self.find_related_document(timedelta_tolerance_value)
 
         self.set_completeness(proof_documents)
 
