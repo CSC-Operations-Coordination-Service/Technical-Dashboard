@@ -56,6 +56,55 @@ def prip_product_2():
     return raw_document
 
 
+@pytest.fixture
+def prip_product_3():
+    # This one are fake for product_type test
+    data_dict = {
+        "reportName": "https://s5p-oda-prip.eoc.dlr.de/proseo/prip",
+        "product_id": "8d69ee20-90df-4827-8a15-3269ddd495c1",
+        "product_name": "S5P_OFFL_L2__AUXDEM_20251022T150309_20251022T164438_41587_03_020800_20251024T045341.nc",
+        "content_length": 2189155,
+        "publication_date": "2023-01-31T05:20:52.307Z",
+        "start_date": "2023-01-30T00:00:00.000Z",
+        "end_date": "2023-01-31T00:00:00.000Z",
+        "origin_date": "1970-01-01T00:00:00.000Z",
+        "eviction_date": "9999-12-31T23:59:59.999Z",
+        "interface_name": "PRIP_S5P_DLR",
+        "production_service_type": "PRIP",
+        "production_service_name": "S5P_DLR",
+        "ingestionTime": "2023-01-31T05:47:25.396Z",
+    }
+    raw_document = model.PripProduct(**data_dict)
+    raw_document.meta.id = "bac271391449a1a6e76534e73f481eb7"
+    raw_document.full_clean()
+    return raw_document
+
+
+@pytest.fixture
+def prip_product_4():
+    # This one are fake for product_type test
+
+    data_dict = {
+        "reportName": "https://s5p-oda-prip.eoc.dlr.de/proseo/prip",
+        "product_id": "8d69ee20-90df-4827-8a15-3269ddd495c1",
+        "product_name": "S5P_NRTI_L2__CH4____20240724T234322_20240724T234822_35136_03_020800_20250909T061653.nc",
+        "content_length": 2189155,
+        "publication_date": "2023-01-31T05:20:52.307Z",
+        "start_date": "2023-01-30T00:00:00.000Z",
+        "end_date": "2023-01-31T00:00:00.000Z",
+        "origin_date": "1970-01-01T00:00:00.000Z",
+        "eviction_date": "9999-12-31T23:59:59.999Z",
+        "interface_name": "PRIP_S5P_DLR",
+        "production_service_type": "PRIP",
+        "production_service_name": "S5P_DLR",
+        "ingestionTime": "2023-01-31T05:47:25.396Z",
+    }
+    raw_document = model.PripProduct(**data_dict)
+    raw_document.meta.id = "bac271391449a1a6e76534e73f481eb7"
+    raw_document.full_clean()
+    return raw_document
+
+
 def test_s5p_extracting_consolidation_publication(prip_product_1):
     engine = PublicationConsolidatorEngine()
 
@@ -142,6 +191,80 @@ def test_prip_consolidation_bis(prip_product_2):
 
     publication = engine.consolidate_from_PripProduct(
         prip_product_2, model.CdsPublication()
+    )
+
+    publication.full_clean()
+
+    assert publication.to_dict() == {
+        "key": "bac271391449a1a6e76534e73f481eb7",
+        "name": "NISE_SSMISF18_20230130.HDFEOS",
+        "product_level": "AUX",
+        "sensing_start_date": "2023-01-30T00:00:00.000Z",
+        "sensing_end_date": "2023-01-31T00:00:00.000Z",
+        "sensing_duration": 86400000000,
+        "timeliness": "_",
+        "content_length": 2189155,
+        "service_id": "S5P_DLR",
+        "service_type": "PRIP",
+        "product_uuid": "8d69ee20-90df-4827-8a15-3269ddd495c1",
+        "publication_date": "2023-01-31T05:20:52.307Z",
+        "eviction_date": "9999-12-31T23:59:59.999Z",
+        "origin_date": "1970-01-01T00:00:00.000Z",
+        "from_sensing_timeliness": 19252307000,
+        "transfer_timeliness": 1675142452307000,
+        "mission": "S5",
+        "satellite_unit": "S5P",
+        "datatake_id": "______",
+        "product_type": "AUX_NISE",
+    }
+
+
+def test_prip_consolidation_3(prip_product_3):
+    engine = PublicationConsolidatorEngine()
+
+    engine.input_documents = [prip_product_3]
+
+    engine.on_pre_consolidate()
+
+    publication = engine.consolidate_from_PripProduct(
+        prip_product_3, model.CdsPublication()
+    )
+
+    publication.full_clean()
+
+    assert publication.to_dict() == {
+        "key": "bac271391449a1a6e76534e73f481eb7",
+        "name": "NISE_SSMISF18_20230130.HDFEOS",
+        "product_level": "AUX",
+        "sensing_start_date": "2023-01-30T00:00:00.000Z",
+        "sensing_end_date": "2023-01-31T00:00:00.000Z",
+        "sensing_duration": 86400000000,
+        "timeliness": "_",
+        "content_length": 2189155,
+        "service_id": "S5P_DLR",
+        "service_type": "PRIP",
+        "product_uuid": "8d69ee20-90df-4827-8a15-3269ddd495c1",
+        "publication_date": "2023-01-31T05:20:52.307Z",
+        "eviction_date": "9999-12-31T23:59:59.999Z",
+        "origin_date": "1970-01-01T00:00:00.000Z",
+        "from_sensing_timeliness": 19252307000,
+        "transfer_timeliness": 1675142452307000,
+        "mission": "S5",
+        "satellite_unit": "S5P",
+        "datatake_id": "______",
+        "product_type": "AUX_NISE",
+    }
+
+
+def test_prip_consolidation_4(prip_product_4):
+    engine = PublicationConsolidatorEngine()
+
+    engine.input_documents = [prip_product_4]
+
+    engine.on_pre_consolidate()
+
+    publication = engine.consolidate_from_PripProduct(
+        prip_product_4, model.CdsPublication()
     )
 
     publication.full_clean()
