@@ -78,9 +78,10 @@ class AnomalyCorrelationConsolidatorEngine(ReplicatorEngine):
             list(
                 set(
                     [
-                        impacted_observation
+                        re.sub(r"\s+", "", impacted_observation)
                         for impacted_observation in raw_document.impacted_observations
                         if impacted_observation
+                        and re.sub(r"\s+", "", impacted_observation)
                     ]
                 )
             )

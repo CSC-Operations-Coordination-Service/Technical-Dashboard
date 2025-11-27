@@ -1,11 +1,8 @@
 """Update entities after some container products are see"""
 
 import typing
-import hashlib
-import copy
-from datetime import datetime, timedelta, UTC
+from datetime import timedelta
 from maas_cds.lib.config_manager import MaasConfigManager
-from maas_cds.model.cds_completeness.cds_completeness import CdsCompleteness
 from maas_cds.model.configuration.maas_config import MaasConfigCompleteness
 from opensearchpy import Q
 
@@ -14,9 +11,7 @@ from maas_engine.engine.base import EngineReport
 from maas_model import (
     MAASMessage,
     MAASDocument,
-    MAASRawDocument,
     datestr_to_utc_datetime,
-    datetime_to_zulu,
 )
 from maas_cds.engines.reports.mission_mixin import MissionMixinEngine
 from maas_cds.engines.reports.anomaly_impact import (
@@ -26,17 +21,9 @@ from maas_cds.engines.reports.anomaly_impact import (
 
 from maas_cds.model.generated import (
     MpProduct,
-    MpAllProduct,
-    MpHktmDownlink,
-    MpHktmAcquisitionProduct,
 )
 from maas_cds.model import (
     CdsCamsTickets,
-    CdsProduct,
-    CdsCadipAcquisitionPassStatus,
-    CdsEdrsAcquisitionPassStatus,
-    CdsHktmAcquisitionCompleteness,
-    CdsHktmProductionCompleteness,
 )
 
 
