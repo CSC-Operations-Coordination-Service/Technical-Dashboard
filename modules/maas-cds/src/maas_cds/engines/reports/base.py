@@ -30,7 +30,7 @@ class BaseProductConsolidatorEngine(RawDataEngine):
     PACKET_STORE_ID_MAPPING = {"43": "NRT-PT", "44": "NTC"}
 
     # a value in seconds to find the datatake of a product from sensing
-    S2_DATATAKE_ATTACHEMENT_DELTA = 15
+    S2_DATATAKE_ATTACHEMENT_DELTA = 20
 
     def __init__(self, args=None, send_reports=True, min_doi=None, chunk_size=0):
         super().__init__(

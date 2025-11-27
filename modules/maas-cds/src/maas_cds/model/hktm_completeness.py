@@ -28,19 +28,13 @@ class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
         "S2": "PRD_HKTM__",
     }
 
-    def count_produced_hktm(self, tolerance_value=0):
-        """
-        Compute the completeness of production based on products.
+    PRODUCT_MAPPING = [
+        ["name", "related_document_name"],
+        ["fos_pushing_date_backup"],
+        ["fos_pushing_date_nominal"],
+    ]
 
-
-        Args:
-            tolerance_value (int): The shift of the sensing start date in minutes
-
-        Returns:
-            int: The count of document that met the criteria
-
-        """
-        tolerance_value = timedelta(minutes=tolerance_value)
+    def find_related_document(self, tolerance_value):
 
         query = (
             generated.CdsProduct.search()
@@ -61,6 +55,41 @@ class CdsHktmProductionCompleteness(generated.CdsHktmProductionCompleteness):
             )
         )
 
-        count = query.count()
+        proof_documents = list(query.execute())
 
-        return count
+        return proof_documents
+
+    def evaluated_produced_hktm(self, tolerance_value=0):
+        """
+        Compute the completeness of production based on products.
+
+
+        Args:
+            tolerance_value (int): The shift of the sensing start date in minutes
+
+        Returns:
+            int: The count of document that met the criteria
+
+        """
+        timedelta_tolerance_value = timedelta(minutes=tolerance_value)
+
+        proof_documents = self.find_related_document(timedelta_tolerance_value)
+
+        self.set_completeness(proof_documents)
+
+    def set_completeness(self, proof_documents):
+        if proof_documents is None or len(proof_documents) == 0:
+            self.completeness = 0
+        else:
+            self.completeness = 1
+            proof_document = proof_documents[0]
+
+            for field in self.PRODUCT_MAPPING:
+                if hasattr(proof_document, field[0]) and (
+                    value := getattr(proof_document, field[0], None)
+                ):
+                    setattr(
+                        self,
+                        field[-1],  # Trigs to avoid duplication 🧨
+                        value,
+                    )

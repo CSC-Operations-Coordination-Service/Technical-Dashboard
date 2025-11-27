@@ -73,9 +73,13 @@ class CamsTicketConsolidatorEngine(ReplicatorEngine):
         document.url = self.base_url + document.meta.id
 
         # Some dashboard use this previous field, filter also here in case of futur updateé
-        document.correlation_file_id = [
-            issue for issue in raw_document.linked_issues if issue.startswith("AN")
-        ]
+        if raw_document.linked_issues is not None:
+
+            document.correlation_file_id = [
+                issue for issue in raw_document.linked_issues if issue.startswith("AN")
+            ]
+        else:
+            document.correlation_file_id = []
 
         if (
             "DLR Acquisition Service" == document.entity
