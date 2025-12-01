@@ -197,7 +197,8 @@ class BaseProductConsolidatorEngine(RawDataEngine):
 
         if (
             document.product_type == "AI_RAW__0_"
-            and raw_document.get("packet_store_id") in self.PACKET_STORE_ID_MAPPING
+            and hasattr(raw_document, "packet_store_id")
+            and getattr(raw_document, "packet_store_id") in self.PACKET_STORE_ID_MAPPING
         ):
             document.timeliness = self.PACKET_STORE_ID_MAPPING[
                 raw_document.packet_store_id
