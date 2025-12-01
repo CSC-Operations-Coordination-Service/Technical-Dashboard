@@ -319,6 +319,20 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
             "level": "L2_",
             "timeliness": "OFFL",
         },
+        "NRTI_L2__CH4___": {
+            "active": True,
+            "slices": 1,
+            "sensing": 55,
+            "level": "L2_",
+            "timeliness": "NRTI",
+        },
+        "OFFL_L2__AUXDEM": {
+            "active": True,
+            "slices": 1,
+            "sensing": 55,
+            "level": "L2_",
+            "timeliness": "OFFL",
+        },
         "OFFL_L2__CLOUD_": {
             "active": True,
             "slices": 1,
