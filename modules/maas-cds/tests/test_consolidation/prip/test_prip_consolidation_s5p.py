@@ -234,12 +234,12 @@ def test_prip_consolidation_3(prip_product_3):
 
     assert publication.to_dict() == {
         "key": "bac271391449a1a6e76534e73f481eb7",
-        "name": "NISE_SSMISF18_20230130.HDFEOS",
+        "name": "S5P_OFFL_L2__AUXDEM_20251022T150309_20251022T164438_41587_03_020800_20251024T045341.nc",
         "product_level": "AUX",
         "sensing_start_date": "2023-01-30T00:00:00.000Z",
         "sensing_end_date": "2023-01-31T00:00:00.000Z",
         "sensing_duration": 86400000000,
-        "timeliness": "_",
+        "timeliness": "OFFL",
         "content_length": 2189155,
         "service_id": "S5P_DLR",
         "service_type": "PRIP",
@@ -251,8 +251,8 @@ def test_prip_consolidation_3(prip_product_3):
         "transfer_timeliness": 1675142452307000,
         "mission": "S5",
         "satellite_unit": "S5P",
-        "datatake_id": "______",
-        "product_type": "AUX_NISE",
+        "datatake_id": "S5P-41587",
+        "product_type": "L2__AUXDEM",
     }
 
 
@@ -271,12 +271,12 @@ def test_prip_consolidation_4(prip_product_4):
 
     assert publication.to_dict() == {
         "key": "bac271391449a1a6e76534e73f481eb7",
-        "name": "NISE_SSMISF18_20230130.HDFEOS",
-        "product_level": "AUX",
+        "name": "S5P_NRTI_L2__CH4____20240724T234322_20240724T234822_35136_03_020800_20250909T061653.nc",
+        "product_level": "L2_",
         "sensing_start_date": "2023-01-30T00:00:00.000Z",
         "sensing_end_date": "2023-01-31T00:00:00.000Z",
         "sensing_duration": 86400000000,
-        "timeliness": "_",
+        "timeliness": "NRTI",
         "content_length": 2189155,
         "service_id": "S5P_DLR",
         "service_type": "PRIP",
@@ -288,6 +288,9 @@ def test_prip_consolidation_4(prip_product_4):
         "transfer_timeliness": 1675142452307000,
         "mission": "S5",
         "satellite_unit": "S5P",
-        "datatake_id": "______",
-        "product_type": "AUX_NISE",
+        "datatake_id": "S5P-35136",
+        "product_type": "L2__CH4___",
+        "absolute_orbit": "35136",
+        "collection_number": "03",
+        "processor_version": "020800",
     }
