@@ -19,6 +19,8 @@ class DisseminationMixin:
     S2_CONTAINED_TYPES = (
         "MSI_L1C_TC",
         "MSI_L1C_TL",
+        "MSI_L1C_DS",
         "MSI_L2A_TC",
         "MSI_L2A_TL",
+        "MSI_L2A_DS",
     )

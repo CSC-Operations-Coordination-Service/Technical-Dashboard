@@ -279,7 +279,7 @@ class CdsDatatakeS1(CdsDatatake):
             CdsProduct.search()
             .filter("term", datatake_id=self.datatake_id)
             .filter("term", satellite_unit=self.satellite_unit)
-            .filter("term", product_type=f"{self.instrument_mode}_SLC__1S")
+            .filter("term", product_type=self.add_prefix_instrument("SLC__1S"))
         )
 
         count = search.count()
