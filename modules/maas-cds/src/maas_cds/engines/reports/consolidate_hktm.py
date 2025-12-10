@@ -222,6 +222,12 @@ class HktmAcquisitionConsolidatorEngine(HktmConsolidatorEngine):
             self.logger.warning("Raw document is too old : %s ", raw_document)
             return None
 
+        if raw_document.session_id is None:
+            self.logger.warning(
+                "Raw document is incomplete missing session id  : %s ", raw_document
+            )
+            return None
+
         document = super().consolidate(raw_document, document)
 
         document.ingestionTime = datetime.now(tz=UTC)
@@ -289,6 +295,7 @@ class HktmAcquisitionConsolidatorEngine(HktmConsolidatorEngine):
             )
         else:
             self.logger.warning("Unknow acq format %s", raw_document.session_id)
+            return None
 
         document.cadip_completeness = cadip_completeness
         document.edrs_completeness = edrs_completeness
