@@ -815,6 +815,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         edrs_completeness = None
         session_id_full = cds_hktm_acquisition_completeness.session_id_full
 
+        anomaly_key = None
+
         if session_id_full is None:
             self.logger.error(
                 "session id format. Default to full session id format for %s",
@@ -916,7 +918,8 @@ class ConsolidateMpFileEngine(MissionMixinEngine, AnomalyImpactMixinEngine, Data
         cds_hktm_acquisition_completeness.cadip_completeness = cadip_completeness
         cds_hktm_acquisition_completeness.edrs_completeness = edrs_completeness
 
-        self._apply_anomalies(cds_hktm_acquisition_completeness, key=anomaly_key)
+        if anomaly_key is not None:
+            self._apply_anomalies(cds_hktm_acquisition_completeness, key=anomaly_key)
 
         return cds_hktm_acquisition_completeness
 
