@@ -1,0 +1,18 @@
+{
+    "date": "2025-08-01T01:00:08.287Z",
+    "message_id": "e6ac64bc-63dc-4611-a721-fb6b09e5316b",
+    "ancestor_ids": [],
+    "pipeline": [
+        "BornFromTheMordor"
+    ],
+    "force": true,
+    "document_ids": [
+        "d02e5d67dcfe827fca359104713329f5",
+        "596f4f0220a995bf985c5a4c177a5569",
+        "3e23e4309162b671042b73e87ad7d90c",
+        "6fd8767abb93f6b218d60247668ec043",
+        "54c8127d9597cf781231fac60e3d2e21"
+    ],
+    "document_indices": [],
+    "document_class": "CdsProductS3"
+}

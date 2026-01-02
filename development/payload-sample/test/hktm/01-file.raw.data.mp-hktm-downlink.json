@@ -1,0 +1,14 @@
+{
+    "date": "2025-01-20T13:43:32.773Z",
+    "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271",
+    "ancestor_ids": [],
+    "pipeline": [
+        "ODataCollector"
+    ],
+    "force": true,
+    "document_ids": [
+        "S2B_MP_DWL__MTL_20250731T120000_20250818T150000.csv"
+    ],
+    "document_indices": [],
+    "document_class": "MpHktmDownlink"
+}
