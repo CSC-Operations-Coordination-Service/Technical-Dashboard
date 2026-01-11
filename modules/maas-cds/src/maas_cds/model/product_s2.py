@@ -80,7 +80,7 @@ class CdsProductS2(CdsProduct):
             LOGGER.warning(
                 "[%s] - Product can't match with datatake document", self.key
             )
-            product_datatake_id = None
+            product_datatake_id = utils.DATATAKE_ID_MISSING_VALUE
         else:
             product_datatake_id = datatake_document_that_match[0].datatake_id
 

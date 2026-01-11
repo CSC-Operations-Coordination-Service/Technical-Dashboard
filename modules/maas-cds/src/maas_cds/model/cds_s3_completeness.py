@@ -3,6 +3,7 @@
 import logging
 
 from maas_cds.lib.config import get_good_threshold_config_from_value
+from maas_cds.lib.status import evaluate_completeness_status
 from maas_model.date_utils import datetime_to_zulu
 from opensearchpy import Keyword
 from maas_cds.model import generated
@@ -10,9 +11,6 @@ from maas_cds.model.product_s3 import CdsProductS3
 from maas_cds.model.enumeration import CompletenessStatus
 from maas_cds.model.enumeration import CompletenessScope
 
-from maas_cds.model.datatake import (
-    evaluate_completeness_status,
-)
 
 from maas_cds.lib.periodutils import (
     compute_total_sensing_product,

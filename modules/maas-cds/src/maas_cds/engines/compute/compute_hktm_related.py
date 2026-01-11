@@ -65,6 +65,7 @@ class ComputeHktmRelatedEngine(DataEngine):
         if self.target_model == "CdsHktmProductionCompleteness":
             return self.update_hktm_production
         elif self.target_model == "CdsHktmAcquisitionCompleteness":
+            # Only working for s1 currently
             return self.update_hktm_acquisition
         else:
             raise ValueError(f"Unexpected target model : {self.target_model}")
@@ -226,11 +227,13 @@ class ComputeHktmRelatedEngine(DataEngine):
             for raw_document, response in zip(valid_input_documents, msearch.execute()):
                 if not response:
                     self.logger.warning("No hktm found %s", raw_document)
+                    result_map[document.meta.id] = raw_document
                     continue
 
                 for document in response:
                     # store link between content and container
                     result_map[document.meta.id] = raw_document
+                    # ? If a hktm match multiple expected this is strange maybe this match the nearest one
 
             # retrieve again targeted documents as msearch does not support versionning :'(
             for hktm_completeness_document, proof_document in zip(
@@ -275,7 +278,7 @@ class ComputeHktmRelatedEngine(DataEngine):
                     ):
                         setattr(
                             hktm_completeness_document,
-                            field[-1],
+                            field[-1],  # Trigs to avoid duplication 🧨
                             value,
                         )
 
