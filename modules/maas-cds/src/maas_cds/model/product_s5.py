@@ -24,10 +24,6 @@ class CdsProductS5(CdsProduct):
 
         return self.datatake_id if not self.datatake_id_is_missing() else None
 
-    @property
-    def old_product_type(self):
-        return f"{self.timeliness}_{self.product_type}"
-
     def get_compute_key(self):
         """Compose compute key from product (used to match completeness)
 
@@ -36,26 +32,26 @@ class CdsProductS5(CdsProduct):
         """
         # on S5 completeness is excluded for several products types
         if model.cds_s5_completeness.CdsS5Completeness.is_exclude_for_completeness(
-            self.old_product_type
+            self.product_type_with_timeliness
         ):
             return None
 
         if None in [
             self.mission,
             self.get_datatake_id(),
-            self.old_product_type,
+            self.product_type_with_timeliness,
             self.absolute_orbit,
         ]:
             LOGGER.warning(
                 "[%s] - Can't create a compute_key : %s %s",
                 self.meta.id,
                 self.get_datatake_id(),
-                self.old_product_type,
+                self.product_type_with_timeliness,
             )
 
             return None
 
-        return self.get_datatake_id() + "-" + self.product_type
+        return self.get_datatake_id() + "-" + self.product_type_with_timeliness
 
     def data_for_completeness(self):
         """compose defaults completeness values from product
@@ -69,7 +65,7 @@ class CdsProductS5(CdsProduct):
             "mission": self.mission,
             "satellite_unit": self.satellite_unit,
             "timeliness": self.timeliness,
-            "product_type": self.old_product_type,
+            "product_type": self.product_type_with_timeliness,
             "product_level": self.product_level,
             "observation_time_start": self.sensing_start_date,
             "observation_time_stop": self.sensing_end_date,

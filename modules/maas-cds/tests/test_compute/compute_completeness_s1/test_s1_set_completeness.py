@@ -64,6 +64,8 @@ def test_fill_global_completeness_2():
 
     datatake_doc = CdsDatatakeS1()
 
+    datatake_doc.satellite_unit = "S1A"
+
     datatake_doc.IW_OCN__2S_local_value = 10
 
     datatake_doc.global_sensing_duration = 0

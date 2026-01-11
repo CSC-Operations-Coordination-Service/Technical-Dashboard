@@ -42,6 +42,12 @@ class CdsProduct(
     def publication_date(self):
         return self.prip_publication_date
 
+    @property
+    def product_type_with_timeliness(self):
+        if self.timeliness is None or self.product_type is None:
+            return None
+        return f"{self.timeliness}_{self.product_type}"
+
     def datatake_id_is_missing(self) -> bool:
         """Returns true if datatake id is missing or None
 

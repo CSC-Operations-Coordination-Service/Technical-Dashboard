@@ -76,7 +76,7 @@ def test_lta_product_consolidation(lta_product_1):
 
     product.full_clean()
 
-    assert product.old_product_type == "OFFL_L1B_IR_SIR"
+    assert product.product_type_with_timeliness == "OFFL_L1B_IR_SIR"
 
     assert product.to_dict() == {
         "absolute_orbit": "469",

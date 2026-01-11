@@ -235,7 +235,7 @@ def test_prip_consolidation_3(prip_product_3):
     assert publication.to_dict() == {
         "key": "bac271391449a1a6e76534e73f481eb7",
         "name": "S5P_OFFL_L2__AUXDEM_20251022T150309_20251022T164438_41587_03_020800_20251024T045341.nc",
-        "product_level": "AUX",
+        "product_level": "L2_",
         "sensing_start_date": "2023-01-30T00:00:00.000Z",
         "sensing_end_date": "2023-01-31T00:00:00.000Z",
         "sensing_duration": 86400000000,
@@ -253,6 +253,9 @@ def test_prip_consolidation_3(prip_product_3):
         "satellite_unit": "S5P",
         "datatake_id": "S5P-41587",
         "product_type": "L2__AUXDEM",
+        "processor_version": "020800",
+        "absolute_orbit": "41587",
+        "collection_number": "03",
     }
 
 

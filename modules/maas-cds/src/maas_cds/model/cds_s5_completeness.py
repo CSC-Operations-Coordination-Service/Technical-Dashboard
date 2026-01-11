@@ -680,9 +680,9 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
             int: The local slice expected value of this datatake and the given product_type
         """
 
-        expected_slices = self.included_types_for_completeness()[self.old_product_type][
-            "slices"
-        ]
+        expected_slices = self.included_types_for_completeness()[
+            self.product_type_with_timeliness
+        ]["slices"]
 
         return expected_slices
 
