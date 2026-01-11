@@ -10,6 +10,9 @@ from maas_engine.engine.rawdata import DataEngine
 from maas_cds import model
 
 
+# @deprecated(
+#     "This class was refactor by CorrelateAnomalyTicketEngine AnomalyCorrelationConsolidatorEngine CamsTicketConsolidatorEngine"
+# )
 class ComputeCamsReferencesEngine(DataEngine):
     """Consolidate cams references"""
 
