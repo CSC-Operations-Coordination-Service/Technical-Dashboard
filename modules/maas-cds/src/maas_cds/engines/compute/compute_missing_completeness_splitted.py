@@ -169,6 +169,13 @@ class ComputeMissingCompletenessSplitted(AnomalyImpactMixinEngine, DataEngine):
     def try_get_and_create_it_if_missing(self, current_brothers):
 
         current_brothers_keys = [bro["key"] for bro in current_brothers]
+
+        if len(current_brothers) == 0:
+            self.logger.debug(
+                "[ITER][%s] - No brother provide",
+            )
+            return
+
         indices = [current_brothers[0]["index"]]
 
         # Here perform mget on current_brothers

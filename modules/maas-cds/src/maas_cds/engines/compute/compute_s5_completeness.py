@@ -74,7 +74,7 @@ class ComputeS5CompletenessEngine(AnomalyImpactMixinEngine, DataEngine):
 
         for delta in (-1, 1):
             neighbor_orbit = int(absolute_orbit) + delta
-            neighbor_compute_key = f"{product_document.satellite_unit}-{neighbor_orbit:05}-{product_document.product_type}"
+            neighbor_compute_key = f"{product_document.satellite_unit}-{neighbor_orbit:05}-{product_document.product_type_with_timeliness}"
             self.logger.debug(
                 "Checking orbit gaps of %s -> %s",
                 compute_key,

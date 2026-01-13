@@ -94,6 +94,7 @@ class CdsPublication(
             "satellite_unit": self.satellite_unit,
             "datatake_id": self.datatake_id,
             "product_type": self.product_type,
+            "product_level": self.product_level,
             "service_type": self.service_type,
             "service_id": self.service_id,
         }
@@ -155,6 +156,7 @@ class CdsPublication(
             "satellite_unit": self.satellite_unit,
             "datatake_id": self.datatake_id,
             "product_type": self.product_type,
+            "product_level": self.product_level,
             "timeliness": self.timeliness,  # Needed for s3-s5
             "service_type": self.service_type,
             "service_id": self.service_id,

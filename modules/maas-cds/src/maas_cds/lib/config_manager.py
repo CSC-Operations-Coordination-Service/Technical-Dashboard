@@ -52,7 +52,7 @@ class MaasConfigManager:
             self.load_config(config_to_load)
 
     def load_config(self, model_class):
-        # ! Over 1000 need to think about a different way
+        # ! Over 1000 elements need to think about a different way
 
         # ? It would be good here to handle also some commun pattern ie :
         # - use latest

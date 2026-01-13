@@ -17,6 +17,7 @@ def duration_inspector(func):
         function_return = func(*args, **kwds)
         end = datetime.datetime.now()
         duration = end - start
+        # Could be nice if this can be setted has a prometheus metrics/trace
         class_instance.logger.info(
             "[%s][STATS] - Duration: %s", func.__name__.upper(), duration
         )

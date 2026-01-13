@@ -25,7 +25,7 @@ class ComputeCompletenessSplitted(
 
     ENGINE_ID = "COMPUTE_COMPLETENESS_SPLITTED"
 
-    # This is not completelty generic, this allow keep some simple state
+    # This is not completelty generic, this allow to keep some simple and explicit state
     cache_no_completeness_key = {"S3": set(), "S5": set()}
     cache_completeness_key = {"S3": set(), "S5": set()}
 
@@ -52,7 +52,7 @@ class ComputeCompletenessSplitted(
         self.target_model.COMPLETENESS_TOLERANCE = completeness_tolerance
 
         if self.target_model is None:
-            raise KeyError(f"The target model doesn't exist: {self.target_model }")
+            raise KeyError(f"The target model doesn't exist: {self.target_model}")
 
     def action_iterator(self):
         """Compute completeness from CdsProduct
@@ -142,7 +142,8 @@ class ComputeCompletenessSplitted(
             else:
                 completeness_keys.append(completeness_key)
                 self.logger.info(
-                    "[ITER][Publication] - (%s) : Add a new compute key (%s)",
+                    "[ITER][Publication][%s] - (%s) : Add a new compute key (%s)",
+                    completeness_key,
                     publication_document.name,
                     len(completeness_keys),
                 )

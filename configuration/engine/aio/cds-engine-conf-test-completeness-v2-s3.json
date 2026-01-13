@@ -2,42 +2,7 @@
     "amqp": [
         {
             "name": "collect-exchange",
-            "queues": [
-                {
-                    "name": "collect-new.raw.data.lta-product",
-                    "routing_key": "new.raw.data.lta-product",
-                    "events": [
-                        {
-                            "id": "CONSOLIDATE_PUBLICATION",
-                            "send_reports": true,
-                            "min_doi": null
-                        }
-                    ]
-                },
-                {
-                    "name": "collect-new.raw.data.dd-product",
-                    "routing_key": "new.raw.data.dd-product",
-                    "events": [
-                        {
-                            "id": "CONSOLIDATE_PUBLICATION",
-                            "send_reports": true,
-                            "min_doi": null
-                        }
-                    ]
-                },
-                {
-                    "name": "collect-new.raw.data.prip-product",
-                    "routing_key": "new.raw.data.prip-product",
-                    "events": [
-                        "CONSOLIDATE_PUBLICATION",
-                        {
-                            "id": "CONSOLIDATE_PRODUCT",
-                            "send_reports": true,
-                            "container_chunk_size": 128
-                        }
-                    ]
-                }
-            ]
+            "queues": []
         },
         {
             "name": "etl-exchange",
@@ -72,52 +37,6 @@
                             "id": "COMPUTE_MISSING_COMPLETENESS_SPLITTED",
                             "target_model": "CdsCompletenessSplittedS3"
                         }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-publication-s5",
-                    "routing_key": "new.cds-publication-s5",
-                    "events": [
-                        {
-                            "id": "COMPUTE_COMPLETENESS_SPLITTED",
-                            "target_model": "CdsCompletenessSplittedS5",
-                            "send_reports": true
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-publication-s5",
-                    "routing_key": "update.cds-publication-s5",
-                    "events": [
-                        {
-                            "id": "COMPUTE_COMPLETENESS_SPLITTED",
-                            "target_model": "CdsCompletenessSplittedS5",
-                            "send_reports": true
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-completeness-splitted-s5",
-                    "routing_key": "new.cds-completeness-splitted-s5",
-                    "events": [
-                        {
-                            "id": "COMPUTE_MISSING_COMPLETENESS_SPLITTED",
-                            "target_model": "CdsCompletenessSplittedS5"
-                        }
-                    ]
-                },
-                {
-                    "name": "etl-new.cds-product-s5",
-                    "routing_key": "new.cds-product-s5",
-                    "events": [
-                        "COMPUTE_S5_COMPLETENESS"
-                    ]
-                },
-                {
-                    "name": "etl-update.cds-product-s5",
-                    "routing_key": "update.cds-product-s5",
-                    "events": [
-                        "COMPUTE_S5_COMPLETENESS"
                     ]
                 }
             ]
@@ -292,7 +211,8 @@
         },
         {
             "id": [
-                "COMPUTE_COMPLETENESS_SPLITTED",
+                "COMPUTE_COMPLETENESS_SPLITTED_S3",
+                "COMPUTE_COMPLETENESS_SPLITTED_S5",
                 "COMPUTE_MISSING_COMPLETENESS_SPLITTED"
             ],
             "completeness_tolerance": {

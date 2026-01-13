@@ -455,7 +455,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
             dict: s5 product_type with metadata
         """
         search_request = generated.CdsDataflow.search().query("term", mission="S5")
-        request_result = search_request.params(size=1000).execute()
+        request_result = search_request.params(size=10000).execute()
 
         result_mapping = {conf.product_type: conf.level for conf in request_result}
         base = cls._BASE_S5_PRODUCTS_TYPES
@@ -542,7 +542,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
                 CdsProductS5.search()
                 .filter("term", datatake_id=self.datatake_id)
                 .filter("term", mission=self.mission)
-                .filter("term", product_type=self.product_type)
+                .filter("term", product_type=self.product_type[5:])
                 .filter("term", timeliness=self.timeliness)
             )
         else:
@@ -550,7 +550,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
                 CdsProductS5.search()
                 .filter("term", datatake_id=self.datatake_id)
                 .filter("term", mission=self.mission)
-                .filter("term", product_type=self.product_type)
+                .filter("term", product_type=self.product_type[5:])
                 .filter("term", timeliness=self.timeliness)
                 .filter("exists", field="prip_id")
             )
@@ -680,9 +680,9 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
             int: The local slice expected value of this datatake and the given product_type
         """
 
-        expected_slices = self.included_types_for_completeness()[
-            self.product_type_with_timeliness
-        ]["slices"]
+        expected_slices = self.included_types_for_completeness()[self.product_type][
+            "slices"
+        ]
 
         return expected_slices
 

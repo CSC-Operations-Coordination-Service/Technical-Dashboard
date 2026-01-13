@@ -45,6 +45,7 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
             "satellite_unit": self.satellite_unit,
             "datatake_id": self.datatake_id,
             "product_type": self.product_type,
+            "product_level": self.product_level,
             "timeliness": self.timeliness,
             "service_type": self.service_type,
             "service_id": self.service_id,
@@ -127,6 +128,12 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
 
         expected_value = matching_items[0].sensing_in_minutes * 60 * 1000000
 
+        LOGGER.debug(
+            "Expected value from config for %s are %s",
+            self.product_type,
+            expected_value,
+        )
+
         tolerance_value = tolerance.get_completeness_tolerance(
             self.COMPLETENESS_TOLERANCE,
             self.mission,
@@ -139,7 +146,9 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
         return expected_value
 
     def get_applicable_configuration(self):
+
         dataflow_product_types = []
+
         for config in MaasConfigManager().get_config("MaasConfigDataflow")["records"]:
             if (
                 config.mission == self.MISSION
@@ -157,7 +166,7 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
                     self.satellite_unit,
                     self.service_type,
                 )
-                dataflow_product_types.append(config.product_type)
+                dataflow_product_types.append(config)
             else:
                 LOGGER.debug(
                     "Skipping product_type %s for mission %s, satellite_unit %s, service_type %s - conditions not met",
@@ -174,9 +183,9 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
         base on configuration
         """
 
-        expected_product_types = self.get_applicable_configuration()
+        expected_items = self.get_applicable_configuration()
 
-        LOGGER.error("Load %s item from config dataflow", len(expected_product_types))
+        LOGGER.info("Load %s item from config dataflow", len(expected_items))
 
         # Get all timeliness expected for each product_type
         configs_completeness = (
@@ -186,14 +195,22 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
         )
 
         LOGGER.debug(
-            "Load %s item from config completeness s3", len(configs_completeness)
+            "Load %s item from config completeness %s",
+            len(configs_completeness),
+            self.MISSION,
         )
 
         # Filter product_type and remove the current one
+
+        product_type_from_dataflow = [item.product_type for item in expected_items]
+        product_level_from_product_type = {
+            item.product_type: item.product_level for item in expected_items
+        }
+
         matching_items = [
             item
             for item in configs_completeness
-            if item.product_type in expected_product_types
+            if item.product_type in product_type_from_dataflow
             and (
                 not exclude_me
                 or not (
@@ -211,6 +228,10 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
 
             completeness_key["timeliness"] = matching_item.timeliness
             completeness_key["product_type"] = matching_item.product_type
+            completeness_key["product_level"] = product_level_from_product_type[
+                matching_item.product_type
+            ]
+
             completeness_key["key"] = "-".join(
                 [
                     completeness_key["datatake_id"],  # Already prefixed by satellite
