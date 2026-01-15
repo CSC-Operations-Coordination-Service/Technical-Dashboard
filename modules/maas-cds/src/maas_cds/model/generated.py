@@ -4,13 +4,14 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-10-01T13:07:58.357222+00:00
+Generated date: 2025-10-30T17:45:38.479493+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
     - resources/templates/cds-anomaly-correlation_template.json
     - resources/templates/cds-cadip-acquisition-pass-status_template.json
     - resources/templates/cds-cams-tickets_template.json
+    - resources/templates/cds-completeness-splitted_template.json
     - resources/templates/cds-completeness_template.json
     - resources/templates/cds-databudget_template.json
     - resources/templates/cds-dataflow_template.json
@@ -31,6 +32,8 @@ Generated from:
     - resources/templates/cds-s3-completeness_template.json
     - resources/templates/cds-s5-completeness_template.json
     - resources/templates/cds-sat-unavailability_template.json
+    - resources/templates/maas-config-completeness-s3_template.json
+    - resources/templates/maas-config-completeness-s5_template.json
     - resources/templates/maas-config-completeness_template.json
     - resources/templates/maas-config-dataflow_template.json
     - resources/templates/maas-config-mission_template.json
@@ -107,6 +110,7 @@ __all__ = [
     "CdsCamsTickets",
     "CdsCompleteness",
     "CdsCompletenessMissingPeriods",
+    "CdsCompletenessSplitted",
     "CdsDatabudget",
     "CdsDataflow",
     "CdsDatatake",
@@ -140,6 +144,10 @@ __all__ = [
     "LtaProduct",
     "MaasConfig",
     "MaasConfigCompleteness",
+    "MaasConfigCompletenessS3",
+    "MaasConfigCompletenessS3Records",
+    "MaasConfigCompletenessS5",
+    "MaasConfigCompletenessS5Records",
     "MaasConfigDataflow",
     "MaasConfigDataflowMetadata",
     "MaasConfigDataflowRecords",
@@ -1359,6 +1367,77 @@ class CdsCompleteness(MAASDocument):
     timeliness = Keyword()
 
     updateTime = ZuluDate()
+
+
+class CdsCompletenessSplitted(MAASDocument):
+    """
+    Mapping class for index: cds-completeness-splitted
+
+    Generated from: resources/templates/cds-completeness-splitted_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-completeness-splitted"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-completeness-splitted")
+
+    _PARTITION_FIELD = ["mission", "satellite_unit", "service_type", "service_id"]
+
+    _PARTITION_FIELD_FORMAT = "{mission}-{satellite_unit}-{service_type}-{service_id}"
+
+    absolute_orbit = Keyword()
+
+    cams_description = Keyword()
+
+    cams_origin = Keyword()
+
+    cams_tickets = Keyword()
+
+    datatake_id = Keyword()
+
+    expected = Long()
+
+    key = Keyword()
+
+    last_attached_ticket = Keyword()
+
+    last_attached_ticket_url = Keyword()
+
+    mission = Keyword()
+
+    observation_duration = Long()
+
+    observation_time_start = ZuluDate()
+
+    observation_time_stop = ZuluDate()
+
+    percentage = Long()
+
+    product_level = Keyword()
+
+    product_type = Keyword()
+
+    relative_orbit = Keyword()
+
+    satellite_unit = Keyword()
+
+    service_id = Keyword()
+
+    service_type = Keyword()
+
+    status = Keyword()
+
+    timeliness = Keyword()
+
+    updateTime = ZuluDate()
+
+    value = Long()
+
+    value_adjusted = Long()
 
 
 class CdsDatabudget(MAASDocument):
@@ -3051,6 +3130,80 @@ class MaasConfigCompleteness(MAASDocument):
     service_type = Keyword()
 
     start_date = ZuluDate()
+
+
+class MaasConfigCompletenessS3Records(InnerDoc):
+    """
+    Inner document class for parent class: MaasConfigCompletenessS3
+
+    Generated from property: records
+    """
+
+    product_type = Keyword()
+
+    sensing_in_minutes = Long()
+
+    timeliness = Keyword()
+
+
+class MaasConfigCompletenessS3(MAASDocument):
+    """
+    Mapping class for index: maas-config-completeness-s3
+
+    Generated from: resources/templates/maas-config-completeness-s3_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-completeness-s3"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-completeness-s3")
+
+    key = Keyword()
+
+    latest = Boolean()
+
+    records = Object(MaasConfigCompletenessS3Records)
+
+
+class MaasConfigCompletenessS5Records(InnerDoc):
+    """
+    Inner document class for parent class: MaasConfigCompletenessS5
+
+    Generated from property: records
+    """
+
+    product_type = Keyword()
+
+    sensing_in_minutes = Long()
+
+    timeliness = Keyword()
+
+
+class MaasConfigCompletenessS5(MAASDocument):
+    """
+    Mapping class for index: maas-config-completeness-s5
+
+    Generated from: resources/templates/maas-config-completeness-s5_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-completeness-s5"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-completeness-s5")
+
+    key = Keyword()
+
+    latest = Boolean()
+
+    records = Object(MaasConfigCompletenessS5Records)
 
 
 class MaasConfigDataflowMetadata(InnerDoc):

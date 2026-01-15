@@ -70,6 +70,9 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
 
     def get_applicable_configuration(self):
         if self.DATAFLOW_CACHE is None:
+
+            # Find dataflow document tagged latest
+            #! TODO: need to merge all latest document and check conflict
             self.DATAFLOW_CACHE = (
                 generated.MaasConfigDataflow.search()
                 .filter("term", latest=True)

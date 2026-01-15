@@ -1,0 +1,36 @@
+{
+    "index_patterns": [
+        "maas-config-completeness-s3"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 1,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "key": {
+                "type": "keyword"
+            },
+            "latest": {
+                "type": "boolean"
+            },
+            "records": {
+                "type": "object",
+                "properties": {
+                    "product_type": {
+                        "type": "keyword"
+                    },
+                    "sensing_in_minutes": {
+                        "type": "long"
+                    },
+                    "timeliness": {
+                        "type": "keyword"
+                    }
+                }
+            }
+        },
+        "_meta": {}
+    }
+}

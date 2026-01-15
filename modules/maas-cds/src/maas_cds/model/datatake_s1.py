@@ -314,10 +314,18 @@ class CdsDatatakeS1(CdsDatatake):
 
         # specific
         if product_type == "RF_RAW__0S":
-            if self.satellite_unit in ("S1C", "S1D"):
+            latest_rf_sensing_value = 2690000
+            if self.satellite_unit in ("S1A", "S1B"):
+                sensing_value = 2800000
+            elif self.satellite_unit in ("S1C", "S1D"):
                 sensing_value = 2690000
             else:
-                sensing_value = 2800000
+                sensing_value = latest_rf_sensing_value
+                LOGGER.warning(
+                    "[%s] - Missing specific satellite rf expected : %s",
+                    self.datatake_id,
+                    self.satellite_unit,
+                )
 
         # apply tolerance if we have sensing value
         if sensing_value:

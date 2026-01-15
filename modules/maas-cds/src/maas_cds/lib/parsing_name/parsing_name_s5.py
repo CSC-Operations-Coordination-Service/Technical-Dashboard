@@ -31,7 +31,7 @@ def extract_data_from_product_name_s5(product_name):
 
         data["timeliness"] = product_name[4:8]
 
-        data["product_type"] = product_name[4:19]
+        data["product_type"] = product_name[9:19]
 
         data["start_sensing_time"] = datestr_to_utc_datetime(product_name[20:35])
 

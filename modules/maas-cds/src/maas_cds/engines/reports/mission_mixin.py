@@ -56,7 +56,7 @@ class MissionMixinEngine:
             if hasattr(model, childname):
                 classname = childname
             else:
-                self.logger.warning("Dedicated class %s not found in model", childname)
+                self.logger.debug("Dedicated class %s not found in model", childname)
         else:
             self.logger.info(
                 "No mission found for document  %s - %s", document, document.name

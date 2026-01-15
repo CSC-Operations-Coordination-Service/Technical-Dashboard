@@ -131,7 +131,7 @@ class PublicationConsolidatorEngine(
         """
 
         if not (document.origin_date and document.publication_date):
-            self.logger.warning(
+            self.logger.debug(
                 "origin_date or publication_date is None:"
                 "cannot calculate transfer_timeliness for publication key= %s",
                 document.key,

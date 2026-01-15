@@ -81,10 +81,83 @@ class CdsPublication(
 
     @property
     def completeness_key(self):
+        # This working for s1-s2 for s3-s5 need also timeliness in the completeness key
         return {
             "index": self.completeness_document_index,
             "class": self.completeness_document_class,
+            "key": "-".join(
+                [
+                    self.satellite_unit,
+                    self.datatake_id,
+                ]
+            ),
             "satellite_unit": self.satellite_unit,
             "datatake_id": self.datatake_id,
             "product_type": self.product_type,
+            "product_level": self.product_level,
+            "service_type": self.service_type,
+            "service_id": self.service_id,
+        }
+
+    @property
+    def completeness_splitted_document_index(self):
+
+        target_index = cds_completeness_model.CdsCompletenessSplitted(
+            mission=self.mission,
+            satellite_unit=self.satellite_unit,
+            service_type=self.service_type,
+            service_id=self.service_id,
+        ).partition_index_name
+
+        return target_index
+
+    @property
+    def completeness_splitted_document_class(self):
+
+        target_model_class_name = f"CdsCompletenessSplitted{self.mission}"
+
+        target_model_class = getattr(
+            cds_completeness_model,
+            target_model_class_name,
+            cds_completeness_model.CdsCompletenessSplitted,
+        )
+
+        return target_model_class
+
+    def get_completeness_splitted_document(self):
+
+        target_model_class = f"CdsCompletenessSplitted{self.mission}"
+
+        datatake_doc_id = self.completeness_splitted_key["key"]
+        datatake_doc = getattr(
+            cds_completeness_model,
+            target_model_class,
+            cds_completeness_model.CdsCompletenessSplitted,
+        ).get_by_id(
+            datatake_doc_id,
+            [self.completeness_splitted_document_index],
+        )
+
+        return datatake_doc
+
+    @property
+    def completeness_splitted_key(self):
+        return {
+            "index": self.completeness_splitted_document_index,
+            "class": self.completeness_splitted_document_class,
+            "key": "-".join(
+                [
+                    self.datatake_id,  # Already prefixed by satellite
+                    self.timeliness,
+                    self.product_type,
+                ]
+            ),
+            "mission": self.mission,
+            "satellite_unit": self.satellite_unit,
+            "datatake_id": self.datatake_id,
+            "product_type": self.product_type,
+            "product_level": self.product_level,
+            "timeliness": self.timeliness,  # Needed for s3-s5
+            "service_type": self.service_type,
+            "service_id": self.service_id,
         }

@@ -183,7 +183,7 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
                     publication_document.name,
                 )
             elif completeness_key in self.tuples_to_compute:
-                self.logger.info(
+                self.logger.debug(
                     "[ITER][Publication] - (%s) : Compute key already present",
                     publication_document.name,
                 )

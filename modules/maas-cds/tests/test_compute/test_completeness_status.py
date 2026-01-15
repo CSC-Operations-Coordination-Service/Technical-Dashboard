@@ -1,8 +1,6 @@
 from maas_cds.model.enumeration import CompletenessStatus
 
-from maas_cds.model.datatake import (
-    evaluate_completeness_status,
-)
+from maas_cds.lib.status import evaluate_completeness_status
 
 
 def test_evaluate_completeness_status_missing():

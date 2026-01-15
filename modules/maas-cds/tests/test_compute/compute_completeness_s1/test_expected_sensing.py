@@ -1,6 +1,5 @@
 """Tests for MP consolidation into datatake"""
 
-
 from maas_cds.model.datatake_s1 import (
     CdsDatatakeS1,
 )
@@ -40,6 +39,7 @@ def test_get_expected_from_product_type_3():
     """test get_expected_value with RFC product"""
 
     datatake_doc = CdsDatatakeS1()
+    datatake_doc.satellite_unit = "S1B"
 
     product_type = "RF_RAW__0S"
 

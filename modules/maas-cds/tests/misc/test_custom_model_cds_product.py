@@ -67,7 +67,7 @@ def test_cds_s2_custom_model_part2(
     product = s2_product_l0_gr
     product.datatake_id = "AZERTY"
     product.find_datatake_id()
-    assert product.datatake_id is None
+    assert product.datatake_id is "______"
     assert product.nb_datatake_document_that_match == 0
 
     # Check that when multiple document are found using find_datatake_from_sensing then only the
@@ -179,7 +179,7 @@ def test_cds_s5_custom_model(
         "mission": "S5",
         "name": "S5P_NRTI_L1B_ENG_DB_20220817T134212_20220817T134724_25100_03_020100_20220817T143010.nc",
         "product_level": "L1_",
-        "product_type": "NRTI_L1B_ENG_DB",
+        "product_type": "L1B_ENG_DB",
         "satellite_unit": "S5P",
         "collection_number": "03",
         "processor_version": "020100",
@@ -196,6 +196,7 @@ def test_cds_s5_custom_model(
     product = CdsProductS5(**dict_data)
     product.meta.id = "test_meta_id_value"
 
+    assert product.product_type_with_timeliness == "NRTI_L1B_ENG_DB"
     # Check get_datatake_id return field datatake_id
     product.datatake_id = "TESTVAL"
     assert product.get_datatake_id() == "TESTVAL"
@@ -204,23 +205,29 @@ def test_cds_s5_custom_model(
     mock_exclude.return_value = False
 
     for x in (
-        ("a", "b", "c", None),
-        ("a", "b", None, "d"),
-        ("a", None, "c", "d"),
-        (None, "b", "c", "d"),
+        ("a", "b", "c", "d", None),
+        ("a", "b", "c", None, "e"),
+        ("a", "b", None, "d", "e"),
+        ("a", None, "c", "d", "e"),
+        (None, "b", "c", "d", "e"),
     ):
         product.product_type = x[0]
         product.mission = x[1]
         product.datatake_id = x[2]
         product.absolute_orbit = x[3]
+        product.timeliness = x[4]
         assert product.get_compute_key() is None
 
     # Check nominal case get_compute_key with valid inputs
     product.product_type = "test_production_type"
+    product.timeliness = "test_timeliness"
     product.absolute_orbit = "test_absolut_orbit"
     product.mission = "test_mission"
     product.datatake_id = "test_datatake_id"
-    assert product.get_compute_key() == f"{product.datatake_id}-{product.product_type}"
+    assert (
+        product.get_compute_key()
+        == f"{product.datatake_id}-{product.product_type_with_timeliness}"
+    )
 
     # Check that the compute key returned is None for product_type in exclude list
     mock_exclude.return_value = True
@@ -229,14 +236,15 @@ def test_cds_s5_custom_model(
 
     # Check data_for_completeness return a subset of keys
     res = product.data_for_completeness()
+
     assert res == {
-        "key": f"{product.datatake_id}-{product.product_type}",
+        "key": f"{product.datatake_id}-{product.product_type_with_timeliness}",
         "datatake_id": product["datatake_id"],
         "mission": product["mission"],
         "absolute_orbit": product["absolute_orbit"],
         "satellite_unit": product["satellite_unit"],
         "timeliness": product["timeliness"],
-        "product_type": product["product_type"],
+        "product_type": product.product_type_with_timeliness,
         "product_level": product["product_level"],
         "observation_time_start": product["sensing_start_date"],
         "observation_time_stop": product["sensing_end_date"],

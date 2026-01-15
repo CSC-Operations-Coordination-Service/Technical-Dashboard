@@ -9,9 +9,7 @@ from maas_cds.model.product_s5 import CdsProductS5
 from maas_cds.model.enumeration import CompletenessStatus
 from maas_cds.model.enumeration import CompletenessScope
 
-from maas_cds.model.datatake import (
-    evaluate_completeness_status,
-)
+from maas_cds.lib.status import evaluate_completeness_status
 
 from maas_cds.lib.periodutils import (
     compute_total_sensing_product,
@@ -457,7 +455,7 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
             dict: s5 product_type with metadata
         """
         search_request = generated.CdsDataflow.search().query("term", mission="S5")
-        request_result = search_request.params(size=1000).execute()
+        request_result = search_request.params(size=10000).execute()
 
         result_mapping = {conf.product_type: conf.level for conf in request_result}
         base = cls._BASE_S5_PRODUCTS_TYPES
@@ -544,14 +542,16 @@ class CdsS5Completeness(AnomalyMixin, generated.CdsS5Completeness):
                 CdsProductS5.search()
                 .filter("term", datatake_id=self.datatake_id)
                 .filter("term", mission=self.mission)
-                .filter("term", product_type=self.product_type)
+                .filter("term", product_type=self.product_type[5:])
+                .filter("term", timeliness=self.timeliness)
             )
         else:
             search_request = (
                 CdsProductS5.search()
                 .filter("term", datatake_id=self.datatake_id)
                 .filter("term", mission=self.mission)
-                .filter("term", product_type=self.product_type)
+                .filter("term", product_type=self.product_type[5:])
+                .filter("term", timeliness=self.timeliness)
                 .filter("exists", field="prip_id")
             )
 

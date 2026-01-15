@@ -1,0 +1,22 @@
+{
+    "date": "2025-01-20T13:43:32.773Z",
+    "message_id": "49af7c48-d31b-45ef-8c3e-70d88d5f6271",
+    "ancestor_ids": [],
+    "pipeline": [
+        "Manual"
+    ],
+    "force": true,
+    "document_ids": [
+        "S1A-490439",
+        "S1A-490437",
+        "S1A-490414",
+        "S1A-490436",
+        "S1A-492879",
+        "S1A-492844",
+        "S1A-492885"
+    ],
+    "document_indices": [
+        "cds-completeness-s1-s1a-dd-das"
+    ],
+    "document_class": "CdsCompletenessS1"
+}

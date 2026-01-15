@@ -18,6 +18,8 @@ def test_fill_global_completeness_1():
 
     datatake_doc = CdsDatatakeS1()
 
+    datatake_doc.satellite_unit = "S1A"
+
     datatake_doc.global_sensing_duration = 0
     datatake_doc.sensing_global_percentage = 0
     datatake_doc.sensing_global_status = model.CompletenessStatus.MISSING.value
