@@ -59,7 +59,8 @@ class CdsProductS2(CdsProduct):
             product_group_id=self.product_group_id,
         )
 
-        if len(datatake_document_that_match) == 0:
+        #! For GR and TL/TC we need to be careful of MP shift and only trust product_group_id
+        if len(datatake_document_that_match) == 0 and self.product_type[-2:] == "DS":
             datatake_document_that_match = find_datatake_from_sensing(
                 start_date=self.sensing_start_date,
                 end_date=self.sensing_end_date,
@@ -91,11 +92,11 @@ class CdsProductS2(CdsProduct):
 
     def get_compute_key(self):
         if self.product_type[-2:] not in ["GR", "TL", "TC", "DS"]:
-            LOGGER.debug("ComputeKey -> wrong product_type : %s", self.product_type)
+            LOGGER.debug("Compute Key -> wrong product_type : %s", self.product_type)
             return None
 
         if self.get_datatake_id() is None:
-            LOGGER.debug("ComputeKey -> no datatake_id : %s", self.datatake_id)
+            LOGGER.debug("Compute Key -> no datatake_id : %s", self.datatake_id)
             return None
 
         return (self.get_datatake_id(), self.product_type)

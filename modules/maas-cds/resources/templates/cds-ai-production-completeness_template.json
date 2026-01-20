@@ -1,0 +1,52 @@
+{
+    "aliases": {},
+    "index_patterns": [
+        "cds-ai-production-completeness*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "updateTime": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "mission": {
+                "type": "keyword"
+            },
+            "satellite_unit": {
+                "type": "keyword"
+            },
+            "sensing_start_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "sensing_end_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "datatake_id": {
+                "type": "keyword"
+            },
+            "input_name": {
+                "type": "keyword"
+            },
+            "timeliness": {
+                "type": "keyword"
+            },
+            "file_name": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "completeness": {
+                "type": "long"
+            }
+        },
+        "_meta": {}
+    }
+}

@@ -4,10 +4,11 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2025-10-30T17:45:38.479493+00:00
+Generated date: 2026-01-20T16:03:30.403337+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
+    - resources/templates/cds-ai-production-completeness_template.json
     - resources/templates/cds-anomaly-correlation_template.json
     - resources/templates/cds-cadip-acquisition-pass-status_template.json
     - resources/templates/cds-cams-tickets_template.json
@@ -104,6 +105,7 @@ __all__ = [
     "CamsCloudTickets",
     "CamsTickets",
     "CdsAcquisitionPassStatus",
+    "CdsAiProductionCompleteness",
     "CdsAnomalyCorrelation",
     "CdsCadipAcquisitionPassStatus",
     "CdsCadipAcquisitionPassStatusQualityInfos",
@@ -983,6 +985,43 @@ class CdsAcquisitionPassStatus(MAASDocument):
     start_delivery = ZuluDate()
 
     stop_delivery = ZuluDate()
+
+    updateTime = ZuluDate()
+
+
+class CdsAiProductionCompleteness(MAASDocument):
+    """
+    Mapping class for index: cds-ai-production-completeness
+
+    Generated from: resources/templates/cds-ai-production-completeness_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-ai-production-completeness"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-ai-production-completeness")
+
+    completeness = Long()
+
+    datatake_id = Keyword()
+
+    file_name = ZuluDate()
+
+    input_name = Keyword()
+
+    mission = Keyword()
+
+    satellite_unit = Keyword()
+
+    sensing_end_date = ZuluDate()
+
+    sensing_start_date = ZuluDate()
+
+    timeliness = Keyword()
 
     updateTime = ZuluDate()
 

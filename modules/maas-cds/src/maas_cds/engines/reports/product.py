@@ -56,6 +56,8 @@ class ProductConsolidatorEngine(
 
         self.hktm_related_products = []
 
+        self.ai_related_products = []
+
         self.custom_reports = {}
 
         self.dd_attrs = dd_attrs or {}
@@ -130,13 +132,19 @@ class ProductConsolidatorEngine(
         document.prip_publication_date = raw_document.publication_date
 
         document.prip_service = raw_document.interface_name
-        #
 
+        # S1/S2 - HKTM Product
         if document.mission == "S1" and document.product_type == "HK_RAW__0_":
             self.hktm_related_products.append(document)
-
         if document.mission == "S2" and document.product_type == "PRD_HKTM__":
             self.hktm_related_products.append(document)
+
+        # S1 - AI Product type for completeness
+        if document.mission == "S1" and document.product_type in (
+            "AI_RAW__0_",
+            "AISAUX",
+        ):
+            self.ai_related_products.append(document)
 
         if (
             document.mission == "S2"
@@ -315,6 +323,25 @@ class ProductConsolidatorEngine(
                 [document.meta.id for document in self.hktm_related_products],
                 "CdsProduct",
                 document_indices=self.get_index_names(self.hktm_related_products),
+                chunk_size=self.container_chunk_size,
+            )
+
+        # Detect AISAUX or AI_RAW__0_ for extra completeness
+        if self.ai_related_products:
+            self.logger.debug(
+                "Sending custom reports to %s of %s %s instances",
+                "update.ai-products",
+                len(
+                    self.ai_related_products,
+                ),
+                "CdsProduct",
+            )
+
+            yield EngineReport(
+                "update.ai-products",
+                [document.meta.id for document in self.ai_related_products],
+                "CdsProductS1",
+                document_indices=self.get_index_names(self.ai_related_products),
                 chunk_size=self.container_chunk_size,
             )
 
