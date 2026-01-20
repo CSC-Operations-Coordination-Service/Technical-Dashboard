@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-01-20T16:03:30.403337+00:00
+Generated date: 2026-01-20T22:16:46.028539+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -1009,7 +1009,7 @@ class CdsAiProductionCompleteness(MAASDocument):
 
     datatake_id = Keyword()
 
-    file_name = ZuluDate()
+    file_name = Keyword()
 
     input_name = Keyword()
 

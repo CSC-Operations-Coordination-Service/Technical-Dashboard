@@ -40,8 +40,7 @@
                 "type": "keyword"
             },
             "file_name": {
-                "type": "date",
-                "locale": "utc"
+                "type": "keyword"
             },
             "completeness": {
                 "type": "long"
