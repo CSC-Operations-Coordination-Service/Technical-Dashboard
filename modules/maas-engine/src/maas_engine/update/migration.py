@@ -189,6 +189,11 @@ class MaasMigrator:
                     if name.endswith(f"-{partition_suffix}"):
                         tmp_list.append(name)
             name_list = tmp_list
+
+        # Monkey stuff Handle index without alias
+        if len(name_list) == 0:
+            name_list = [index_name_prefix]
+
         return name_list
 
     def migrate_index_template(self, index_name, partitions, script=None):
