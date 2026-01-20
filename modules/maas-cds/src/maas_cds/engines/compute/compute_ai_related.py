@@ -45,7 +45,7 @@ class ComputeAiRelatedEngine(RawDataEngine):
         )
 
     def _common_consolidation(
-        product_doc: CdsProductS1, completeness_doc: CdsAiProductionCompleteness
+        self, product_doc: CdsProductS1, completeness_doc: CdsAiProductionCompleteness
     ):
         """Set to the completeness doc the common attribuate
 
