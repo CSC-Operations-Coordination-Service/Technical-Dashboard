@@ -50,6 +50,7 @@ def test_cds_s2_custom_model_part2(
     find_mock,
     s2_product_olqc_report,
     s2_product_l0_gr,
+    s2_product_l0_ds,
     s2_datatake_S2A_38107_1,
     s2_datatake_dark_o,
 ):
@@ -78,7 +79,7 @@ def test_cds_s2_custom_model_part2(
     out_dtk_2.datatake_id = "out_dtk_2"
 
     find_mock.return_value = [out_dtk_2, out_dtk_1]
-    product = s2_product_l0_gr
+    product = s2_product_l0_ds
     product.datatake_id = "AZERTY"
     product.find_datatake_id()
 
