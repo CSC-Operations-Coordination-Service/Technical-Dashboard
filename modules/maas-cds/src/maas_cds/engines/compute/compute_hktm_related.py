@@ -227,7 +227,6 @@ class ComputeHktmRelatedEngine(DataEngine):
             for raw_document, response in zip(valid_input_documents, msearch.execute()):
                 if not response:
                     self.logger.warning("No hktm found %s", raw_document)
-                    result_map[document.meta.id] = raw_document
                     continue
 
                 for document in response:
