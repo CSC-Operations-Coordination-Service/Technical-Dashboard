@@ -10,6 +10,7 @@ __all__ = [
     "s2_product_olqc_report",
     "s2_product_l2a_tc",
     "s2_product_l0_gr",
+    "s2_product_l0_ds",
     "s2_product_gip",
     "s2_raw_l2a_tc",
     "s2_product_l1c_ds",
@@ -158,6 +159,45 @@ product_l0_gr_dict = {
 @pytest.fixture
 def s2_product_l0_gr():
     product = CdsProductS2(**product_l0_gr_dict)
+    product.full_clean()
+    return product
+
+
+product_l0_ds_dict = {
+    "key": "00000b11b16cc863b04582fa66bd4c2b",
+    "mission": "S2",
+    "name": "S2A_OPER_MSI_L0__DS_ATOS_20220603T221050_S20220603T185059_D05_N04.00.tar",
+    "product_level": "L0_",
+    "product_type": "MSI_L0__DS",
+    "satellite_unit": "S2A",
+    "site_center": "ATOS",
+    "sensing_start_date": "2022-06-03T18:50:59.265Z",
+    "sensing_end_date": "2022-06-03T18:50:59.265Z",
+    "sensing_duration": 0,
+    "timeliness": "NOMINAL",
+    "detector_id": "05",
+    "prip_id": "d688fe5a-52c4-4f93-8218-124204b63619",
+    "prip_publication_date": "2022-06-03T22:29:13.891Z",
+    "prip_service": "PRIP_S2A_ATOS",
+    "updateTime": "2022-06-09T01:15:54.629Z",
+    "nb_datatake_document_that_match": 0,
+    "expected_lta_number": 4,
+    "LTA_Acri_is_published": True,
+    "LTA_Acri_publication_date": "2022-06-03T22:47:55.852000+00:00",
+    "nb_lta_served": 3,
+    "LTA_CloudFerro_is_published": True,
+    "LTA_CloudFerro_publication_date": "2022-06-03T22:56:23.694000+00:00",
+    "LTA_Werum_is_published": True,
+    "LTA_Werum_publication_date": "2022-06-03T22:41:50.649000+00:00",
+    "absolute_orbit": "36289",
+    "instrument_mode": "NOBS",
+    "datatake_id": "36289-1",
+}
+
+
+@pytest.fixture
+def s2_product_l0_ds():
+    product = CdsProductS2(**product_l0_ds_dict)
     product.full_clean()
     return product
 

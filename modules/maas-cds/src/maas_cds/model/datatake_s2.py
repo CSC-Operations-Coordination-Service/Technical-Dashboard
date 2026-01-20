@@ -240,33 +240,36 @@ class CdsDatatakeS2(CdsDatatake):
         # Evaluate expected tiles before compute completeness
         self.number_of_expected_tiles = len(self.search_expected_tiles())
 
+        for product in self.find_related_document_not_attached().scan():
+
+            self.retrieve_additional_fields_from_product(product)
+
+            if product.datatake_id != self.datatake_id:
+                product.datatake_id = self.datatake_id
+                LOGGER.info(
+                    "Load_data_before_compute - CdsProduct with key %s had"
+                    " no datatake_id, using product group id it has been rattached"
+                    " to datatake_id : %s",
+                    product.key,
+                    self.datatake_id,
+                )
+                yield product
+
+    def find_related_document_not_attached(self):
         # Try to rattach products which have no datatake id to this datatake using sensing date
         # Also update the datastrip_ds and product_group_ids list of the datatake
         search_request = (
             CdsProduct.search()
-            .filter("term", satellite_unit=self.satellite_unit)
             .filter("term", mission=self.mission)
+            .filter("term", satellite_unit=self.satellite_unit)
             .filter("exists", field="prip_id")
-            .filter("range", sensing_start_date={"gte": self.observation_time_start})
-            .filter("range", sensing_end_date={"lte": self.observation_time_stop})
-            .filter("terms", product_type=self.get_all_product_types())
+            .filter(~Q("term", datatake_id=self.datatake_id))
+            .filter("term", product_group_id=self.product_group_ids[0])
             .params(ignore=404)
         )
-        res = search_request.execute()
-        if res:
-            for product in res:
-                self.retrieve_additional_fields_from_product(product)
+        request = search_request
 
-                if product.datatake_id in ("", utils.DATATAKE_ID_MISSING_VALUE):
-                    product.datatake_id = self.datatake_id
-                    LOGGER.info(
-                        "Load_data_before_compute - CdsProduct with key:%s had"
-                        " no datake_id, using sensing date it has been rattached"
-                        " to datatake_id: %s",
-                        product.key,
-                        self.datatake_id,
-                    )
-                    yield product
+        return request
 
     def search_expected_tiles(self) -> set[str]:
         """Look for expected tiles for this datatake
@@ -312,7 +315,7 @@ class CdsDatatakeS2(CdsDatatake):
 
         if not global_expected:
             LOGGER.warning(
-                "[%s] - Unhandle instrument mode : %s",
+                "[%s] - No global expected for : %s",
                 self.datatake_id,
                 self.instrument_mode,
             )
@@ -664,24 +667,33 @@ class CdsDatatakeS2(CdsDatatake):
 
         # We match all product between observation ± delta in seconds
 
-        start_date = self.observation_time_start - timedelta(
-            seconds=self.MATCHING_DELTA_PRODUCTS
-        )
-        end_date = self.observation_time_stop + timedelta(
-            seconds=self.MATCHING_DELTA_PRODUCTS
-        )
+        # start_date = self.observation_time_start - timedelta(
+        #     seconds=self.MATCHING_DELTA_PRODUCTS
+        # )
+        # end_date = self.observation_time_stop + timedelta(
+        #     seconds=self.MATCHING_DELTA_PRODUCTS
+        # )
+        # return Q(
+        #     "bool",
+        #     filter=[
+        #         Q("term", satellite_unit=self.satellite_unit),
+        #         Q(
+        #             "range",
+        #             sensing_start_date={"gte": start_date},
+        #         ),
+        #         Q(
+        #             "range",
+        #             sensing_end_date={"lte": end_date},
+        #         ),
+        #     ],
+        # )
+
+        # Default behaviour
         return Q(
             "bool",
             filter=[
                 Q("term", satellite_unit=self.satellite_unit),
-                Q(
-                    "range",
-                    sensing_start_date={"gte": start_date},
-                ),
-                Q(
-                    "range",
-                    sensing_end_date={"lte": end_date},
-                ),
+                Q("term", datatake_id=self.datatake_id),
             ],
         )
 
@@ -716,4 +728,11 @@ class CdsDatatakeS2(CdsDatatake):
                 self.datatake_id,
                 product.key,
             )
+
             self.product_group_ids.append(product.product_group_id)
+
+            if len(self.product_group_ids) > 1:
+                LOGGER.warning(
+                    "[%s] - It's unexpected to have more than 1 products group id",
+                    self.datatake_id,
+                )

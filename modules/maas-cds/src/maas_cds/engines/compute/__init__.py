@@ -20,7 +20,9 @@ from maas_cds.engines.compute.compute_s5_completeness import (
 )
 from maas_cds.engines.compute.compute_cams_references import ComputeCamsReferencesEngine
 
-from maas_cds.engines.compute.compute_hktm_related import CdsHktmProductionCompleteness
+from maas_cds.engines.compute.compute_hktm_related import ComputeHktmRelatedEngine
+
+from maas_cds.engines.compute.compute_ai_related import ComputeAiRelatedEngine
 
 from maas_cds.engines.compute.correlate_acquisitions import (
     CorrelateAcquisitionsEngine,

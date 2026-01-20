@@ -210,7 +210,7 @@ class CdsDatatakeS1(CdsDatatake):
 
         if not global_expected:
             LOGGER.warning(
-                "[%s] - Unhandle instrument mode : %s",
+                "[%s] - No global expected : %s",
                 self.datatake_id,
                 self.instrument_mode,
             )
@@ -582,7 +582,7 @@ class CdsDatatakeS1(CdsDatatake):
 
         if not global_expected:
             LOGGER.warning(
-                "[%s] - Unhandle instrument mode : %s",
+                "[%s] - No global expected : %s",
                 self.datatake_id,
                 self.instrument_mode,
             )
@@ -593,4 +593,10 @@ class CdsDatatakeS1(CdsDatatake):
         """override"""
 
         # Default behaviour
-        return Q("term", datatake_id=self.datatake_id)
+        return Q(
+            "bool",
+            filter=[
+                Q("term", satellite_unit=self.satellite_unit),
+                Q("term", datatake_id=self.datatake_id),
+            ],
+        )
