@@ -272,6 +272,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
 
     def load_data_before_compute(self):
         """Some step need to be done before starting compute all completeness"""
+        yield None
 
     def impact_other_calculation(self, compute_key):
         """Some compute provide more information and make possible other compute
