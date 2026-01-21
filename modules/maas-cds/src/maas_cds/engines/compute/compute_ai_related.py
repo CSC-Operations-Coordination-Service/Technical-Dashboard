@@ -77,7 +77,10 @@ class ComputeAiRelatedEngine(RawDataEngine):
         if product_doc.product_type == "AISAUX":
             self._common_consolidation(product_doc, completeness_doc)
 
-            if completeness_doc.file_name != product_doc.name:
+            if (
+                completeness_doc.file_name is not None
+                and completeness_doc.file_name != product_doc.name
+            ):
                 self.logger.warning(
                     "[%s] - Completeness document already own by an other document here %s - %s",
                     completeness_doc.meta.id,
@@ -92,7 +95,10 @@ class ComputeAiRelatedEngine(RawDataEngine):
         elif product_doc.product_type == "AI_RAW__0_":
             self._common_consolidation(product_doc, completeness_doc)
 
-            if completeness_doc.input_name != product_doc.name:
+            if (
+                completeness_doc.input_name is not None
+                and completeness_doc.input_name != product_doc.name
+            ):
                 self.logger.warning(
                     "[%s] - Completeness document already own by an other document here %s - %s",
                     completeness_doc.meta.id,

@@ -119,7 +119,7 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
             datatake_doc.purge_dynamic_fields()
 
             # TODO for s2
-            datatake_doc.load_data_before_compute()
+            yield from datatake_doc.load_data_before_compute()
 
             self.logger.debug("Instance are %s", type(datatake_doc))
 
