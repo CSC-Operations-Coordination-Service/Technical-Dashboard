@@ -245,7 +245,17 @@ class CdsDatatakeS2(CdsDatatake):
             self.retrieve_additional_fields_from_product(product)
 
             if product.datatake_id != self.datatake_id:
+
                 product.datatake_id = self.datatake_id
+
+                if self.timeliness:
+                    product.timeliness = self.timeliness
+
+                product.absolute_orbit = self.absolute_orbit
+                product.relative_orbit = self.relative_orbit
+
+                product.instrument_mode = self.instrument_mode
+
                 LOGGER.info(
                     "Load_data_before_compute - CdsProduct with key %s had"
                     " no datatake_id, using product group id it has been rattached"
@@ -253,7 +263,7 @@ class CdsDatatakeS2(CdsDatatake):
                     product.key,
                     self.datatake_id,
                 )
-                yield product
+                yield product.to_bulk_action()
 
     def find_related_document_not_attached(self):
         # Try to rattach products which have no datatake id to this datatake using sensing date
@@ -267,9 +277,8 @@ class CdsDatatakeS2(CdsDatatake):
             .filter("term", product_group_id=self.product_group_ids[0])
             .params(ignore=404)
         )
-        request = search_request
 
-        return request
+        return search_request
 
     def search_expected_tiles(self) -> set[str]:
         """Look for expected tiles for this datatake
