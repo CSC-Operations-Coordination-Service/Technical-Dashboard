@@ -240,7 +240,11 @@ class CdsDatatakeS2(CdsDatatake):
         # Evaluate expected tiles before compute completeness
         self.number_of_expected_tiles = len(self.search_expected_tiles())
 
-        for product in self.find_related_document_not_attached().scan():
+        for product in (
+            self.find_related_document_not_attached()
+            .params(version=True, seq_no_primary_term=True)
+            .scan()
+        ):
 
             self.retrieve_additional_fields_from_product(product)
 
