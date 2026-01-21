@@ -192,6 +192,7 @@ class ComputeCompletenessEngine(DataEngine):
                     self.tuples_to_compute.append(key)
 
                     other_calculations = datatake_doc.impact_other_calculation(key)
+
                     for other_calculation in other_calculations:
                         if other_calculation in self.tuples_to_compute:
                             continue
@@ -218,6 +219,7 @@ class ComputeCompletenessEngine(DataEngine):
             datatake_id,
             product_type,
         ) in self.tuples_to_compute:
+
             datatake_doc = self.get_datatake_doc(datatake_id)
 
             if datatake_doc is None:
@@ -256,7 +258,9 @@ class ComputeCompletenessEngine(DataEngine):
             datatake_doc,
             original_datatake_doc_dict,
         ) in self.local_cache_datatake.items():
+
             if datatake_doc is None:
+
                 self.logger.info(
                     "[ITER][Product][%s] - Datatake not find - skipping", datatake_id
                 )
