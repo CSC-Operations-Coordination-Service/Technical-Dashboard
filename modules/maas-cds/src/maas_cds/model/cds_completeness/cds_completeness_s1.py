@@ -55,10 +55,14 @@ class CdsCompletenessS1(CdsCompleteness, CdsDatatakeS1):
 
         if "SLC" in compute_key["product_type"]:
             new_compute_key = copy.deepcopy(compute_key)
+
             new_compute_key["product_type"] = (
                 f"{compute_key['product_type'][:2]}_ETA__AX"
             )
-            return [new_compute_key]
+
+            if new_compute_key["product_type"] in self.get_all_product_types():
+
+                return [new_compute_key]
 
         if self.REFERENCE_PRODUCT_TYPE_SENSING in compute_product_type:
             # build compute key to process

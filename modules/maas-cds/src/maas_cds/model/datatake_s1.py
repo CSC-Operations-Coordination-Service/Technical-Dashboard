@@ -83,7 +83,12 @@ class CdsDatatakeS1(CdsDatatake):
         extra_compute_key = []
 
         if "SLC" in compute_key[1]:
-            return [(compute_key[0], f"{compute_key[1][:2]}_ETA__AX")]
+
+            eta_product_type = f"{compute_key[1][:2]}_ETA__AX"
+
+            if eta_product_type in self.get_all_product_types():
+
+                return [(compute_key[0], eta_product_type)]
 
         if self.REFERENCE_PRODUCT_TYPE_SENSING in compute_product_type:
             # build compute key to process
