@@ -284,6 +284,18 @@ class CdsDatatakeS1(CdsDatatake):
             CdsProduct.search()
             .filter("term", datatake_id=self.datatake_id)
             .filter("term", satellite_unit=self.satellite_unit)
+            .filter(
+                "range",
+                sensing_start_date={
+                    "lte": self.observation_time_stop + timedelta(hours=1)
+                },
+            )
+            .filter(
+                "range",
+                sensing_end_date={
+                    "gte": self.observation_time_start - timedelta(hours=1)
+                },
+            )
             .filter("term", product_type=self.add_prefix_instrument("SLC__1S"))
         )
 
@@ -603,5 +615,17 @@ class CdsDatatakeS1(CdsDatatake):
             filter=[
                 Q("term", satellite_unit=self.satellite_unit),
                 Q("term", datatake_id=self.datatake_id),
+                Q(
+                    "range",
+                    sensing_start_date={
+                        "lte": self.observation_time_stop + timedelta(hours=1)
+                    },
+                ),
+                Q(
+                    "range",
+                    sensing_end_date={
+                        "gte": self.observation_time_start - timedelta(hours=1)
+                    },
+                ),
             ],
         )

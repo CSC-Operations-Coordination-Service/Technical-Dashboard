@@ -20,6 +20,7 @@ from maas_cds.model import generated
 from maas_cds.model.anomaly_mixin import AnomalyMixin
 from maas_cds.model.enumeration import CompletenessScope, CompletenessStatus
 from maas_cds.model.product import CdsProduct
+from datetime import timedelta
 
 __all__ = ["CdsDatatake"]
 
@@ -542,11 +543,17 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         # Ignore if index are missing -
         # This can be dangerous to not raise an error on missing index this can hide an database issue
 
+        # Add 1 hour tolerance to the time range
+        time_start_with_tolerance = self.observation_time_start - timedelta(hours=1)
+        time_stop_with_tolerance = self.observation_time_stop + timedelta(hours=1)
+
         search_request = (
             base_search.filter("term", datatake_id=self.datatake_id)
             .filter("term", satellite_unit=self.satellite_unit)
             .filter("term", product_type=product_type)
             .filter("terms", prip_service=completeness_service)
+            .filter("range", sensing_start_date={"lte": time_stop_with_tolerance})
+            .filter("range", sensing_end_date={"gte": time_start_with_tolerance})
             .filter("exists", field="prip_id")
             .filter(
                 "bool",
@@ -562,8 +569,8 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                     {"term": {"nb_lta_deleted": 0}},
                 ],
             )
-            .params(ignore=404, ignore_unavailable=True)
         )
+        search_request = search_request.params(ignore=404, ignore_unavailable=True)
 
         query_scan = search_request.scan()
 
