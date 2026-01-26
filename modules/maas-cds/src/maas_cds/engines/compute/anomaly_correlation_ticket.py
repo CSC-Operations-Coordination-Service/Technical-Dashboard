@@ -3,7 +3,8 @@
 from typing import Any, Dict, Iterator
 from collections import defaultdict
 
-from opensearchpy import NotFoundError, Keyword
+from maas_cds.model.generated import CdsAnomalyCorrelation
+from opensearchpy import MultiSearch, NotFoundError, Keyword
 
 from maas_model import MAASDocument
 
@@ -140,15 +141,27 @@ class CorrelateAnomalyTicketEngine(DataEngine):
                 ticket_with_an_payloads[ticket_id] = []
             ticket_with_an_payloads[ticket_id].append(report)
 
+        ref_ticket_id = list(ticket_with_an_payloads.keys())
+
+        # Here need to load all AN (CdsAnomalyCorrelation)
+        msearch = MultiSearch()
+
+        for ticket_id in ref_ticket_id:
+            msearch.add(
+                CdsAnomalyCorrelation.search().filter("term", ticket_id=ticket_id)
+            )
+
         # Next get the tickets to avoid duplicated impact and centralize information
         self.logger.debug(
             "Load %s tickets",
             len(ticket_with_an_payloads.keys()),
         )
 
-        tickets = CdsCamsTickets.mget_by_ids(list(ticket_with_an_payloads.keys()))
+        tickets = CdsCamsTickets.mget_by_ids(ref_ticket_id)
 
-        for ticket, ticket_id in zip(tickets, ticket_with_an_payloads.keys()):
+        for ticket, ticket_id, an_tickets_linked in zip(
+            tickets, ref_ticket_id, msearch.execute()
+        ):
 
             if ticket is None:
                 self.logger.warning(
@@ -164,15 +177,21 @@ class CorrelateAnomalyTicketEngine(DataEngine):
                 ticket_with_an_payloads[ticket_id],
             )
 
-            for an_payload in ticket_with_an_payloads[ticket_id]:
-                # Field to aggregate
-                fields_to_merge = [
-                    "products",
-                    "publications",
-                    "datatake_ids",
-                    "acquisition_pass",
-                ]
+            fields_to_merge = [
+                "products",
+                "publications",
+                "datatake_ids",
+                "acquisition_pass",
+            ]
+            # Perform a reset
+            for field in fields_to_merge:
+                setattr(ticket, field, [])
 
+            # Now apply all latest information inside AN ticket
+            an_payloads = list(an_tickets_linked)
+            for an_payload in an_payloads:
+
+                # Merge all aggregate
                 for field in fields_to_merge:
 
                     # Merge and avoid duplicates
@@ -187,7 +206,8 @@ class CorrelateAnomalyTicketEngine(DataEngine):
                         ),
                     )
 
-                # Correlate ticket from report (keep origin and description of the latest ingested)
+            # Correlate ticket from report (keep origin and description of the latest ingested)
+            for an_payload in ticket_with_an_payloads[ticket_id]:
                 ticket.origin = an_payload.origin
                 ticket.description = an_payload.description
 
