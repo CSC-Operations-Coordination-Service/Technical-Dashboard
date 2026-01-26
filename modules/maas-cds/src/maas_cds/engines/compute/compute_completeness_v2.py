@@ -1,7 +1,9 @@
 """Publication consolidation"""
 
 from maas_cds.engines.compute.compute_completeness import ComputeCompletenessEngine
+from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.lib.parsing_name import utils
+from maas_cds.model.configuration import MaasConfigCompleteness, MaasConfigDataflow
 from maas_engine.engine.rawdata import DataEngine
 from maas_cds.model.cds_completeness import CdsCompleteness
 
@@ -19,6 +21,29 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
     #  -> check from config what is needed on this periode / satellite
     # CdsPublication methode -> associate_completeness_index_name -> associate datatake_id doc reference
     #
+
+    def __init__(
+        self,
+        args=None,
+        completeness_tolerance=None,
+        send_reports=False,
+        generate_missing_periods=False,
+        missing_periods_maximal_offset=None,
+    ):
+        super().__init__(
+            args,
+            completeness_tolerance,
+            send_reports,
+            generate_missing_periods,
+            missing_periods_maximal_offset,
+        )
+
+        self.config_manager = MaasConfigManager(
+            config_model_class=[
+                MaasConfigDataflow(),
+                MaasConfigCompleteness(),
+            ]
+        )
 
     def load_datatake_doc(self, compute_key):
         """Load a datatake in the local cache

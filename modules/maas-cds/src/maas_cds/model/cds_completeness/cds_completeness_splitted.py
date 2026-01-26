@@ -31,8 +31,6 @@ class CdsCompletenessSplitted(AnomalyMixin, generated.CdsCompletenessSplitted):
     cams_origin = Keyword(multi=True)
     cams_descriptions = Keyword(multi=True)
 
-    DATAFLOW_CACHE = None
-
     COMPLETENESS_TOLERANCE = {}
 
     @property
