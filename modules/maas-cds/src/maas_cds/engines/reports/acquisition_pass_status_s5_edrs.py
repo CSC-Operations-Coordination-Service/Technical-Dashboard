@@ -352,6 +352,7 @@ class EDRSAcquisitionPassStatusConsolidatorEngine(
     SAT_GROUND_STATION_DICT = {
         "S1A": ("RDGS", "HDGS"),
         "S1B": ("RDGS", "HDGS"),
+        "S1C": ("RDGS", "HDGS"),
         "S2A": ("FLGS", "BFLGS"),
         "S2B": ("FLGS", "BFLGS"),
     }
