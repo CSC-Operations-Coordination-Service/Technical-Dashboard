@@ -353,8 +353,10 @@ class EDRSAcquisitionPassStatusConsolidatorEngine(
         "S1A": ("RDGS", "HDGS"),
         "S1B": ("RDGS", "HDGS"),
         "S1C": ("RDGS", "HDGS"),
+        "S1D": ("RDGS", "HDGS"),
         "S2A": ("FLGS", "BFLGS"),
         "S2B": ("FLGS", "BFLGS"),
+        "S2C": ("FLGS", "BFLGS"),
     }
 
     def __init__(self, args=None, send_reports=False, chunk_size=128):
