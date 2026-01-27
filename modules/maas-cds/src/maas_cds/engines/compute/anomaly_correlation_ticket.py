@@ -147,7 +147,7 @@ class CorrelateAnomalyTicketEngine(DataEngine):
         msearch = MultiSearch()
 
         for ticket_id in ref_ticket_id:
-            msearch.add(
+            msearch = msearch.add(
                 CdsAnomalyCorrelation.search().filter("term", ticket_id=ticket_id)
             )
 
