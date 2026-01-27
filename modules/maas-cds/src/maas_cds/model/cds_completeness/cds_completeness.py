@@ -2,6 +2,7 @@
 
 import logging
 
+from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.model.datatake import CdsDatatake
 
 from maas_cds.model import generated
@@ -13,8 +14,6 @@ LOGGER = logging.getLogger("CdsModelCompleteness")
 
 
 class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
-
-    DATAFLOW_CACHE = None
 
     def find_brother_products_scan(self, product_type, indices=None):
         """Find products with the same datatake and the same product_type
@@ -69,20 +68,13 @@ class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
         ]
 
     def get_applicable_configuration(self):
-        if self.DATAFLOW_CACHE is None:
-
-            # Find dataflow document tagged latest
-            #! TODO: need to merge all latest document and check conflict
-            self.DATAFLOW_CACHE = (
-                generated.MaasConfigDataflow.search()
-                .filter("term", latest=True)
-                .execute()[0]
-            )
 
         # Filter DATAFLOW_CACHE records to match mission, satellite_unit, and service_type
         filtered_records = [
             record
-            for record in self.DATAFLOW_CACHE.records
+            for record in MaasConfigManager().get_config("MaasConfigDataflow")[
+                "records"
+            ]
             if record.mission == self.mission
             and self.satellite_unit in record.satellites
             and self.service_type in record.services_config

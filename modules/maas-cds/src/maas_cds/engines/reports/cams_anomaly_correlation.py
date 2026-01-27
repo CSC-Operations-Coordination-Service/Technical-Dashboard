@@ -9,6 +9,9 @@ from maas_cds.lib.parsing_name.utils import (
     normalize_product_name_list,
     generate_publication_names,
 )
+import logging
+
+LOGGER = logging.getLogger("AnomalyCorrelationConsolidatorEngine")
 
 
 class AnomalyCorrelationConsolidatorEngine(ReplicatorEngine):
@@ -50,6 +53,46 @@ class AnomalyCorrelationConsolidatorEngine(ReplicatorEngine):
     def get_consolidated_id(self, raw_document: CamsCloudAnomalyCorrelation):
         return raw_document.meta.id
 
+    @staticmethod
+    def kindly_input_corrector(datatake_id):
+        datatake_ids_to_correct = []
+        # Try to guess common separator
+        datatake_id = datatake_id.replace(".", ",")
+        datatake_id = datatake_id.replace(";", ",")
+
+        # Handle concatenated datatake IDs that start with S (e.g., S1A-516380S1A-516381)
+        datatake_id = re.sub(r"(?<=\d)S", ",S", datatake_id)
+
+        if "," in datatake_id:
+            datatake_ids_to_correct = [id for id in datatake_id.split(",")]
+        else:
+            datatake_ids_to_correct = [datatake_id]
+
+        corrected_datatake_ids = []
+        for datatake_id in datatake_ids_to_correct:
+
+            # Remove whitespace and empty strings and typo
+            datatake_id = datatake_id.replace("--", "-")
+            datatake_id = datatake_id.replace("\t", "")
+
+            datatake_id = datatake_id.upper()
+            datatake_id = datatake_id.strip()
+            datatake_id = "".join([char for char in datatake_id if char != " "])
+
+            if re.match(r"S\d{1}.-", datatake_id):
+                if re.match(r"S1[A-Z]-\d{1,6}$", datatake_id):
+                    corrected_datatake_ids.append(datatake_id)
+                elif re.match(r"S2[A-Z]-\d{1,6}-\d{1}", datatake_id):
+                    corrected_datatake_ids.append(datatake_id)
+                elif re.match(r"S3[A-Z]-\d{3}-\d{3}$", datatake_id):
+                    corrected_datatake_ids.append(datatake_id)
+                elif re.match(r"S5P-\d{1,6}$", datatake_id):
+                    corrected_datatake_ids.append(datatake_id)
+                else:
+                    LOGGER.warning("Invalid datatake_id format: %s", datatake_id)
+
+        return corrected_datatake_ids
+
     def consolidate(
         self, raw_document: CamsCloudAnomalyCorrelation, document: CdsAnomalyCorrelation
     ) -> Union[CdsAnomalyCorrelation]:
@@ -74,20 +117,18 @@ class AnomalyCorrelationConsolidatorEngine(ReplicatorEngine):
             for publication_name in generate_publication_names(product_name)
         ]
 
-        document.datatake_ids = (
-            list(
-                set(
-                    [
-                        re.sub(r"\s+", "", impacted_observation)
-                        for impacted_observation in raw_document.impacted_observations
-                        if impacted_observation
-                        and re.sub(r"\s+", "", impacted_observation)
-                    ]
+        corrected_dt_ids = set()
+        if raw_document.impacted_observations:
+            for impacted_observation in raw_document.impacted_observations:
+                patched_dt = (
+                    AnomalyCorrelationConsolidatorEngine.kindly_input_corrector(
+                        impacted_observation
+                    )
                 )
-            )
-            if raw_document.impacted_observations
-            else []
-        )
+                for corrected_dt in patched_dt:
+                    corrected_dt_ids.add(corrected_dt)
+
+        document.datatake_ids = list(corrected_dt_ids)
 
         if raw_document.impacted_passes:
             acquisition_pass_keys = []
