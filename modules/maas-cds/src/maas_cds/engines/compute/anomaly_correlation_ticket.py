@@ -132,7 +132,7 @@ class CorrelateAnomalyTicketEngine(DataEngine):
 
     def action_iterator(self) -> Iterator[Dict[str, Any]]:
 
-        self.logger.debug("START ACTION ITERATR")
+        self.logger.debug("START ACTION ITERATOR")
         # Retrieve all ticket impact by the AN
         ticket_with_an_payloads = {}
         for report in self.input_documents:
@@ -189,6 +189,7 @@ class CorrelateAnomalyTicketEngine(DataEngine):
 
             # Now apply all latest information inside AN ticket
             an_payloads = list(an_tickets_linked)
+
             for an_payload in an_payloads:
 
                 # Merge all aggregate
