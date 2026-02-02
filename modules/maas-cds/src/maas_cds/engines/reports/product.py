@@ -56,6 +56,8 @@ class ProductConsolidatorEngine(
 
         self.hktm_related_products = []
 
+        self.ds_related_products = []
+
         self.ai_related_products = []
 
         self.custom_reports = {}
@@ -138,6 +140,10 @@ class ProductConsolidatorEngine(
             self.hktm_related_products.append(document)
         if document.mission == "S2" and document.product_type == "PRD_HKTM__":
             self.hktm_related_products.append(document)
+
+        # S2 - DS product for timeliness
+        if document.mission == "S2" and document.product_type == "MSI_L0__DS":
+            self.ds_related_products.append(document)
 
         # S1 - AI Product type for completeness
         if document.mission == "S1" and document.product_type in (
@@ -323,6 +329,23 @@ class ProductConsolidatorEngine(
                 [document.meta.id for document in self.hktm_related_products],
                 "CdsProduct",
                 document_indices=self.get_index_names(self.hktm_related_products),
+                chunk_size=self.container_chunk_size,
+            )
+        if self.ds_related_products:
+            self.logger.debug(
+                "Sending custom reports to %s of %s %s instances",
+                "update.ds-products",
+                len(
+                    self.ds_related_products,
+                ),
+                "CdsProductS2",
+            )
+
+            yield EngineReport(
+                "update.ds-products",
+                [document.meta.id for document in self.ds_related_products],
+                "CdsProductS2",
+                document_indices=self.get_index_names(self.ds_related_products),
                 chunk_size=self.container_chunk_size,
             )
 

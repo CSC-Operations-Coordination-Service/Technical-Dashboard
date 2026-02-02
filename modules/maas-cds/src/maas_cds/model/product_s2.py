@@ -9,6 +9,7 @@ from maas_cds.lib.queryutils.find_datatake_from_product_group_id import (
     find_datatake_from_product_group_id,
 )
 from maas_cds.model.product import CdsProduct
+from datetime import timedelta
 import maas_cds.lib.parsing_name.utils as utils
 
 
@@ -61,11 +62,54 @@ class CdsProductS2(CdsProduct):
 
         #! For GR and TL/TC we need to be careful of MP shift and only trust product_group_id
         if len(datatake_document_that_match) == 0 and self.product_type[-2:] == "DS":
+
             datatake_document_that_match = find_datatake_from_sensing(
                 start_date=self.sensing_start_date,
                 end_date=self.sensing_end_date,
                 mission=self.mission,
                 satellite=self.satellite_unit,
+            )
+
+            # Filter out datatakes that already have a product_group_id and
+            # order by nearest sensing duration, filtering out those with duration lower than product
+            filtered_datatakes = []
+            product_duration = (
+                self.sensing_end_date - self.sensing_start_date
+            ).total_seconds()
+
+            for dt in datatake_document_that_match:
+                # Skip datatakes that already have product_group_ids
+                if (
+                    hasattr(dt, "product_group_ids")
+                    and dt.product_group_ids is not None
+                ):
+                    continue
+
+                # Calculate datatake duration
+                datatake_duration = (
+                    dt.observation_time_stop - dt.observation_time_start
+                ).total_seconds()
+
+                # Filter out datatakes with duration lower than product duration (tolerance of 11 sec)
+                if datatake_duration >= (product_duration - 11):
+                    filtered_datatakes.append(dt)
+
+            # Sort by nearest datatake (by middle point distance to product middle)
+            product_middle = (
+                self.sensing_start_date
+                + (self.sensing_end_date - self.sensing_start_date) / 2
+            )
+
+            # For S2C, adjust product middle by 10 seconds to handle timing differences
+            if self.satellite_unit == "S2C" and product_duration < 15:
+                product_middle = product_middle + timedelta(seconds=10)
+
+            datatake_document_that_match = sorted(
+                filtered_datatakes,
+                key=lambda dt: min(
+                    abs((dt.observation_time_start - product_middle).total_seconds()),
+                    abs((dt.observation_time_stop - product_middle).total_seconds()),
+                ),
             )
 
         nb_datatake_document_that_match = len(datatake_document_that_match)
