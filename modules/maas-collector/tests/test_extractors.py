@@ -3,6 +3,7 @@ Test extractor classes with first bunch of data provided by Cap Gemini Italy.
 
 Data format will surely change and some rewrite of the tests will happen.
 """
+
 import os
 
 from maas_collector.rawdata.extractor.base import BaseExtractor, get_hash_func
@@ -96,7 +97,7 @@ def test_json_iterate():
         attr_map={
             "jiraKey": "`this`.id",
             "author": "`this`.author.emailAddress",
-            "creationDate": "`this`.created"
+            "creationDate": "`this`.created",
             # "globalStatus": "$.Quality_report.Quality_cheks.'-global_status'",
         },
         iterate_nodes="$.changelog.histories",
@@ -600,3 +601,103 @@ def test_json_extraction_with_advanced_extraction_path():
         "qualityStatus": "NOMINAL",
         "cloudCover": 10.2811222880479,
     }
+
+
+def test_xml_extractor_02():
+    xext = XMLExtractor(
+        iterate_nodes="Data_Block/List_of_DCSU_Info/",
+        allow_partial=False,
+        attr_map={
+            "file_name": {"root_path": "Fixed_Header/File_Name"},
+            "description": {"root_path": "Fixed_Header/File_Description"},
+            "notes": {"root_path": "Fixed_Header/Notes"},
+            "mission": {"root_path": "Fixed_Header/Mission"},
+            "file_class": {"root_path": "Fixed_Header/File_Class"},
+            "file_type": {"root_path": "Fixed_Header/File_Type"},
+            "creation_date": {"root_path": "Fixed_Header/Creation_Date"},
+            "session_id": {"root_path": "Fixed_Header/Session_ID"},
+            "source_system": {"root_path": "Fixed_Header/Source/System"},
+            "source_creator": {"root_path": "Fixed_Header/Source/Creator"},
+            "source_creator_version": {
+                "root_path": "Fixed_Header/Source/Creator_Version"
+            },
+            "source_creation_date": {"root_path": "Fixed_Header/Source/Creation_Date"},
+            "session_id_data": {"root_path": "Data_Block/Session_ID"},
+            "user_id": {"root_path": "Data_Block/Session_Description/User_ID"},
+            "direction": {"root_path": "Data_Block/Session_Description/Direction"},
+            "trans_mode": {"root_path": "Data_Block/Session_Description/Trans_Mode"},
+            "leo_satellite_id": {
+                "root_path": "Data_Block/Session_Description/LEO_Satellite_ID"
+            },
+            "geo_satellite_id": {
+                "root_path": "Data_Block/Session_Description/GEO_Satellite_ID"
+            },
+            "priority": {"root_path": "Data_Block/Session_Description/Priority"},
+            "start_time": {"root_path": "Data_Block/Session_Description/Start_Time"},
+            "stop_time": {"root_path": "Data_Block/Session_Description/Stop_Time"},
+            "duration": {"root_path": "Data_Block/Session_Description/Duration"},
+            "reception_profile_id": {
+                "root_path": "Data_Block/Session_Description/Reception_Profile_ID"
+            },
+            "emergency_flag": {
+                "root_path": "Data_Block/Session_Description/Emergency_Flag"
+            },
+            "dcsu_id": "DCSU_ID",
+            "execution_status": "Execution_Status",
+            "link_session_completion_time": "Link_session_completion_time",
+            "link_session_fer": "Link_session_FER",
+            "number_of_delivered_cadu": "Number_of_delivered_CADU",
+            "number_of_missing_cadu": "Number_of_missing_CADU",
+            "interface_name": {"python": "lambda c: 'MPIP_GMV_AcqPassesStatusEDRS'"},
+            "production_service_type": {"python": "lambda c: 'MPIP'"},
+            "production_service_name": {
+                "python": "lambda c: 'GMV_AcqPassesStatusEDRS'"
+            },
+        },
+        converter_map={
+            "creation_date": {
+                "type": "python",
+                "python": "lambda creation_date: creation_date[4:]",
+            },
+            "source_creation_date": {
+                "type": "python",
+                "python": "lambda source_creation_date: source_creation_date[4:]",
+            },
+            "start_time": {
+                "type": "python",
+                "python": "lambda start_time: start_time[4:]",
+            },
+            "stop_time": {
+                "type": "python",
+                "python": "lambda stop_time: stop_time[4:]",
+            },
+            "link_session_completion_time": {
+                "type": "python",
+                "python": "lambda link_session_completion_time: link_session_completion_time[4:]",
+            },
+        },
+    )
+    extracts = list(
+        xext.extract(
+            os.path.join(
+                DATA_DIR,
+                "OPER_SER_SR1_OA_20250407T235004_L20250310160540761000052.EOF",
+            )
+        )
+    )
+
+    assert len(extracts) == 2
+
+    assert extracts[0]["dcsu_id"] == "02"
+    assert extracts[1]["dcsu_id"] == "04"
+    assert (
+        extracts[0]["file_name"]
+        == "EDR_OPER_SER_SR1_OA_20250407T235004_L20250310160540761000052"
+    )
+    assert (
+        extracts[1]["file_name"]
+        == "EDR_OPER_SER_SR1_OA_20250407T235004_L20250310160540761000052"
+    )
+
+    assert extracts[0]["creation_date"] == "2025-04-07T23:50:04"
+    assert extracts[1]["creation_date"] == "2025-04-07T23:50:04"

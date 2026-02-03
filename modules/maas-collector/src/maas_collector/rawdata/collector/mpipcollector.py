@@ -29,6 +29,8 @@ class MpipCollectorConfiguration(HttpCollectorConfiguration):
 
     refresh_interval: int = 10
 
+    base_url: str = ""
+
     file_list_url: str = ""
 
     probe_url: str = ""
@@ -80,6 +82,17 @@ class MpipCollectorConfiguration(HttpCollectorConfiguration):
     scope: str = None
 
     grant_type: str = "password"
+
+    def get_config_product_url(self):
+        """Retrieve the product_url field from the collector configuration
+
+        This function can be overloaded by child class in case their product url
+        field is named differently and we do not want to break retrocompatibiliy
+
+        Returns:
+            str: product url field
+        """
+        return self.base_url
 
 
 @dataclass
@@ -155,7 +168,9 @@ class MpipCollector(HttpCollector, HttpMixin):
             self.logger.debug("Download file in interface : %s", url)
             # Get file product
             response = http_session.get(
-                f"{url}{name}", headers=headers, timeout=self.http_config.timeout
+                f"{url}download?filename={name}",
+                headers=headers,
+                timeout=self.http_config.timeout,
             )
 
             if not 200 <= response.status_code <= 300:

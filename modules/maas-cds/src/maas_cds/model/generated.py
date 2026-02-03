@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-01-20T22:16:46.028539+00:00
+Generated date: 2026-02-03T15:53:07.357491+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -41,6 +41,7 @@ Generated from:
     - resources/templates/maas-config-satellite_template.json
     - resources/templates/maas-config-service_template.json
     - resources/templates/maas-config_template.json
+    - resources/templates/raw-data-acq-passes-status-edrs_template.json
     - resources/templates/raw-data-app-product_template.json
     - resources/templates/raw-data-aps-edrs_template.json
     - resources/templates/raw-data-aps-file_template.json
@@ -91,6 +92,7 @@ from opensearchpy import (
 from maas_model import MAASDocument, MAASRawDocument, ZuluDate
 
 __all__ = [
+    "AcqPassesStatusEdrs",
     "AppProduct",
     "ApsEdrs",
     "ApsFile",
@@ -168,6 +170,85 @@ __all__ = [
     "ProductDeletion",
     "SatUnavailabilityProduct",
 ]
+
+
+class AcqPassesStatusEdrs(MAASRawDocument):
+    """
+    Mapping class for index: raw-data-acq-passes-status-edrs
+
+    Generated from: resources/templates/raw-data-acq-passes-status-edrs_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "raw-data-acq-passes-status-edrs"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("raw-data-acq-passes-status-edrs")
+
+    creation_date = ZuluDate()
+
+    dcsu_id = Keyword()
+
+    description = Text()
+
+    direction = Keyword()
+
+    duration = Keyword()
+
+    emergency_flag = Keyword()
+
+    execution_status = Keyword()
+
+    file_class = Keyword()
+
+    file_name = Keyword()
+
+    file_type = Keyword()
+
+    geo_satellite_id = Keyword()
+
+    leo_satellite_id = Keyword()
+
+    link_session_completion_time = ZuluDate()
+
+    link_session_fer = Float()
+
+    notes = Text()
+
+    number_of_delivered_cadu = Long()
+
+    number_of_missing_cadu = Long()
+
+    priority = Integer()
+
+    production_service_name = Keyword()
+
+    production_service_type = Keyword()
+
+    reception_profile_id = Keyword()
+
+    reportFolder = Keyword()
+
+    session_id_data = Keyword()
+
+    source_creation_date = ZuluDate()
+
+    source_creator = Keyword()
+
+    source_creator_version = Keyword()
+
+    source_system = Keyword()
+
+    start_time = ZuluDate()
+
+    stop_time = ZuluDate()
+
+    trans_mode = Keyword()
+
+    user_id = Keyword()
 
 
 class AppProduct(MAASRawDocument):
@@ -1759,9 +1840,17 @@ class CdsDownlinkDatatake(MAASDocument):
 
     downlink_polarization = Keyword()
 
+    ds_product_name = Keyword()
+
+    ds_sensing_start_date = ZuluDate()
+
     effective_downlink_start = ZuluDate()
 
     effective_downlink_stop = ZuluDate()
+
+    expected_tiles = Keyword()
+
+    from_ds_sensing_to_downlink_stop_timeliness = Long()
 
     from_sensing_to_delivery_stop_timeliness = Long()
 

@@ -8,6 +8,7 @@ from maas_cds.model import (
     CdsEdrsAcquisitionPassStatus,
     CdsCadipAcquisitionPassStatus,
     CdsDatatake,
+    CdsProductS2,
 )
 from maas_cds.lib.dateutils import get_microseconds_delta
 from opensearchpy import MultiSearch, Q, Search
@@ -52,6 +53,9 @@ class CorrelateAcquisitionsEngine(DataEngine):
             ]
         elif self.source_type == CdsDatatake:
             self.needed_fields = ["datatake_id", "satellite_unit"]
+
+        elif self.source_type == CdsProductS2:
+            self.needed_fields = ["satellite_unit", "sensing_start_date", "name"]
 
     def generate_edrs_search(self, doc: CdsEdrsAcquisitionPassStatus) -> Search:
         """This function is used to generate a downlink search
@@ -110,6 +114,8 @@ class CorrelateAcquisitionsEngine(DataEngine):
             updated_docs = self.update_downlink_from_acq(self.input_documents)
         elif self.source_type == CdsDatatake:
             updated_docs = self.update_downlink_from_datatake(self.input_documents)
+        elif self.source_type == CdsProductS2:
+            updated_docs = self.update_downlink_from_product(self.input_documents)
 
         for document in updated_docs:
             yield document.to_bulk_action()
@@ -164,7 +170,7 @@ class CorrelateAcquisitionsEngine(DataEngine):
                         cached_downlink[downlink.meta.id] = downlink
 
                     if (
-                        not "delivery_stop" in cached_downlink[downlink.meta.id]
+                        not cached_downlink[downlink.meta.id].delivery_stop
                         or cached_downlink[downlink.meta.id].delivery_stop
                         < doc[self.delivery_stop_field]
                     ):
@@ -182,6 +188,14 @@ class CorrelateAcquisitionsEngine(DataEngine):
                     get_microseconds_delta(
                         downlink.delivery_stop,
                         downlink.observation_time_start,
+                    )
+                )
+
+            if downlink.ds_sensing_start_date:
+                downlink.from_ds_sensing_to_downlink_stop_timeliness = (
+                    get_microseconds_delta(
+                        downlink.delivery_stop,
+                        downlink.ds_sensing_start_date,
                     )
                 )
         return list(versionned_downlinks)
@@ -237,6 +251,10 @@ class CorrelateAcquisitionsEngine(DataEngine):
                 cached_downlink[downlink.meta.id].observation_time_start = (
                     doc.observation_time_start
                 )
+                if doc.mission == "S2":
+                    cached_downlink[downlink.meta.id].expected_tiles = (
+                        doc.search_expected_tiles()
+                    )
 
         versionned_downlinks = list(
             CdsDownlinkDatatake.mget_by_ids(list(cached_downlink.keys()))
@@ -246,11 +264,130 @@ class CorrelateAcquisitionsEngine(DataEngine):
             downlink.observation_time_start = cached_downlink[
                 downlink.meta.id
             ].observation_time_start
-            if "delivery_stop" in downlink:
+
+            if expected_tiles := cached_downlink[downlink.meta.id].expected_tiles:
+                downlink.expected_tiles = expected_tiles
+
+            if downlink.delivery_stop:
                 downlink.from_sensing_to_delivery_stop_timeliness = (
                     get_microseconds_delta(
                         downlink.delivery_stop,
                         downlink.observation_time_start,
+                    )
+                )
+        return versionned_downlinks
+
+    def update_downlink_from_product(
+        self, input_documents: List[CdsProductS2]
+    ) -> List[CdsDownlinkDatatake]:
+        """This function is used to add the observation start date
+          field to the downlike datatakes elements
+          associated to the datatakes in input
+          If delivery stop field is also available then
+          the observation-deliverystop timeliness is also calculated
+
+        Args:
+            input_documents (List[CdsProductS2]): List of input CdsProductS2 documents
+
+        Returns:
+            List[CdsDownlinkDatatake]: List of CdsDownlink to update in DB
+        """
+        msearch_downlink = MultiSearch()
+        cached_downlink: Dict[str, CdsDownlinkDatatake] = {}
+
+        input_docs = []
+        for doc in input_documents:
+            if not all(key in doc for key in self.needed_fields):
+                self.logger.debug(
+                    "No downlink datatake correlation will "
+                    "be done for product %s because all the"
+                    " needed fields %s were not found in it",
+                    doc.meta.id,
+                    self.needed_fields,
+                )
+            else:
+                input_docs.append(doc)
+
+        if not input_docs:
+            return []
+
+        for doc in input_docs:
+            msearch_downlink = msearch_downlink.add(
+                CdsDownlinkDatatake.search()
+                .filter("term", satellite_unit=doc.satellite_unit)
+                .filter(
+                    "range",
+                    acquisition_start={
+                        "gte": doc.sensing_start_date - timedelta(minutes=2),
+                        "lte": doc.sensing_start_date + timedelta(minutes=2),
+                    },
+                ),
+            )
+
+        for doc, responses in zip(input_docs, msearch_downlink.execute()):
+
+            if not responses:
+                self.logger.warning(
+                    "No downlink datatake found for product %s with satellite_unit %s and sensing_start_date %s",
+                    doc.name,
+                    doc.satellite_unit,
+                    doc.sensing_start_date,
+                )
+                continue
+
+            # Find the nearest downlink based on sensing start date
+            nearest_downlink = None
+            min_time_diff = None
+
+            for downlink in responses:
+                if (
+                    hasattr(downlink, "acquisition_start")
+                    and downlink.acquisition_start
+                ):
+                    time_diff = abs(
+                        (
+                            doc.sensing_start_date - downlink.acquisition_start
+                        ).total_seconds()
+                    )
+                    if min_time_diff is None or time_diff < min_time_diff:
+                        min_time_diff = time_diff
+                        nearest_downlink = downlink
+
+            if nearest_downlink is None:
+                self.logger.warning(
+                    "No nearest downlink datatake found for product %s with satellite_unit %s and sensing_start_date %s",
+                    doc.name,
+                    doc.satellite_unit,
+                    doc.sensing_start_date,
+                )
+                continue
+
+            target_downlink = nearest_downlink
+
+            if target_downlink.meta.id in cached_downlink:
+                target_downlink = cached_downlink[target_downlink.meta.id]
+            else:
+                cached_downlink[target_downlink.meta.id] = target_downlink
+
+            cached_downlink[target_downlink.meta.id].ds_sensing_start_date = (
+                doc.sensing_start_date
+            )
+            cached_downlink[target_downlink.meta.id].ds_product_name = doc.name
+
+        versionned_downlinks = list(
+            CdsDownlinkDatatake.mget_by_ids(list(cached_downlink.keys()))
+        )
+
+        for downlink in versionned_downlinks:
+            downlink.ds_sensing_start_date = cached_downlink[
+                downlink.meta.id
+            ].ds_sensing_start_date
+            downlink.ds_product_name = cached_downlink[downlink.meta.id].ds_product_name
+            if downlink.delivery_stop:
+                downlink.from_ds_sensing_to_downlink_stop_timeliness = (
+                    get_microseconds_delta(
+                        downlink.delivery_stop,
+                        downlink.ds_sensing_start_date,
                     )
                 )
         return versionned_downlinks

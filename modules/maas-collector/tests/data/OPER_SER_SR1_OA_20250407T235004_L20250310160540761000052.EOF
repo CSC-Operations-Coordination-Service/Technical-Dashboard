@@ -1,0 +1,53 @@
+<earth_explorer_file:Earth_Explorer_File xmlns:earth_explorer_file="http://moc.edrs.com/sentinel/Earth_Explorer_File" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://moc.edrs.com/sentinel/Earth_Explorer_File Earth_Explorer_File_SER_SRx.xsd">
+<Fixed_Header>
+	<File_Name>EDR_OPER_SER_SR1_OA_20250407T235004_L20250310160540761000052</File_Name>
+	<File_Description>Link Execution Status</File_Description>
+	<Notes>Created by MOC</Notes>
+	<Mission>EDRS-A</Mission>
+	<File_Class>OPER</File_Class>
+	<File_Type>SER_SR1_OA</File_Type>
+	<Creation_Date>UTC=2025-04-07T23:50:04</Creation_Date>
+	<Session_ID>L20250310160540761000052</Session_ID>
+	<Source>
+		<System>EDRS</System>
+		<Creator>QMOC</Creator>
+		<Creator_Version>1</Creator_Version>
+		<Creation_Date>UTC=2025-04-07T23:50:04</Creation_Date>
+	</Source>
+</Fixed_Header>
+<Variable_Header/>
+<Data_Block>
+	<Session_ID>L20250310160540761000052</Session_ID>
+	<Session_Description>
+		<User_ID>Sentinel</User_ID>
+		<Direction>RTN</Direction>
+		<Trans_Mode>SENT</Trans_Mode>
+		<LEO_Satellite_ID>2015-028A</LEO_Satellite_ID>
+		<GEO_Satellite_ID>EDRS-A</GEO_Satellite_ID>
+		<Priority>NORMAL</Priority>
+		<Start_Time>UTC=2025-04-07T23:09:07</Start_Time>
+		<Stop_Time>UTC=2025-04-07T23:28:54</Stop_Time>
+		<Duration>00:18:32</Duration>
+		<Reception_Profile_ID>220</Reception_Profile_ID>
+		<Emergency_Flag>0</Emergency_Flag>
+	</Session_Description>
+	<List_of_DCSU_Info count="2">
+		<DCSU_Info>
+			<DCSU_ID>02</DCSU_ID>
+			<Execution_Status>SUCCESS</Execution_Status>
+			<Link_session_completion_time>UTC=2025-04-07T23:29:05</Link_session_completion_time>
+			<Link_session_FER>0.0</Link_session_FER>
+			<Number_of_delivered_CADU>38218952</Number_of_delivered_CADU>
+			<Number_of_missing_CADU>0</Number_of_missing_CADU>
+		</DCSU_Info>
+	<DCSU_Info>
+			<DCSU_ID>04</DCSU_ID>
+			<Execution_Status>SUCCESS</Execution_Status>
+			<Link_session_completion_time>UTC=2025-04-07T23:29:04</Link_session_completion_time>
+			<Link_session_FER>0.0</Link_session_FER>
+			<Number_of_delivered_CADU>38218951</Number_of_delivered_CADU>
+			<Number_of_missing_CADU>0</Number_of_missing_CADU>
+		</DCSU_Info>
+	</List_of_DCSU_Info>
+</Data_Block>
+</earth_explorer_file:Earth_Explorer_File>

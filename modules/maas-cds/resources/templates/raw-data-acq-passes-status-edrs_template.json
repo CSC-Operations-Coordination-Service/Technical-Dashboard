@@ -1,0 +1,123 @@
+{
+    "aliases": {},
+    "index_patterns": [
+        "raw-data-acq-passes-status-edrs*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "ingestionTime": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "reportName": {
+                "type": "keyword"
+            },
+            "reportFolder": {
+                "type": "keyword"
+            },
+            "file_name": {
+                "type": "keyword"
+            },
+            "description": {
+                "type": "text"
+            },
+            "notes": {
+                "type": "text"
+            },
+            "file_class": {
+                "type": "keyword"
+            },
+            "file_type": {
+                "type": "keyword"
+            },
+            "creation_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "source_system": {
+                "type": "keyword"
+            },
+            "source_creator": {
+                "type": "keyword"
+            },
+            "source_creator_version": {
+                "type": "keyword"
+            },
+            "source_creation_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "session_id_data": {
+                "type": "keyword"
+            },
+            "user_id": {
+                "type": "keyword"
+            },
+            "direction": {
+                "type": "keyword"
+            },
+            "trans_mode": {
+                "type": "keyword"
+            },
+            "leo_satellite_id": {
+                "type": "keyword"
+            },
+            "geo_satellite_id": {
+                "type": "keyword"
+            },
+            "priority": {
+                "type": "integer"
+            },
+            "start_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "stop_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "duration": {
+                "type": "keyword"
+            },
+            "reception_profile_id": {
+                "type": "keyword"
+            },
+            "emergency_flag": {
+                "type": "keyword"
+            },
+            "dcsu_id": {
+                "type": "keyword"
+            },
+            "execution_status": {
+                "type": "keyword"
+            },
+            "link_session_completion_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "link_session_fer": {
+                "type": "float"
+            },
+            "number_of_delivered_cadu": {
+                "type": "long"
+            },
+            "number_of_missing_cadu": {
+                "type": "long"
+            },
+            "production_service_type": {
+                "type": "keyword"
+            },
+            "production_service_name": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {}
+    }
+}

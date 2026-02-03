@@ -1,4 +1,5 @@
 """XMLExtractor implementation"""
+
 import os
 import typing
 import xml.etree.ElementTree as ET
@@ -61,18 +62,20 @@ class XMLExtractor(BaseExtractor):
         func = None
 
         if value is None:
-            # node text. useless
-            func = lambda node: node.text
+
+            def findtext(element, _root):
+                return element.text
+
+            func = findtext
 
         elif callable(value):
-            # already a lambda or function
-            func = value
+            func = lambda element, _root: value(element)
 
         elif isinstance(value, str):
             # node text content
             path = self._path_with_ns(name, value)
 
-            def findtext(element):
+            def findtext(element, _root):
                 value = element.findtext(path, namespaces=self.namespace_map)
                 if value is None:
                     raise ValueError(f"{path} returned None")
@@ -88,7 +91,7 @@ class XMLExtractor(BaseExtractor):
                 if "path" in value:
                     path = self._path_with_ns(name, value["path"])
 
-                    def findattr(element):
+                    def findattr(element, _root):
                         node = element.find(path)
                         if node is None:
                             msg = (
@@ -102,7 +105,7 @@ class XMLExtractor(BaseExtractor):
                     func = findattr
                 else:
                     # root attribute
-                    def findrootattr(element):
+                    def findrootattr(element, _root):
                         if not attrname in element.attrib:
                             msg = f"Attribute {attrname} not found on root element"
                             raise ValueError(msg)
@@ -111,7 +114,24 @@ class XMLExtractor(BaseExtractor):
                     func = findrootattr
 
             elif "python" in value:
-                func = self.compile_lambda(value)
+                compiled_func = self.compile_lambda(value)
+                func = lambda element, _root: compiled_func(element)
+
+            elif "rpython" in value:
+                compiled_func = self.compile_lambda(value)
+                func = lambda _element, root: compiled_func(root)
+
+            elif "root_path" in value:
+                path = self._path_with_ns(name, value["root_path"])
+
+                def findtext(_element, root):
+                    value = root.findtext(path, namespaces=self.namespace_map)
+                    if value is None:
+                        raise ValueError(f"{path} returned None")
+
+                    return value
+
+                func = findtext
 
         else:
             raise ValueError(f"Invalid value mapper in XMLExtractor: {repr(value)}")
@@ -119,7 +139,9 @@ class XMLExtractor(BaseExtractor):
         if self.converter_map and name in self.converter_map:
             # add converter to the call stack
             target_func = func
-            func = lambda element: self.converter_map[name](target_func(element))
+            func = lambda element, root: self.converter_map[name](
+                target_func(element, root)
+            )
 
         # enforce func check
         assert func is not None and callable(func)
@@ -141,7 +163,6 @@ class XMLExtractor(BaseExtractor):
         basepath = os.path.basename(path)
 
         for element in nodes:
-
             if self.should_stop:
                 break
 
@@ -150,7 +171,7 @@ class XMLExtractor(BaseExtractor):
             for name, func in self.attr_map.items():
 
                 try:
-                    extract_dict[name] = func(element)
+                    extract_dict[name] = func(element, root)
                 # catch broad exception to allow partial extraction if necessary
                 # pylint: disable=W0703
                 except Exception as error:

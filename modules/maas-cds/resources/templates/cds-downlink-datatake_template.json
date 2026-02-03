@@ -30,6 +30,9 @@
             "datatake_id": {
                 "type": "keyword"
             },
+            "expected_tiles": {
+                "type": "keyword"
+            },
             "effective_downlink_start": {
                 "type": "date",
                 "locale": "utc"
@@ -86,6 +89,16 @@
             },
             "from_sensing_to_delivery_stop_timeliness": {
                 "type": "long"
+            },
+            "ds_sensing_start_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "from_ds_sensing_to_downlink_stop_timeliness": {
+                "type": "long"
+            },
+            "ds_product_name": {
+                "type": "keyword"
             }
         },
         "_meta": {
