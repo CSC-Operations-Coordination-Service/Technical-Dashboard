@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-02-02T21:29:30.830682+00:00
+Generated date: 2026-02-03T15:53:07.357491+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -1847,6 +1847,8 @@ class CdsDownlinkDatatake(MAASDocument):
     effective_downlink_start = ZuluDate()
 
     effective_downlink_stop = ZuluDate()
+
+    expected_tiles = Keyword()
 
     from_ds_sensing_to_downlink_stop_timeliness = Long()
 

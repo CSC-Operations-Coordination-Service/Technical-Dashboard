@@ -16,6 +16,8 @@ from maas_cds.model.datatake import *
 from maas_cds.model.datatake_s1 import *
 from maas_cds.model.datatake_s2 import *
 
+from maas_cds.model.cds_downlink_datatake import *
+
 # following import completeness
 from maas_cds.model.cds_s3_completeness import *
 from maas_cds.model.cds_s5_completeness import *
@@ -50,6 +52,7 @@ from maas_cds.model.product_deletion import *
 
 # consolidated acquisition pass status to feature cams tickets
 from maas_cds.model.acquisition_pass_status import *
+
 
 # HKTM completeness to feature cams tickets
 from maas_cds.model.hktm_completeness import *

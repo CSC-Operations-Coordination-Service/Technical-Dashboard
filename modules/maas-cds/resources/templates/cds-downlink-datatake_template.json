@@ -30,6 +30,9 @@
             "datatake_id": {
                 "type": "keyword"
             },
+            "expected_tiles": {
+                "type": "keyword"
+            },
             "effective_downlink_start": {
                 "type": "date",
                 "locale": "utc"

@@ -75,8 +75,10 @@ def test_cds_s2_custom_model_part2(
     # first one returned is used for datatake_id
     out_dtk_1 = s2_datatake_S2A_38107_1
     out_dtk_1.datatake_id = "out_dtk_1"
+    out_dtk_1.product_group_ids = None
     out_dtk_2 = s2_datatake_dark_o
     out_dtk_2.datatake_id = "out_dtk_2"
+    out_dtk_2.product_group_ids = None
 
     find_mock.return_value = [out_dtk_2, out_dtk_1]
     product = s2_product_l0_ds
