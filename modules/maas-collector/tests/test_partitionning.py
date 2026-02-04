@@ -30,12 +30,12 @@ def test_partition_no_conf():
         ingestionTime=now,
     )
 
-    assert DSIB._PARTITION_FIELD == "ingestionTime"
-
     # default behavior
-    assert DSIB._PARTITION_FIELD_FORMAT == "%Y"
+    assert DSIB._PARTITION_FIELD == None
 
-    assert dsib.partition_index_name == f"raw-data-dsib-{now.strftime('%Y')}"
+    assert DSIB._PARTITION_FIELD_FORMAT == None
+
+    assert dsib.partition_index_name == f"raw-data-dsib"
 
 
 def test_partition_with_field():

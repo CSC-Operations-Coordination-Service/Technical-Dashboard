@@ -125,3 +125,52 @@ def test_build_collector_configuration():
         "timeFinished": "2019-12-08T05:12:27Z",
         "reportName": "DCS_02_L20191003131732787001008_ch1_DSIB.xml",
     }
+
+
+def test_build_model_class_02():
+    """check base behavior of mapping classes building"""
+    meta_dict = {
+        "index": "raw-data-acq-passes-status-edrs",
+        "name": "AcqPassesStatusEdrs",
+        "fields": [
+            {"name": "reportFolder", "type": "Keyword"},
+            {"name": "file_name", "type": "Keyword"},
+            {"name": "description", "type": "Text"},
+            {"name": "notes", "type": "Text"},
+            {"name": "file_class", "type": "Keyword"},
+            {"name": "file_type", "type": "Keyword"},
+            {"name": "creation_date", "type": "Date"},
+            {"name": "source_system", "type": "Keyword"},
+            {"name": "source_creator", "type": "Keyword"},
+            {"name": "source_creator_version", "type": "Keyword"},
+            {"name": "source_creation_date", "type": "Date"},
+            {"name": "session_id_data", "type": "Keyword"},
+            {"name": "user_id", "type": "Keyword"},
+            {"name": "direction", "type": "Keyword"},
+            {"name": "trans_mode", "type": "Keyword"},
+            {"name": "leo_satellite_id", "type": "Keyword"},
+            {"name": "geo_satellite_id", "type": "Keyword"},
+            {"name": "priority", "type": "Keyword"},
+            {"name": "start_time", "type": "Date"},
+            {"name": "stop_time", "type": "Date"},
+            {"name": "duration", "type": "Keyword"},
+            {"name": "reception_profile_id", "type": "Keyword"},
+            {"name": "emergency_flag", "type": "Keyword"},
+            {"name": "dcsu_id", "type": "Keyword"},
+            {"name": "execution_status", "type": "Keyword"},
+            {"name": "link_session_completion_time", "type": "Date"},
+            {"name": "link_session_fer", "type": "Float"},
+            {"name": "number_of_delivered_cadu", "type": "Long"},
+            {"name": "number_of_missing_cadu", "type": "Long"},
+            {"name": "production_service_type", "type": "Keyword"},
+            {"name": "production_service_name", "type": "Keyword"},
+        ],
+    }
+
+    class_model = build_model_class(meta_dict)
+
+    assert class_model.__name__ == meta_dict["name"]
+
+    instance = class_model()
+
+    assert instance.partition_index_name == "raw-data-acq-passes-status-edrs"
