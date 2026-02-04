@@ -73,6 +73,8 @@ class MpipCollectorConfiguration(HttpCollectorConfiguration):
 
     # auth argument
 
+    oauth_basic_credential: str = ""
+
     client_username: str = ""
 
     client_password: str = ""
