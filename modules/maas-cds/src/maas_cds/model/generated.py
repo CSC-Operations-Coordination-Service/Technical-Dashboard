@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-02-03T15:53:07.357491+00:00
+Generated date: 2026-02-04T13:23:36.299019+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -222,7 +222,7 @@ class AcqPassesStatusEdrs(MAASRawDocument):
 
     number_of_missing_cadu = Long()
 
-    priority = Integer()
+    priority = Keyword()
 
     production_service_name = Keyword()
 

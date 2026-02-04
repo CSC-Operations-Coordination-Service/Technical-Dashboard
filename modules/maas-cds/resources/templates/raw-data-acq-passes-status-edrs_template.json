@@ -73,7 +73,7 @@
                 "type": "keyword"
             },
             "priority": {
-                "type": "integer"
+                "type": "keyword"
             },
             "start_time": {
                 "type": "date",

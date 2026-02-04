@@ -66,6 +66,11 @@ def build_model_class(meta: dict) -> MAASRawDocument:
         lambda cls, hit: hit["_index"].startswith(meta["index"])
     )
 
+    # No configuration about partition ? Ok no partionning so
+    if not "partition_field" in meta and not "partition_format" in meta:
+        class_dict["_PARTITION_FIELD"] = None
+        class_dict["_PARTITION_FIELD_FORMAT"] = None
+
     # return new document class
     model_class = type(meta["name"], (MAASRawDocument,), class_dict)
 
