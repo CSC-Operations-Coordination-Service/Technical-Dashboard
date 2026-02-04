@@ -324,7 +324,7 @@ class MpipCollector(HttpCollector, HttpMixin):
                 url_list.append(
                     (
                         product["filename"],
-                        self.get_product_url(config.product),
+                        self.get_product_url(config, product),
                     )
                 )
         return url_list
