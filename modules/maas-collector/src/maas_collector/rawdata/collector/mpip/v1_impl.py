@@ -102,7 +102,7 @@ class MpipQueryV1Implementation(AbstractMpipQueryStrategy):
 
         # Date filtering
         # MPIP interface sort in REVERSE (because why not ?) so we need to do some magic tricks 🧙‍♂️
-        data["ingestionDate"] = datestr_to_zulu(str(self.mpip_start_date))
+        data["ingestionDate"] = datestr_to_zulu(str(self.mpip_start_date))[:-1]
 
         headers = self.authentication.get_headers()
         response = self.http_session.post(
