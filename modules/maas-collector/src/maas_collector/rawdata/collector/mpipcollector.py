@@ -313,7 +313,7 @@ class MpipCollector(HttpCollector, HttpMixin):
             list: A list of tuples containing matched product names and their corresponding URLs.
         """
         url_list = []
-        for product in data:
+        for product in data["value"]:
 
             # check file pattern is matched
             if fnmatch.fnmatch(product["filename"].lower(), file_pattern.lower()):
