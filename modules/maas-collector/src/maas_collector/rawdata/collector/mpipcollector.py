@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass, field
 import fnmatch
+import typing
 
+from maas_collector.rawdata.collector.filecollector import FileCollectorConfiguration
 from maas_collector.rawdata.collector.httpcollector import (
     HttpCollector,
     HttpCollectorConfiguration,
@@ -11,13 +13,15 @@ from maas_collector.rawdata.collector.httpcollector import (
 
 from maas_collector.rawdata.collector.httpmixin import HttpMixin
 
+from maas_collector.rawdata.collector.journal import CollectorJournal
 from maas_collector.rawdata.collector.mpip.v1_impl import (
     MpipQueryV1Implementation,
 )
 
 from maas_collector.rawdata.collector.http.authentication import build_authentication
 
-import maas_collector.rawdata.collector.tools.archivetools as achivetools
+import maas_collector.rawdata.collector.tools.archivetools as archivetools
+
 import os
 
 
@@ -83,6 +87,14 @@ class MpipCollectorConfiguration(HttpCollectorConfiguration):
 
     grant_type: str = "password"
 
+    # sub collector
+
+    download_file_pattern: list = field(default_factory=lambda: [])
+
+    parent_file_pattern: str = None
+
+    no_credential: bool = False
+
     def get_config_product_url(self):
         """Retrieve the product_url field from the collector configuration
 
@@ -93,6 +105,27 @@ class MpipCollectorConfiguration(HttpCollectorConfiguration):
             str: product url field
         """
         return self.base_url
+
+    def filename_match(self, name: str) -> bool:
+        """Check if a filename matches the configuration
+
+        parent_file_pattern is used to link a sub config to its main
+        config without altering the file_pattern attribute.
+
+        It allows to test independant parts of the collect pipeline
+        (list files, d/l & untar, extract) without having to replay the whole pipeline
+
+        Args:
+            name ([str]): name of a file
+
+        Returns:
+            bool: True if the file is ok to be processed by the configuration extractor
+        """
+        if self.parent_file_pattern:
+            return fnmatch.fnmatch(name, self.parent_file_pattern)
+        elif self.file_pattern:
+            return fnmatch.fnmatch(name, self.file_pattern)
+        return False
 
 
 @dataclass
@@ -107,24 +140,37 @@ class MpipCollector(HttpCollector, HttpMixin):
 
     IMPL_DIR = {"v1": MpipQueryV1Implementation}
 
+    def ingest_all_interfaces(self):
+        """Nominal ingestion from OData: collect all the OData configurations"""
+        # iterate over all OData collector configurations
+        for config in self.configs:
+            if config.no_credential:
+                # pseudo configuration for auxiliary ingestion, like downloaded files
+                continue
+
+            self.ingest_interface(CollectorJournal(config), config)
+
+            if self.should_stop_loop:
+                break
+
     def post_process_data(self, data, filename, config, http_session):
         if config.download_file_pattern:
+
+            self.logger.debug("file pattern : %s", config.download_file_pattern)
+
             url_list = []
 
-            for product in data:
-                # check file pattern is matched
-
-                if fnmatch.fnmatch(product["filename"], config.download_file_pattern):
-                    self.logger.debug(
-                        "Download File pattern find : %s", product["filename"]
+            if isinstance(config.download_file_pattern, str):
+                file_pattern = config.download_file_pattern
+                url_list = self.match_file_pattern_with_product_name(
+                    data, config, file_pattern
+                )
+            elif isinstance(config.download_file_pattern, list):
+                for file_pattern in config.download_file_pattern:
+                    url_list += self.match_file_pattern_with_product_name(
+                        data, config, file_pattern
                     )
 
-                    url_list.append(
-                        (
-                            product["filename"],
-                            config.get_config_product_url(),
-                        )
-                    )
             if len(url_list) > 0:
                 # download file
                 result_download_files = self.download_product(
@@ -165,10 +211,14 @@ class MpipCollector(HttpCollector, HttpMixin):
         headers = authentication.get_headers()
 
         for name, url in url_list:
-            self.logger.debug("Download file in interface : %s", url)
+
+            self.logger.debug("Download file in odata interface : %s", url)
+            self.logger.debug("url_list name %s", name)
+            self.logger.debug("url_list url %s", url)
+
             # Get file product
             response = http_session.get(
-                f"{url}download?filename={name}",
+                url,
                 headers=headers,
                 timeout=self.http_config.timeout,
             )
@@ -186,24 +236,96 @@ class MpipCollector(HttpCollector, HttpMixin):
             # put data in file at working_directory
             filepath = os.path.join(working_directory, name)
 
-            # plus
-            with open(filepath, "bw") as file_desc:
-                file_desc.write(response.content)
+            # -- Common behaviour
+            config_download_list = self.get_configurations(name)
+            self.logger.debug("Filepath :%s", filepath)
+            self.logger.debug("config download list :%s", config_download_list)
+            for config_download in config_download_list:
+                self.logger.debug(
+                    "config download file_pattern :%s", config_download.file_pattern
+                )
 
-            extract_files = achivetools.extract_files_in_tar(
-                self.logger,
-                filepath,
-                working_directory,
-                config.file_pattern,
-            )
+                with open(filepath, "bw") as file_desc:
+                    file_desc.write(response.content)
 
-            for path_file in extract_files:
-                extract_files_and_config.append((path_file, config))
+                # if file is a archive : unarchive
+                ext = os.path.splitext(filepath)[1].lower()
+                if ext == ".tgz":
+                    self.logger.debug("Ext == tgz")
+                    extract_files = archivetools.extract_files_in_tar(
+                        self.logger,
+                        filepath,
+                        working_directory,
+                        config_download.file_pattern,
+                    )
+                    self.logger.debug("extract_files :%s", extract_files)
 
-            # remove tgz
-            os.remove(filepath)
+                    for path_file in extract_files:
+                        extract_files_and_config.append((path_file, config_download))
 
-            return extract_files_and_config
+                    # remove tgz
+                    os.remove(filepath)
+                elif ext == ".zip":
+                    self.logger.debug("Ext == zip")
+                    extract_files = archivetools.extract_files_in_zip(
+                        self.logger,
+                        filepath,
+                        working_directory,
+                        config_download.file_pattern,
+                    )
+
+                    for path_file in extract_files:
+                        extract_files_and_config.append((path_file, config_download))
+                    # remove zip
+                    os.remove(filepath)
+                else:
+                    self.logger.debug("Ext == %s", ext)
+
+                    extract_files_and_config.append((filepath, config_download))
+
+        return extract_files_and_config
+
+    def get_configurations(
+        self, filename: str
+    ) -> typing.List[FileCollectorConfiguration]:
+        """Get the FileCollectorConfiguration instances that can handle a file
+
+        Args:
+            path ([filename]): filename
+
+        Returns:
+            [typing.List[FileCollectorConfiguration]]: list of configuration that can extract
+        """
+        basename = os.path.basename(filename)
+        return [config for config in self.configs if config.filename_match(basename)]
+
+    def match_file_pattern_with_product_name(self, data, config, file_pattern) -> list:
+        """Match product names in the given data against a file pattern and return a list of matched names and URLs.
+
+        Args:
+            data (dict): The data containing product information.
+            config (HttpCollectorConfiguration): The configuration for the HTTP collector.
+            file_pattern (str): The file pattern to match against product names.
+
+        Returns:
+            list: A list of tuples containing matched product names and their corresponding URLs.
+        """
+        url_list = []
+        for product in data:
+
+            # check file pattern is matched
+            if fnmatch.fnmatch(product["filename"].lower(), file_pattern.lower()):
+                self.logger.debug(
+                    "Download File pattern find : %s", product["filename"]
+                )
+
+                url_list.append(
+                    (
+                        product["filename"],
+                        self.get_product_url(config.product),
+                    )
+                )
+        return url_list
 
     @classmethod
     def build_probe_query(cls, config: MpipCollectorConfiguration):
@@ -227,3 +349,20 @@ class MpipCollector(HttpCollector, HttpMixin):
         information = super().document(config)
 
         return information
+
+    def get_product_url(self, config: MpipCollectorConfiguration, product: dict) -> str:
+        """_summary_
+
+        Args:
+            config (ODataCollectorConfiguration): config of the collector
+            product (dict): the product to =be downloaded
+
+        Returns:
+            str: the url that allow to dowload the product content
+        """
+
+        name = product["filename"]
+
+        url = f"{config.get_config_product_url()}download?filename={name}"
+
+        return url

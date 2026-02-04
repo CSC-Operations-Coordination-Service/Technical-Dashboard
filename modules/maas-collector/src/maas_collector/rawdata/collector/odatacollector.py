@@ -97,13 +97,15 @@ class ODataCollectorConfiguration(HttpCollectorConfiguration):
 
     grant_type: str = "password"
 
+    oauth_basic_credential: str = ""
+
+    # sub collector
+
     download_file_pattern: list = field(default_factory=lambda: [])
 
     parent_file_pattern: str = None
 
     no_credential: bool = False
-
-    oauth_basic_credential: str = ""
 
     list_of_files_to_retrieve: typing.List[str] = field(default_factory=lambda: [])
 
@@ -336,6 +338,7 @@ class ODataCollector(HttpCollector, HttpMixin):
             # put data in file at working_directory
             filepath = os.path.join(working_directory, name)
 
+            # -- Common behaviour
             config_download_list = self.get_configurations(name)
             self.logger.debug("Filepath :%s", filepath)
             self.logger.debug("config download list :%s", config_download_list)
@@ -423,6 +426,7 @@ class ODataCollector(HttpCollector, HttpMixin):
             self.logger.debug("file pattern : %s", config.download_file_pattern)
 
             url_list = []
+
             if isinstance(config.download_file_pattern, str):
                 file_pattern = config.download_file_pattern
                 url_list = self.match_file_pattern_with_product_name(
@@ -434,15 +438,17 @@ class ODataCollector(HttpCollector, HttpMixin):
                         data, config, file_pattern
                     )
             self.logger.debug("Url list :%s", url_list)
-            # download file
-            result_download_files = self.odata_download_product(
-                config,
-                self.args.working_directory,
-                http_session,
-                url_list,
-            )
 
-            self.extract_from_file_download(result_download_files)
+            if len(url_list) > 0:
+                # download file
+                result_download_files = self.odata_download_product(
+                    config,
+                    self.args.working_directory,
+                    http_session,
+                    url_list,
+                )
+
+                self.extract_from_file_download(result_download_files)
 
     @classmethod
     def build_probe_query(cls, config: ODataCollectorConfiguration):
