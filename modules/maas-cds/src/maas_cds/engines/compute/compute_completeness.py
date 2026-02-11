@@ -100,9 +100,7 @@ class ComputeCompletenessEngine(DataEngine):
                 f"Unexpected input document class for completeness: {document_class}"
             )
 
-        # bulk feed
-        for action in iterator:
-            yield action
+        yield from iterator
 
     def action_iterator_from_datatake(self):
         """Compute completeness from CdsDataTake

@@ -18,6 +18,7 @@ from maas_cds.lib.periodutils import compute_total_sensing_product, Period
 from maas_cds.model.enumeration import CompletenessScope
 
 from maas_cds.lib import tolerance
+from maas_cds.model import CdsDownlinkDatatake
 
 __all__ = ["CdsDatatakeS2"]
 
@@ -93,6 +94,15 @@ class CdsDatatakeS2(CdsDatatake):
     def __init__(self, meta=None, **kwargs):
         super().__init__(meta, **kwargs)
         self.number_of_expected_tiles = 0
+
+    def get_downlinks(self):
+        """Get the count of downlink datatake entries with the same satellite and datatake_id"""
+        search_request = (
+            CdsDownlinkDatatake.search()
+            .filter("term", satellite_unit=self.satellite_unit)
+            .filter("term", datatake_id=self.datatake_id)
+        )
+        return search_request.execute()
 
     def product_type_with_missing_periods(self, product_type: str) -> bool:
         """Do we want missing periods for this product type ?"""
@@ -239,6 +249,8 @@ class CdsDatatakeS2(CdsDatatake):
 
         # Evaluate expected tiles before compute completeness
         self.number_of_expected_tiles = len(self.search_expected_tiles())
+
+        setattr(self, "number_of_expected_ds", len(self.get_downlinks()))
 
         for product in (
             self.find_related_document_not_attached()
@@ -398,7 +410,8 @@ class CdsDatatakeS2(CdsDatatake):
 
         compute_method = len
 
-        if key_field in ["TL", "TC", "GR"]:
+        # __ is for container
+        if key_field in ["TL", "TC", "GR", "__"]:
             compute_method = len
 
         elif key_field in ["DS"]:
@@ -491,7 +504,7 @@ class CdsDatatakeS2(CdsDatatake):
                             )
                         )
 
-        elif key_field in ["TL", "TC"]:
+        elif key_field in ["TL", "TC", "__"]:
             # get unique TL/TC number
             brother_of_datatake_documents = set()
 
