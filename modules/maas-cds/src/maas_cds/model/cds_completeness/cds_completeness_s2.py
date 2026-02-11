@@ -10,6 +10,7 @@ from maas_cds.model.generated import CdsPublication
 
 from maas_cds.lib import tolerance
 from maas_cds.model.enumeration import CompletenessScope
+from opensearchpy import Keyword
 
 
 __all__ = ["CdsCompletenessS2"]
@@ -40,6 +41,10 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
             "__",
         ],
     }
+
+    datastrip_ids = Keyword(multi=True)
+
+    product_group_ids = Keyword(multi=True)
 
     def search_expected_tiles(self):
         return CdsDatatakeS2.get_by_id(self.meta.id).search_expected_tiles()
