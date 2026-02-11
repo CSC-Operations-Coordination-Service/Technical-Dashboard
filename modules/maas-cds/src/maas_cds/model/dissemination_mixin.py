@@ -24,3 +24,16 @@ class DisseminationMixin:
         "MSI_L2A_TL",
         "MSI_L2A_DS",
     )
+
+    S2_CONTAINER_NAME_FOR_CONTAINED_TYPES = {
+        "MSI_L1C___": [
+            "MSI_L1C_TC",
+            "MSI_L1C_TL",
+            "MSI_L1C_DS",
+        ],
+        "MSI_L2A___": [
+            "MSI_L2A_TC",
+            "MSI_L2A_TL",
+            "MSI_L2A_DS",
+        ],
+    }

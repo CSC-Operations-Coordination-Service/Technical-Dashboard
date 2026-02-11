@@ -91,9 +91,8 @@ class CdsProductS2(CdsProduct):
                 ).total_seconds()
 
                 # Filter out datatakes with duration lower than product duration (tolerance of 11 sec)
-                if datatake_duration >= (product_duration - 11):
+                if datatake_duration >= (product_duration - 6):
                     filtered_datatakes.append(dt)
-
             # Sort by nearest datatake (by middle point distance to product middle)
             product_middle = (
                 self.sensing_start_date
@@ -101,9 +100,10 @@ class CdsProductS2(CdsProduct):
             )
 
             # For S2C, adjust product middle by 10 seconds to handle timing differences
-            if self.satellite_unit == "S2C" and product_duration < 15:
-                product_middle = product_middle + timedelta(seconds=10)
+            if self.satellite_unit == "S2C":
+                product_middle = product_middle + timedelta(seconds=20)
 
+            # This can be improve using nb ds expected and also the datastrips_groups
             datatake_document_that_match = sorted(
                 filtered_datatakes,
                 key=lambda dt: min(
@@ -114,6 +114,7 @@ class CdsProductS2(CdsProduct):
 
         nb_datatake_document_that_match = len(datatake_document_that_match)
 
+        # Already hard to know if the algo match the right one
         if nb_datatake_document_that_match > 1:
             LOGGER.warning(
                 "[%s] - Product match with %s datatake document",
@@ -144,3 +145,30 @@ class CdsProductS2(CdsProduct):
             return None
 
         return (self.get_datatake_id(), self.product_type)
+
+    def search_expected_tiles(self):
+        results = (
+            CdsProductS2.search()
+            .filter("term", mission=self.mission)
+            .filter("term", satellite_unit=self.satellite_unit)
+            .filter("range", sensing_start_date={"gte": self.sensing_start_date})
+            .filter("range", sensing_end_date={"lte": self.sensing_end_date})
+            .filter("exists", field="expected_tiles")
+            .execute()
+        )
+
+        if len(results) == 0:
+            LOGGER.warning(
+                "[%s] - No DS Found products with expected_tiles, expected at lease one",
+                self.key,
+            )
+
+            return []
+        elif len(results) > 1:
+            LOGGER.warning(
+                "[%s] - Found %s products with expected_tiles, expected only one",
+                self.key,
+                len(results),
+            )
+
+        return results[0].expected_tiles

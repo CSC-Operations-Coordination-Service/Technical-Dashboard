@@ -251,10 +251,6 @@ class CorrelateAcquisitionsEngine(DataEngine):
                 cached_downlink[downlink.meta.id].observation_time_start = (
                     doc.observation_time_start
                 )
-                if doc.mission == "S2":
-                    cached_downlink[downlink.meta.id].expected_tiles = (
-                        doc.search_expected_tiles()
-                    )
 
         versionned_downlinks = list(
             CdsDownlinkDatatake.mget_by_ids(list(cached_downlink.keys()))
@@ -369,6 +365,9 @@ class CorrelateAcquisitionsEngine(DataEngine):
             else:
                 cached_downlink[target_downlink.meta.id] = target_downlink
 
+            cached_downlink[target_downlink.meta.id].expected_tiles = (
+                doc.search_expected_tiles()
+            )
             cached_downlink[target_downlink.meta.id].ds_sensing_start_date = (
                 doc.sensing_start_date
             )
@@ -390,4 +389,5 @@ class CorrelateAcquisitionsEngine(DataEngine):
                         downlink.ds_sensing_start_date,
                     )
                 )
+            downlink.expected_tiles = cached_downlink[downlink.meta.id].expected_tiles
         return versionned_downlinks

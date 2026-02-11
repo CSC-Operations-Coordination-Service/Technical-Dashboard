@@ -293,9 +293,10 @@ class ComputeCompletenessEngineV2(ComputeCompletenessEngine):
                 local_value,
             )
 
-            datatake_doc.compute_missing_production(product_type, related_publications)
+            # Remove it as it is no needed yet
+            # datatake_doc.compute_missing_production(product_type, related_publications)
 
-            datatake_doc.compute_duplicated(product_type, related_publications)
+            # datatake_doc.compute_duplicated(product_type, related_publications)
 
             self.logger.info(
                 "[ITER][Publication][%s] - Compute local value : %s -> %s",

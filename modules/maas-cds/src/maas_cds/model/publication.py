@@ -81,7 +81,11 @@ class CdsPublication(
 
     @property
     def completeness_key(self):
-        # This working for s1-s2 for s3-s5 need also timeliness in the completeness key
+        """This is only made and tested for S1 and S2
+
+        Returns:
+            dict: a dict that contains all information to compute completeness
+        """
         return {
             "index": self.completeness_document_index,
             "class": self.completeness_document_class,
@@ -142,6 +146,11 @@ class CdsPublication(
 
     @property
     def completeness_splitted_key(self):
+        """This is only made and tested for S3 and S5
+
+        Returns:
+            dict: a dict that contains all information to compute completeness grouped
+        """
         return {
             "index": self.completeness_splitted_document_index,
             "class": self.completeness_splitted_document_class,
