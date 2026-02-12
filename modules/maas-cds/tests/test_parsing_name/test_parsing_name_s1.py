@@ -378,7 +378,7 @@ def test_s1_aux_mp_specific_size_8():
     assert result_dict == {
         "satellite_unit": "S1C",
         "mission": "S1",
-        "product_type": "MP_ALL__",
+        "product_type": "MP_ALL",
         "product_level": "L__",
     }
 

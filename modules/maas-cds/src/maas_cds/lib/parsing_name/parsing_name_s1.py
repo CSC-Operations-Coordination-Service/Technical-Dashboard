@@ -13,8 +13,8 @@ def extract_product_type_from_product_name_s1(product_name):
         "AMALFI_REPORT": r".*-report-[0-9]{8}T[0-9]{6}.xml$",
         "OUT_OF_MONITORING": r"(.*_COG.*)|(.*CARD_BS$)",  # todo verify ut
     } | {
-        f"{pattern_type}": r".*{}.*".format(pattern_type)
-        for pattern_type in ["AISAUX", "MPL_TIMELINE", "MP_FULL", "MP_ALL__"]
+        f"{pattern_type}": rf".*{pattern_type}.*"
+        for pattern_type in ["AISAUX", "MPL_TIMELINE", "MP_FULL", "MP_ALL"]
     }
 
     for product_type, pattern in regex_patterns.items():
