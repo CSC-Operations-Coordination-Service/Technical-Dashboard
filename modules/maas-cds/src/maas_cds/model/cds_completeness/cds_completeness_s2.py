@@ -69,30 +69,29 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
             .filter("terms", product_type=self.get_all_product_types())
             .params(ignore=404)
         )
-        res = search_request.execute()
-        if res:
-            for product in res:
-                self.retrieve_additional_fields_from_product(product)
+        res = search_request.params(size=10000).execute()
+        for product in res:
+            self.retrieve_additional_fields_from_product(product)
 
-                if product.datatake_id in ("", utils.DATATAKE_ID_MISSING_VALUE):
-                    LOGGER.info(
-                        "Load_data_before_compute - CdsProduct with key:%s had"
-                        " no datake_id, using sensing date it has been rattached"
-                        " to datatake_id: %s",
-                        product.key,
-                        self.datatake_id,
-                    )
+            if product.datatake_id in ("", utils.DATATAKE_ID_MISSING_VALUE):
+                LOGGER.info(
+                    "Load_data_before_compute - CdsProduct with key:%s had"
+                    " no datake_id, using sensing date it has been rattached"
+                    " to datatake_id: %s",
+                    product.key,
+                    self.datatake_id,
+                )
 
-                    product.datatake_id = self.datatake_id
+                product.datatake_id = self.datatake_id
 
-                    if self.timeliness:
-                        product.timeliness = self.timeliness
+                if self.timeliness:
+                    product.timeliness = self.timeliness
 
-                    product.absolute_orbit = self.absolute_orbit
-                    product.relative_orbit = self.relative_orbit
+                product.absolute_orbit = self.absolute_orbit
+                product.relative_orbit = self.relative_orbit
 
-                    product.instrument_mode = self.instrument_mode
-                    yield product
+                product.instrument_mode = self.instrument_mode
+                yield product
 
     def impact_other_calculation(self, compute_key):
         """MSI_L1C_DS provide footprint to evaluated expected tiles
