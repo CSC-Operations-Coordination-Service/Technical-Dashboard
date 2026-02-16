@@ -262,6 +262,14 @@ class CdsDatatakeS2(CdsDatatake):
 
             if product.datatake_id != self.datatake_id:
 
+                LOGGER.info(
+                    "Load_data_before_compute - CdsProduct with key %s had"
+                    " no datatake_id, using product group id it has been rattached"
+                    " to datatake_id : %s",
+                    product.key,
+                    self.datatake_id,
+                )
+
                 product.datatake_id = self.datatake_id
 
                 if self.timeliness:
@@ -272,13 +280,6 @@ class CdsDatatakeS2(CdsDatatake):
 
                 product.instrument_mode = self.instrument_mode
 
-                LOGGER.info(
-                    "Load_data_before_compute - CdsProduct with key %s had"
-                    " no datatake_id, using product group id it has been rattached"
-                    " to datatake_id : %s",
-                    product.key,
-                    self.datatake_id,
-                )
                 yield product.to_bulk_action()
 
     def find_related_document_not_attached(self):

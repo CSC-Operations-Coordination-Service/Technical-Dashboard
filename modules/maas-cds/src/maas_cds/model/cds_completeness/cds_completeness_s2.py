@@ -71,7 +71,8 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
         ):
             self.retrieve_additional_fields_from_product(product)
 
-            if product.datatake_id in ("", utils.DATATAKE_ID_MISSING_VALUE):
+            if product.datatake_id != self.datatake_id:
+
                 LOGGER.info(
                     "Load_data_before_compute - CdsProduct with key:%s had"
                     " no datake_id, using sensing date it has been rattached"
@@ -89,7 +90,8 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
                 product.relative_orbit = self.relative_orbit
 
                 product.instrument_mode = self.instrument_mode
-                yield product
+
+                yield product.to_bulk_action()
 
     def impact_other_calculation(self, compute_key):
         """MSI_L1C_DS provide footprint to evaluated expected tiles
