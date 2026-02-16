@@ -10,7 +10,8 @@ from maas_cds.model.generated import CdsPublication
 
 from maas_cds.lib import tolerance
 from maas_cds.model.enumeration import CompletenessScope
-from opensearchpy import Keyword
+from opensearchpy import Q, Keyword
+from datetime import timedelta
 
 
 __all__ = ["CdsCompletenessS2"]
@@ -55,22 +56,19 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
         # Evaluate expected tiles before compute completeness
         self.number_of_expected_tiles = len(self.search_expected_tiles())
 
+        if not self.product_group_ids:
+            self.product_group_ids = CdsDatatakeS2.get_by_id(
+                self.meta.id
+            ).product_group_ids
+
         # Try to rattach products which have no datatake id to this datatake using sensing date
         # Also update the datastrip_ds and product_group_ids list of the datatake
 
-        search_request = (
-            CdsPublication.search()
-            .filter("term", satellite_unit=self.satellite_unit)
-            .filter("term", mission=self.mission)
-            .filter("term", service_type=self.service_type)
-            .filter("term", service_id=self.service_id)
-            .filter("range", sensing_start_date={"gte": self.observation_time_start})
-            .filter("range", sensing_end_date={"lte": self.observation_time_stop})
-            .filter("terms", product_type=self.get_all_product_types())
-            .params(ignore=404)
-        )
-        res = search_request.params(size=10000).execute()
-        for product in res:
+        for product in (
+            self.find_related_document_not_attached()
+            .params(version=True, seq_no_primary_term=True)
+            .scan()
+        ):
             self.retrieve_additional_fields_from_product(product)
 
             if product.datatake_id in ("", utils.DATATAKE_ID_MISSING_VALUE):
@@ -350,3 +348,21 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
         setattr(
             self, "final_completeness_status", evaluate_completeness_status(percentage)
         )
+
+    def find_related_document_not_attached(self):
+        # Try to rattach products which have no datatake id to this datatake using sensing date
+        # Also update the datastrip_ds and product_group_ids list of the datatake
+
+        search_request = (
+            CdsPublication.search()
+            .filter("term", satellite_unit=self.satellite_unit)
+            .filter("term", mission=self.mission)
+            .filter("term", service_type=self.service_type)
+            .filter("term", service_id=self.service_id)
+            .filter(~Q("term", datatake_id=self.datatake_id))
+            .filter("term", product_group_id=self.product_group_ids[0])
+            .filter("terms", product_type=self.get_all_product_types())
+            .params(ignore=404)
+        )
+
+        return search_request
