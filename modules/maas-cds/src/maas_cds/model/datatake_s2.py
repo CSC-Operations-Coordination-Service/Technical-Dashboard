@@ -252,6 +252,9 @@ class CdsDatatakeS2(CdsDatatake):
 
         setattr(self, "number_of_expected_ds", len(self.get_downlinks()))
 
+        if not self.product_group_ids:
+            return
+
         for product in (
             self.find_related_document_not_attached()
             .params(version=True, seq_no_primary_term=True)
@@ -285,6 +288,7 @@ class CdsDatatakeS2(CdsDatatake):
     def find_related_document_not_attached(self):
         # Try to rattach products which have no datatake id to this datatake using sensing date
         # Also update the datastrip_ds and product_group_ids list of the datatake
+
         search_request = (
             CdsProduct.search()
             .filter("term", mission=self.mission)
