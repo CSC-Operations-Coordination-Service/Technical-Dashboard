@@ -64,6 +64,9 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
         # Try to rattach products which have no datatake id to this datatake using sensing date
         # Also update the datastrip_ds and product_group_ids list of the datatake
 
+        if not self.product_group_ids:
+            return
+
         for product in (
             self.find_related_document_not_attached()
             .params(version=True, seq_no_primary_term=True)
