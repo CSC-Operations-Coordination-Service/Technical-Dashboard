@@ -66,7 +66,8 @@ class CdsDatatakeS1(CdsDatatake):
 
     def product_type_with_duplicated(self, product_type: str) -> bool:
         """Do we want check duplicated for this product type ?"""
-        return True
+
+        return product_type not in ("AMH_ERRMAT", "AMV_ERRMAT")
 
     def impact_other_calculation(self, compute_key):
         """Reference product sensing provide expected for OCN or SLC
