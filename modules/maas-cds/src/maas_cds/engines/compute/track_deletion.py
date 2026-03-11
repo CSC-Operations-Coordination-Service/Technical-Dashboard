@@ -195,7 +195,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
                     # Exprivia_S1/S2/S3
                     if service_id == "Exprivia":
-                        interface_name += f"_{deletion.product_name[0:1]}"
+                        interface_name += f"_{deletion.product_name[0:2]}"
 
                     for product_uuid in product_uuids:
 
