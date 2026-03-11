@@ -3,12 +3,12 @@ name: Run Tests
 on:
   push:
     branches:
-      - '**'  # Triggers on push to any branch
+      - "**" # Triggers on push to any branch
     tags:
-      - '*'  # Triggers on push to any tag
+      - "*" # Triggers on push to any tag
   pull_request:
     branches:
-      - '**'  # Triggers on pull request to any branch
+      - "**" # Triggers on pull request to any branch
   workflow_dispatch:
 
 jobs:
@@ -20,45 +20,45 @@ jobs:
         module: [maas-model, maas-engine, maas-collector, maas-cds]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11.11'
-        architecture: x64
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.11"
+          architecture: x64
 
-    - name: Init venv
-      run: |
-        python -m venv venv
-        pip install -U pip
+      - name: Init venv
+        run: |
+          python -m venv venv
+          pip install -U pip
 
-    - name: Install dependencies
-      run: |
-        source venv/bin/activate
-        pip install -e ./modules/maas-model
-        pip install -e ./modules/maas-engine
-        pip install -e ./modules/maas-collector
-        pip install -e ./modules/maas-cds
+      - name: Install dependencies
+        run: |
+          source venv/bin/activate
+          pip install -e ./modules/maas-model
+          pip install -e ./modules/maas-engine
+          pip install -e ./modules/maas-collector
+          pip install -e ./modules/maas-cds
 
-    - name: Install test dependencies
-      run: |
-        source venv/bin/activate
-        pip install pytest
-        pip install pytest-cov
-        pip install wheel
+      - name: Install test dependencies
+        run: |
+          source venv/bin/activate
+          pip install pytest
+          pip install pytest-cov
+          pip install wheel
 
-    - name: Run tests
-      run: |
-        source venv/bin/activate
-        pytest ./modules/${{ matrix.module }}/tests --junitxml=reports/${{ matrix.module }}-results.xml
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          pytest ./modules/${{ matrix.module }}/tests --junitxml=reports/${{ matrix.module }}-results.xml
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results-${{ matrix.module }}
-        path: reports/${{ matrix.module }}-results.xml
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.module }}
+          path: reports/${{ matrix.module }}-results.xml
 
   python-build:
     runs-on: ubuntu-22.04
@@ -69,27 +69,27 @@ jobs:
         module: [maas-model, maas-engine, maas-collector, maas-cds]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2    
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11.11'
-        architecture: x64
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Install tox
-      run: pip install tox
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.11"
+          architecture: x64
 
-    - name: Build wheels
-      run: |
-        tox -c ./modules/${{ matrix.module }}/tox.ini -e build
-        
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: wheel-${{ matrix.module }}
-        path: ./modules/${{ matrix.module }}/dist/
+      - name: Install tox
+        run: pip install tox
+
+      - name: Build wheels
+        run: |
+          tox -c ./modules/${{ matrix.module }}/tox.ini -e build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-${{ matrix.module }}
+          path: ./modules/${{ matrix.module }}/dist/
 
   docker-build:
     runs-on: ubuntu-22.04
@@ -97,84 +97,84 @@ jobs:
 
     needs: python-build
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Download specific artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: wheel-maas-model
-        path: ./modules/build/maas-model/
-    - name: Download specific artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: wheel-maas-engine
-        path: ./modules/build/maas-engine/ 
-    - name: Download specific artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: wheel-maas-cds
-        path: ./modules/build/maas-cds/ 
-    - name: Download specific artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: wheel-maas-collector
-        path: ./modules/build/maas-collector/
+      - name: Download specific artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-maas-model
+          path: ./modules/build/maas-model/
+      - name: Download specific artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-maas-engine
+          path: ./modules/build/maas-engine/
+      - name: Download specific artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-maas-collector
+          path: ./modules/build/maas-collector/
 
-    - name: Convert repository name to lowercase
-      run: |
-        echo "REPO_NAME_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - name: Download specific artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: wheel-maas-cds
+          path: ./modules/build/maas-cds/
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Convert repository name to lowercase
+        run: |
+          echo "REPO_NAME_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
-    - name: Extract version from branch or tag
-      run: |
-        if [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
-          echo "VERSION=$(echo '${{ github.ref_name }}' | sed 's/release\///')-beta" >> $GITHUB_ENV
-        elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-        fi
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Build and push cds
-      uses: docker/build-push-action@v6
-      with:
-        platforms: linux/amd64
-        push: true
-        context: ./modules
-        file: ./modules/Dockerfile.maas-cds
-        tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/technical-dashboard:maas-cds-${{ env.VERSION }}
-          ghcr.io/${{ env.REPO_NAME_LOWER }}/maas-cds:${{ env.VERSION }}
-        build-args: |
-          NO_CACHE=true
+      - name: Extract version from branch or tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/heads/release/* ]]; then
+            echo "VERSION=$(echo '${{ github.ref_name }}' | sed 's/release\///')-beta" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
 
-    - name: Build and push collector
-      uses: docker/build-push-action@v6
-      with:
-        platforms: linux/amd64
-        push: true
-        context: ./modules
-        file: ./modules/Dockerfile.maas-collector
-        tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/technical-dashboard:maas-collector-${{ env.VERSION }}
-          ghcr.io/${{ env.REPO_NAME_LOWER }}/maas-collector:${{ env.VERSION }}       
-        build-args: |
-          NO_CACHE=true
+      - name: Build and push cds
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          push: true
+          context: ./modules
+          file: ./modules/Dockerfile.maas-cds
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/technical-dashboard:maas-cds-${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_NAME_LOWER }}/maas-cds:${{ env.VERSION }}
+          build-args: |
+            NO_CACHE=true
 
+      - name: Build and push collector
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          push: true
+          context: ./modules
+          file: ./modules/Dockerfile.maas-collector
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/technical-dashboard:maas-collector-${{ env.VERSION }}
+            ghcr.io/${{ env.REPO_NAME_LOWER }}/maas-collector:${{ env.VERSION }}
+          build-args: |
+            NO_CACHE=true
