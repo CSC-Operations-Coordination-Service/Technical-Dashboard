@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-02-04T13:23:36.299019+00:00
+Generated date: 2026-03-10T21:55:00.340677+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -20,6 +20,7 @@ Generated from:
     - resources/templates/cds-ddp-data-available_template.json
     - resources/templates/cds-downlink-datatake_template.json
     - resources/templates/cds-edrs-acquisition-pass-status_template.json
+    - resources/templates/cds-expected_template.json
     - resources/templates/cds-grafana-usage_template.json
     - resources/templates/cds-hktm-acquisition-completeness_template.json
     - resources/templates/cds-hktm-production-completeness_template.json
@@ -33,6 +34,7 @@ Generated from:
     - resources/templates/cds-s3-completeness_template.json
     - resources/templates/cds-s5-completeness_template.json
     - resources/templates/cds-sat-unavailability_template.json
+    - resources/templates/maas-config-collector_template.json
     - resources/templates/maas-config-completeness-s3_template.json
     - resources/templates/maas-config-completeness-s5_template.json
     - resources/templates/maas-config-completeness_template.json
@@ -122,6 +124,7 @@ __all__ = [
     "CdsDdpDataAvailable",
     "CdsDownlinkDatatake",
     "CdsEdrsAcquisitionPassStatus",
+    "CdsExpected",
     "CdsGrafanaUsage",
     "CdsHktmAcquisitionCompleteness",
     "CdsHktmProductionCompleteness",
@@ -147,6 +150,7 @@ __all__ = [
     "InterfaceProbe",
     "LtaProduct",
     "MaasConfig",
+    "MaasConfigCollector",
     "MaasConfigCompleteness",
     "MaasConfigCompletenessS3",
     "MaasConfigCompletenessS3Records",
@@ -1956,6 +1960,37 @@ class CdsEdrsAcquisitionPassStatus(MAASDocument):
     uplink_status = Keyword()
 
 
+class CdsExpected(MAASDocument):
+    """
+    Mapping class for index: cds-expected
+
+    Generated from: resources/templates/cds-expected_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-expected"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-expected")
+
+    daily_expected = Float()
+
+    date = ZuluDate()
+
+    mission = Keyword()
+
+    product_type = Keyword()
+
+    provider = Keyword()
+
+    satellite = Keyword()
+
+    service_type = Keyword()
+
+
 class CdsGrafanaUsage(MAASDocument):
     """
     Mapping class for index: cds-grafana-usage
@@ -3225,6 +3260,23 @@ class MaasConfig(MAASDocument):
     @classmethod
     def _matches(cls, hit):
         return hit["_index"].startswith("maas-config")
+
+
+class MaasConfigCollector(MAASDocument):
+    """
+    Mapping class for index: maas-config-collector
+
+    Generated from: resources/templates/maas-config-collector_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "maas-config-collector"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("maas-config-collector")
 
 
 class MaasConfigCompleteness(MAASDocument):

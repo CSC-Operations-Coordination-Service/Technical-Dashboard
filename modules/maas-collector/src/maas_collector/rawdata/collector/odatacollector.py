@@ -5,6 +5,9 @@ import datetime
 import fnmatch
 import os
 import typing
+from requests.adapters import HTTPAdapter, Retry
+
+
 from maas_model import datetime_to_zulu
 
 from maas_collector.rawdata.collector.httpcollector import (
@@ -483,5 +486,77 @@ class ODataCollector(HttpCollector, HttpMixin):
         return probe_query_dict[config.get_config_protocol_version()]
 
     @classmethod
+    def build_get_an_entity_query(
+        cls, config: ODataCollectorConfiguration, entity_uuid
+    ):
+        template_query = (
+            f"{config.get_config_product_url()}{config.odata_entity_location}"
+            f"{config.odata_entities}({entity_uuid})"
+        )
+
+        return template_query
+
+    @classmethod
     def attributs_url(cls):
         return super().attributs_url() + ["odata_product_url"]
+
+    @classmethod
+    def probe_item(cls, config: HttpCollectorConfiguration, entity_uuid: str):
+        """_summary_
+
+        Args:
+            config (HttpCollectorConfiguration): configuration of the collector
+            probe_data (InterfaceProbeData): data to fill
+
+        Raises:
+            ValueError: The query of the interface led to a code not in range 200-300
+
+        Returns:
+            str: Returns OK string if query succeeded
+        """
+
+        now = datetime.datetime.now(tz=datetime.UTC)
+        item_status = {
+            "code": 0,
+            "message": "",
+            "probe_start_date": datetime_to_zulu(now),
+            "probe_end_date": None,
+            "probe_duration": None,
+        }
+
+        with cls.create_http_session(config) as http_session:
+            # no retry for probing
+            retry = Retry(total=0, connect=0, backoff_factor=0)
+
+            http_session.mount("http://", HTTPAdapter(max_retries=retry))
+            http_session.mount("https://", HTTPAdapter(max_retries=retry))
+
+            authentication = build_authentication(
+                config.auth_method, config, http_session
+            )
+
+            headers = authentication.get_headers()
+
+            response = http_session.get(
+                cls.build_get_an_entity_query(config, entity_uuid),
+                headers=headers,
+                timeout=config.auth_timeout,
+            )
+
+            item_status["code"] = response.status_code
+            if not 200 <= response.status_code < 300:
+                item_status["message"] = "Not to find the product"
+                item_status["available"] = False
+
+            else:
+                item_status["message"] = "Product are available"
+                item_status["available"] = True
+
+        item_status["probe_end_date"] = datetime_to_zulu(now)
+
+        item_status["probe_duration"] = (
+            datetime.datetime.fromisoformat(item_status["probe_end_date"])
+            - datetime.datetime.fromisoformat(item_status["probe_start_date"])
+        ).total_seconds()
+
+        return item_status
