@@ -67,7 +67,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                 products_deletion = (
                     CdsInterfaceProductDeletion.search()
                     .filter("term", jira_issue=issue.key)
-                    .params(size=10000)
+                    .params(version=True, seq_no_primary_term=True, size=10000)
                     .execute()
                 )
 
