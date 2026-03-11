@@ -4,8 +4,15 @@ import os
 import re
 import typing
 
-STRIPPED_EXTENSIONS = [".SAFE", ".SEN3", ".EOF", ".nc", ".h5", ".RAW"]
-COMPRESION_EXTENSIONS = [".zip", ".tar", ".tgz"]
+STRIPPED_EXTENSIONS = [".SAFE", ".SEN3", ".EOF", ".nc", ".h5", ".RAW", ".jp2"]
+COMPRESION_EXTENSIONS_lower = [".zip", ".tar", ".tgz"]
+COMPRESION_EXTENSIONS = COMPRESION_EXTENSIONS_lower + [
+    i.upper() for i in COMPRESION_EXTENSIONS_lower
+]
+
+COMPRESION_EXTENSIONS_REGEX = "|".join(
+    [f"\{COMPRESION_EXT}$" for COMPRESION_EXT in COMPRESION_EXTENSIONS]
+)
 
 STRIPPED_EXTENSIONS_REGEX = "|".join(
     [f"\{STRIPPED_EXT}$" for STRIPPED_EXT in STRIPPED_EXTENSIONS]
@@ -27,8 +34,9 @@ def remove_extension_from_product_name(product_name):
     Returns:
         str: the given product_name whithout extension
     """
-    product_without_file_extension = os.path.splitext(product_name)[0]
-    return re.sub(STRIPPED_EXTENSIONS_REGEX, "", product_without_file_extension)
+    remove_compression = re.sub(COMPRESION_EXTENSIONS_REGEX, "", product_name)
+    remove_extension = re.sub(STRIPPED_EXTENSIONS_REGEX, "", remove_compression)
+    return remove_extension
 
 
 def normalize_product_name(name: str) -> str:
@@ -82,7 +90,7 @@ def generate_publication_names(product_name: str) -> list[str]:
 
     products_list = set()
     for short_product_name in [
-        remove_extension_from_product_name(product_name.rsplit(".", 1)[0]),
+        remove_extension_from_product_name(product_name),
     ]:
         products_list.add(short_product_name)
         for extension in STRIPPED_EXTENSIONS:

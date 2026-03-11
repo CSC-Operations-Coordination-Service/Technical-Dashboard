@@ -1,0 +1,39 @@
+{
+    "index_patterns": [
+        "cds-expected*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "service_type": {
+                "type": "keyword"
+            },
+            "mission": {
+                "type": "keyword"
+            },
+            "satellite": {
+                "type": "keyword"
+            },
+            "product_type": {
+                "type": "keyword"
+            },
+            "provider": {
+                "type": "keyword"
+            },
+            "date": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "daily_expected": {
+                "type": "float"
+            }
+        },
+        "_meta": {}
+    }
+}

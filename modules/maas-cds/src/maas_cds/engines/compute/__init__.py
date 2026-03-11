@@ -44,3 +44,8 @@ from maas_cds.engines.compute.compute_missing_completeness_splitted import (
 from maas_cds.engines.compute.anomaly_correlation_ticket import (
     CorrelateAnomalyTicketEngine,
 )
+
+
+from maas_cds.engines.compute.track_deletion import (
+    TrackDeletionEngine,
+)

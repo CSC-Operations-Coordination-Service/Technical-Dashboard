@@ -1,6 +1,6 @@
 {
     "index_patterns": [
-        "maas-config*"
+        "maas-config-collector*"
     ],
     "settings": {
         "index": {

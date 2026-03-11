@@ -356,7 +356,7 @@ class MpipCollector(HttpCollector, HttpMixin):
         """_summary_
 
         Args:
-            config (ODataCollectorConfiguration): config of the collector
+            config (MpipCollectorConfiguration): config of the collector
             product (dict): the product to =be downloaded
 
         Returns:
