@@ -205,6 +205,8 @@ class ODataCollector(HttpCollector, HttpMixin):
     Warning: does not support redirect
     """
 
+    __auth_cache = {}
+
     CONFIG_CLASS = ODataCollectorConfiguration
 
     IMPL_DIR = {"v3": ODataQueryV3Implementation, "v4": ODataQueryV4Implementation}
@@ -531,9 +533,12 @@ class ODataCollector(HttpCollector, HttpMixin):
             http_session.mount("http://", HTTPAdapter(max_retries=retry))
             http_session.mount("https://", HTTPAdapter(max_retries=retry))
 
-            authentication = build_authentication(
-                config.auth_method, config, http_session
-            )
+            if config.interface_name not in cls.__auth_cache:
+                cls.__auth_cache[config.interface_name] = build_authentication(
+                    config.auth_method, config, http_session
+                )
+
+            authentication = cls.__auth_cache[config.interface_name]
 
             headers = authentication.get_headers()
 
@@ -545,7 +550,7 @@ class ODataCollector(HttpCollector, HttpMixin):
 
             item_status["code"] = response.status_code
             if not 200 <= response.status_code < 300:
-                item_status["message"] = "Not to find the product"
+                item_status["message"] = "Not able to find the product"
                 item_status["available"] = False
 
             else:
