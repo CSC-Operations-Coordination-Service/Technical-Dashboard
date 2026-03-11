@@ -53,6 +53,9 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
         Returns:
             List[str]: translated names
         """
+
+        if isinstance(names, str):
+            names = [names]
         return [self.interface_dict.get(name.lower(), name) for name in names]
 
     def action_iterator(self):
@@ -188,15 +191,19 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
             for interface_type, services in products_id_to_download.items():
                 for service_id, product_uuids in services.items():
+                    interface_name = f"{interface_type}_{service_id}"
+
+                    # Exprivia_S1/S2/S3
+                    if service_id == "Exprivia":
+                        interface_name += f"_{deletion.product_name[0:1]}"
+
                     for product_uuid in product_uuids:
 
-                        interface_name = f"{interface_type}_{service_id}"
-
-                        # Exprivia_S1/S2/S3
-                        if service_id == "Exprivia":
-                            service_id += f"_{deletion.product_name[0:1]}"
-
                         status = self.collect_product(interface_name, product_uuid)
+
+                        if status is None:
+                            # Fail to get a valid status
+                            continue
 
                         attr_name = (
                             self.local_attribute_prefix(
@@ -226,7 +233,17 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
     def collect_product(self, interface_name, product_uuid):
 
-        collect_conf_dict = MaasConfigCollector.get_by_id(interface_name).to_dict()
+        self.logger.info(
+            "[%s] - Trying to fetch product %s", interface_name, product_uuid
+        )
+
+        collect_conf = MaasConfigCollector.get_by_id(interface_name)
+
+        if collect_conf is None:
+            self.logger.warning("There is not collector config for %s", interface_name)
+            return
+
+        collect_conf_dict = collect_conf.to_dict()
 
         collector_class = get_collector_class_by_config_classname(
             collect_conf_dict["class"]
