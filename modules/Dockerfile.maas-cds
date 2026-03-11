@@ -10,6 +10,7 @@ WORKDIR /app
 
 COPY ./build/maas-model/*.whl  ./
 COPY ./build/maas-engine/*.whl  ./
+COPY ./build/maas-collector/*.whl  ./
 COPY ./build/maas-cds/*.whl  ./
 
 # update distrib and add needed tools
@@ -21,6 +22,7 @@ COPY ./build/maas-cds/*.whl  ./
 # install only usefull lib
 RUN pip install ./maas_model*.whl 
 RUN pip install ./maas_engine*.whl 
+RUN pip install ./maas_collector*.whl 
 RUN pip install ./maas_cds*.whl 
 
 RUN rm -f *.whl
