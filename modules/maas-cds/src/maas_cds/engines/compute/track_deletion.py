@@ -70,6 +70,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                 products_deletion = (
                     CdsInterfaceProductDeletion.search()
                     .filter("term", jira_issue=issue.key)
+                    .filter("term", interface_type=issue.interface_type)
                     .params(version=True, seq_no_primary_term=True, size=10000)
                     .execute()
                 )
@@ -109,6 +110,17 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                 # Init
                 if service_id not in products_id_to_download[deletion.interface_type]:
                     products_id_to_download[deletion.interface_type][service_id] = []
+
+                status_attr_name = (
+                    self.local_attribute_prefix(deletion.interface_type, service_id)
+                    + "_status"
+                )
+
+                if (
+                    not hasattr(deletion, status_attr_name)
+                    or getattr(deletion, status_attr_name) is None
+                ):
+                    setattr(deletion, status_attr_name, "Unknow")
 
                 attr_name = (
                     self.local_attribute_prefix(deletion.interface_type, service_id)
@@ -159,12 +171,8 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                         service_id,
                         deletion.product_name,
                     )
-                    attr_name = (
-                        self.local_attribute_prefix(deletion.interface_type, service_id)
-                        + "_status"
-                    )
 
-                    setattr(deletion, attr_name, "Never published")
+                    setattr(deletion, status_attr_name, "Never published")
 
                 elif nb_publication_find > 1:
                     self.logger.warning(
@@ -223,14 +231,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
                         getattr(deletion, attr_name).append(status)
 
-                        attr_name = (
-                            self.local_attribute_prefix(
-                                deletion.interface_type, service_id
-                            )
-                            + "_status"
-                        )
-
-                        setattr(deletion, attr_name, status["status"])
+                        setattr(deletion, status_attr_name, status["status"])
 
             yield deletion.to_bulk_action()
 
