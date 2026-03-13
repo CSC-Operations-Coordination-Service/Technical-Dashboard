@@ -551,11 +551,11 @@ class ODataCollector(HttpCollector, HttpMixin):
             item_status["code"] = response.status_code
             if not 200 <= response.status_code < 300:
                 item_status["message"] = "Not able to find the product"
-                item_status["available"] = False
+                item_status["status"] = "Missing"
 
             else:
                 item_status["message"] = "Product are available"
-                item_status["available"] = True
+                item_status["status"] = "Available"
 
         item_status["probe_end_date"] = datetime_to_zulu(now)
 

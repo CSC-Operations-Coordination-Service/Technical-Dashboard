@@ -159,6 +159,12 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                         service_id,
                         deletion.product_name,
                     )
+                    attr_name = (
+                        self.local_attribute_prefix(deletion.interface_type, service_id)
+                        + "_status"
+                    )
+
+                    setattr(deletion, attr_name, "Never published")
 
                 elif nb_publication_find > 1:
                     self.logger.warning(
@@ -221,10 +227,10 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                             self.local_attribute_prefix(
                                 deletion.interface_type, service_id
                             )
-                            + "_is_available"
+                            + "_status"
                         )
 
-                        setattr(deletion, attr_name, status["available"])
+                        setattr(deletion, attr_name, status["status"])
 
             yield deletion.to_bulk_action()
 
