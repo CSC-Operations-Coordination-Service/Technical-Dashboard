@@ -29,6 +29,24 @@
             },
             "interface_type": {
                 "type": "keyword"
+            },
+            "DD_DAS_status": {
+                "type": "keyword"
+            },
+            "LTA_Acri_status": {
+                "type": "keyword"
+            },
+            "LTA_CloudFerro_status": {
+                "type": "keyword"
+            },
+            "LTA_Exprivia_status": {
+                "type": "keyword"
+            },
+            "LTA_S5P_DLR_status": {
+                "type": "keyword"
+            },
+            "LTA_Werum_status": {
+                "type": "keyword"
             }
         },
         "_meta": {
