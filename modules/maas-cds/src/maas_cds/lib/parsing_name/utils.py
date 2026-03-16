@@ -89,6 +89,8 @@ def generate_publication_names(product_name: str) -> list[str]:
     """
 
     products_list = set()
+    products_list.add(product_name)
+
     for short_product_name in [
         remove_extension_from_product_name(product_name),
     ]:
