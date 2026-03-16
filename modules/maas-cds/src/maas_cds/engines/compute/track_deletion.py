@@ -89,10 +89,10 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
         for deletion in products_deletion:
 
             # Init
-            products_id_to_download = {}
+            self.products_id_to_download = {}
 
-            if deletion.interface_type not in products_id_to_download:
-                products_id_to_download[deletion.interface_type] = {}
+            if deletion.interface_type not in self.products_id_to_download:
+                self.products_id_to_download[deletion.interface_type] = {}
 
             # if hasattr(deletion, "effective_product_name") is not None:
             #     continue
@@ -108,8 +108,13 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
             for service_id in service_ids:
                 # Init
-                if service_id not in products_id_to_download[deletion.interface_type]:
-                    products_id_to_download[deletion.interface_type][service_id] = []
+                if (
+                    service_id
+                    not in self.products_id_to_download[deletion.interface_type]
+                ):
+                    self.products_id_to_download[deletion.interface_type][
+                        service_id
+                    ] = []
 
                 status_attr_name = (
                     self.local_attribute_prefix(deletion.interface_type, service_id)
@@ -136,9 +141,9 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                         deletion.product_name,
                         service_product_uuid,
                     )
-                    products_id_to_download[deletion.interface_type][service_id].append(
-                        service_product_uuid
-                    )
+                    self.products_id_to_download[deletion.interface_type][
+                        service_id
+                    ].append(service_product_uuid)
                     continue
 
                 publications_query = (
@@ -175,35 +180,30 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                     setattr(deletion, status_attr_name, "Never published")
 
                 elif nb_publication_find > 1:
-                    self.logger.warning(
-                        "[%s - %s] There is no product for %s",
-                        deletion.interface_type,
-                        service_id,
-                        deletion.product_name,
-                    )
+
+                    # Filter publications with the same product_name as deletion.product_name
+                    same_name_publications = [
+                        pub
+                        for pub in publications
+                        if pub.product_name == deletion.product_name
+                    ]
+                    if len(same_name_publications) == 1:
+                        self.import_publication_to_deletion(
+                            deletion, same_name_publications[0], service_id
+                        )
+                    else:
+                        self.logger.warning(
+                            "[%s - %s] There is to many product for %s",
+                            deletion.interface_type,
+                            service_id,
+                            deletion.product_name,
+                        )
                 else:
-                    matched_publication = publications[0]
-                    self.logger.debug(
-                        "[%s - %s] There is a product for %s named : %s",
-                        deletion.interface_type,
-                        service_id,
-                        deletion.product_name,
-                        matched_publication.name,
+                    self.import_publication_to_deletion(
+                        deletion, publications[0], service_id
                     )
 
-                    deletion.effective_product_name = matched_publication.name
-                    setattr(
-                        deletion,
-                        self.local_attribute_prefix(deletion.interface_type, service_id)
-                        + "_product_uuid",
-                        matched_publication.product_uuid,
-                    )
-
-                    products_id_to_download[deletion.interface_type][service_id].append(
-                        matched_publication.product_uuid
-                    )
-
-            for interface_type, services in products_id_to_download.items():
+            for interface_type, services in self.products_id_to_download.items():
                 for service_id, product_uuids in services.items():
                     interface_name = f"{interface_type}_{service_id}"
 
@@ -234,6 +234,27 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                         setattr(deletion, status_attr_name, status["status"])
 
             yield deletion.to_bulk_action()
+
+    def import_publication_to_deletion(self, deletion, publication, service_id):
+        self.logger.debug(
+            "[%s - %s] There is a product for %s named : %s",
+            deletion.interface_type,
+            service_id,
+            deletion.product_name,
+            publication.name,
+        )
+
+        deletion.effective_product_name = publication.name
+        setattr(
+            deletion,
+            self.local_attribute_prefix(deletion.interface_type, service_id)
+            + "_product_uuid",
+            publication.product_uuid,
+        )
+
+        self.products_id_to_download[deletion.interface_type][service_id].append(
+            publication.product_uuid
+        )
 
     def local_attribute_prefix(self, service_id, service_name):
         return f"{service_id}_{service_name}"
