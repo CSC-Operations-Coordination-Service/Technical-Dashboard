@@ -203,6 +203,12 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
             for interface_type, services in self.products_id_to_download.items():
                 for service_id, product_uuids in services.items():
+
+                    status_attr_name = (
+                        self.local_attribute_prefix(deletion.interface_type, service_id)
+                        + "_status"
+                    )
+
                     interface_name = f"{interface_type}_{service_id}"
 
                     # Exprivia_S1/S2/S3
@@ -228,7 +234,6 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                             setattr(deletion, attr_name, [])
 
                         getattr(deletion, attr_name).append(status)
-
                         setattr(deletion, status_attr_name, status["status"])
 
             yield deletion.to_bulk_action()
@@ -282,5 +287,9 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
         self.set_credential_attributes(collector_config, self.credential_dict)
 
         item_status = collector_class.probe_item(collector_config, product_uuid)
+
+        self.logger.debug(
+            "[%s][%s] - Status %s ", interface_name, product_uuid, item_status
+        )
 
         return item_status
