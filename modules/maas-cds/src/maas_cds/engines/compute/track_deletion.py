@@ -183,9 +183,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
                     # Filter publications with the same product_name as deletion.product_name
                     same_name_publications = [
-                        pub
-                        for pub in publications
-                        if pub.product_name == deletion.product_name
+                        pub for pub in publications if pub.name == deletion.product_name
                     ]
                     if len(same_name_publications) == 1:
                         self.import_publication_to_deletion(
