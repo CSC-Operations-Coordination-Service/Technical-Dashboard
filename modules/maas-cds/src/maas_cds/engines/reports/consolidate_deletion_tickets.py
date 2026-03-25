@@ -38,7 +38,7 @@ class DeletionIssueConsolidatorEngine(ReplicatorEngine):
             self.interface_dict = interface_dict
 
     def get_consolidated_id(self, raw_document: DeletionIssue):
-        return raw_document.meta.key
+        return raw_document.meta.id
 
     def consolidate(
         self, raw_document: DeletionIssue, document: CdsDeletionIssue
