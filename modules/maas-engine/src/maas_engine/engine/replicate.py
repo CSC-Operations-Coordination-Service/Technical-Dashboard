@@ -1,6 +1,7 @@
 """
 A engine to automate attribute copy from raw data to consolidated data
 """
+
 from typing import Optional, List, Set
 
 from maas_model import MAASDocument, MAASRawDocument

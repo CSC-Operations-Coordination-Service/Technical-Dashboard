@@ -701,3 +701,68 @@ def test_xml_extractor_02():
 
     assert extracts[0]["creation_date"] == "2025-04-07T23:50:04"
     assert extracts[1]["creation_date"] == "2025-04-07T23:50:04"
+
+
+def test_log_extractor_02():
+    lext = LogExtractor(
+        r'(?P<month>\w{3})\s+(?P<day>\d{1,2})\s+(?P<time>\d{2}:\d{2}:\d{2})\s+(?P<hostname>\S+)\s+(?P<process>\w+)\[(?P<pid>\d+)\]:\s*M&C\|Timeliness\|TL\|OUT\|eventtime="(?P<eventtime>[^"]+)"\|eventname="(?P<eventname>[^"]+)"\|check="(?P<check>[^"]+)"\|timelinessKey="(?P<timelinessKey>[^"]+)"\|filename="(?P<filename>[^"]+)"\|pmode="(?P<pmode>[^"]+)"\|validitystart="(?P<validitystart>[^"]+)"\|validitystop="(?P<validitystop>[^"]+)"\|generationtime="(?P<generationtime>[^"]+)"\|env="(?P<env>[^"]+)"\|ptype="(?P<ptype>[^"]+)"\|level="(?P<level>[^"]+)"\|sat="(?P<sat>[^"]+)"\|message="(?P<message>[^"]*)"\|?reftime="(?P<reftime>[^"]+)"\|?'
+    )
+
+    extract = list(
+        lext.extract(
+            os.path.join(
+                DATA_DIR,
+                "syslogSample.txt",
+            )
+        )
+    )[0]
+
+    expected = {
+        "check": "OK",
+        "day": "9",
+        "env": "N",
+        "eventname": "LOPP",
+        "eventtime": "2026-02-09T16:54:29",
+        "filename": "S3B_TM_0_NAT__G_20200121T021231_20200121T035452_20260209T162303_6141______________SVL_O_NR_OPE.ISIP",
+        "generationtime": "2020-01-21T03:54:52.000000",
+        "hostname": "s3p-s3b-pf-acq-02",
+        "level": "0",
+        "ptype": "S2B_OPER_MSI_L2A_TL_SGS__20200714T120236_A015250_T26QPD_N02.14",
+        "message": "",
+        "month": "Feb",
+        "pid": "180335",
+        "pmode": "N",
+        "process": "ThinLayer",
+        "ptype": "0",
+        "reftime": "ground",
+        "reportName": "syslogSample.txt",
+        "sat": "S3B",
+        "time": "16:54:29",
+        "timelinessKey": "SVL__DCS_01_S3B_20200928074138009060_dat",
+        "validitystart": "2020-01-21T02:12:31.000000",
+        "validitystop": "2020-01-21T03:54:52.000000",
+    }
+    assert extract == expected
+
+    extract = list(
+        lext.extract(
+            os.path.join(
+                DATA_DIR,
+                "syslogSample.txt",
+            )
+        )
+    )[0]
+
+    lext = LogExtractor(
+        r'(?P<log_date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2})\s+(?P<hostname>\S+)\s+(?P<process>\w+)\[(?P<pid>\d+)\]:\s*M&C\|Timeliness\|TL\|OUT\|eventtime="(?P<eventtime>[^"]+)"\|eventname="(?P<eventname>[^"]+)"\|check="(?P<check>[^"]+)"\|timelinessKey="(?P<timelinessKey>[^"]+)"\|filename="(?P<filename>[^"]+)"\|pmode="(?P<pmode>[^"]+)"\|validitystart="(?P<validitystart>[^"]+)"\|validitystop="(?P<validitystop>[^"]+)"\|generationtime="(?P<generationtime>[^"]+)"\|env="(?P<env>[^"]+)"\|ptype="(?P<ptype>[^"]+)"\|level="(?P<level>[^"]+)"\|sat="(?P<sat>[^"]+)"\|message="(?P<message>[^"]*)"\|reftime="(?P<reftime>[^"]+)"\|'
+    )
+    extract = list(
+        lext.extract(
+            os.path.join(
+                DATA_DIR,
+                "thinlayer.txt",
+            )
+        )
+    )
+
+    assert len(extract) == 1

@@ -1,0 +1,121 @@
+{
+    "models": [
+        {
+            "index": "raw-data-s3p-metrics",
+            "name": "S3PMetrics",
+            "fields": [
+                {
+                    "name": "check",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "day",
+                    "type": "Integer"
+                },
+                {
+                    "name": "env",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "eventname",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "eventtime",
+                    "type": "Date"
+                },
+                {
+                    "name": "filename",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "generationtime",
+                    "type": "Date"
+                },
+                {
+                    "name": "hostname",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "level",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "ptype",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "message",
+                    "type": "Text"
+                },
+                {
+                    "name": "month",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "pid",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "pmode",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "process",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "reftime",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "reportName",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "sat",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "time",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "timelinessKey",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "validitystart",
+                    "type": "Date"
+                },
+                {
+                    "name": "validitystop",
+                    "type": "Date"
+                }
+            ],
+            "partition_field": "generationtime",
+            "partition_format": "%Y-%m"
+        }
+    ],
+    "collectors": [
+        {
+            "class": "FileCollectorConfiguration",
+            "id_field": [
+                "session_id",
+                "interface_name",
+                "time_created",
+                "reportName"
+            ],
+            "routing_key": "",
+            "interface_name": "LOG_FS_S3P",
+            "file_pattern": "*log*txt",
+            "model": "S3PMetrics",
+            "extractor": {
+                "class": "LogExtractor",
+                "args": {
+                    "pattern": "(?P<month>\\w{3})\\s+(?P<day>\\d{1,2})\\s+(?P<time>\\d{2}:\\d{2}:\\d{2})\\s+(?P<hostname>\\S+)\\s+(?P<process>\\w+)\\[(?P<pid>\\d+)\\]:\\s*M&C\\|Timeliness\\|TL\\|OUT\\|eventtime=\"(?P<eventtime>[^\"]+)\"\\|eventname=\"(?P<eventname>[^\"]+)\"\\|check=\"(?P<check>[^\"]+)\"\\|timelinessKey=\"(?P<timelinessKey>[^\"]+)\"\\|filename=\"(?P<filename>[^\"]+)\"\\|pmode=\"(?P<pmode>[^\"]+)\"\\|validitystart=\"(?P<validitystart>[^\"]+)\"\\|validitystop=\"(?P<validitystop>[^\"]+)\"\\|generationtime=\"(?P<generationtime>[^\"]+)\"\\|env=\"(?P<env>[^\"]+)\"\\|ptype=\"(?P<ptype>[^\"]+)\"\\|level=\"(?P<level>[^\"]+)\"\\|sat=\"(?P<sat>[^\"]+)\"\\|message=\"(?P<message>[^\"]*)\"\\|?reftime=\"(?P<reftime>[^\"]+)\"\\|?"
+                }
+            }
+        }
+    ]
+}

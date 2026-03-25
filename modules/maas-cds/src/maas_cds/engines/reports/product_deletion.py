@@ -8,45 +8,17 @@ from opensearchpy.exceptions import NotFoundError
 from maas_engine.engine.rawdata import DataEngine
 
 from maas_cds.model import (
-    DeletionIssue,
-    ProductDeletion,
+    CdsDeletionIssue,
     CdsInterfaceProductDeletion,
     CdsProduct,
     CdsPublication,
 )
 
-from maas_cds.lib.parsing_name.utils import remove_extension_from_product_name
-
-from maas_cds.lib.parsing_name.utils import (
-    normalize_product_name_list,
-    normalize_product_name,
-)
-
 
 class DeletionConsolidatorEngine(DataEngine):
-    """Consolidate CdsInterfaceProductDeletion / DeletionIssue"""
+    """Consolidate CdsInterfaceProductDeletion / CdsDeletionIssue"""
 
     ENGINE_ID = "CONSOLIDATE_DELETION"
-
-    def __init__(self, args=None, send_reports=True, interface_dict=None):
-        super().__init__(args, send_reports=send_reports)
-        if not interface_dict:
-            self.logger.error("You must supply an interface dict")
-            interface_dict = {}
-
-        self.interface_dict = interface_dict
-
-    def translate_service_ids(self, names: List[str]) -> List[str]:
-        """
-        Translate user input to real service name using the engine parameter map
-
-        Args:
-            names (List[str]): service names from jira ticket
-
-        Returns:
-            List[str]: translated names
-        """
-        return [self.interface_dict.get(name.lower(), name) for name in names]
 
     def action_iterator(self):
         """route the action iterator depending of the payload document class"""
@@ -55,7 +27,7 @@ class DeletionConsolidatorEngine(DataEngine):
         if document_class == "CdsInterfaceProductDeletion":
             yield from self.action_iterator_from_deletions(self.input_documents)
 
-        elif document_class == "DeletionIssue":
+        elif document_class == "CdsDeletionIssue":
             for issue in self.input_documents:
                 yield from self.action_iterator_from_issue(issue)
 
@@ -64,21 +36,23 @@ class DeletionConsolidatorEngine(DataEngine):
                 f"Unexpected input document class for deletion: {document_class}"
             )
 
-    def action_iterator_from_issue(self, issue: DeletionIssue):
+    def action_iterator_from_issue(self, issue: CdsDeletionIssue):
         """
         Generate bulk action of products and publication based on a deletion issue
 
         Args:
-            issue (DeletionIssue): issue containing deletion info
+            issue (CdsDeletionIssue): issue containing deletion info
 
         Yields:
             dict: bulk actions
         """
 
         try:
+            #! TODO Scan is better to handle deletion that contains more 10k product
             deletion_result = (
                 CdsInterfaceProductDeletion.search()
                 .filter("term", jira_issue=issue.key)
+                .filter("term", interface_type=issue.interface_type)
                 .params(size=10000)
                 .execute()
             )
@@ -89,19 +63,17 @@ class DeletionConsolidatorEngine(DataEngine):
             return
 
         # get the deletion related to the issue
-        product_names = normalize_product_name_list(
-            [deletion.product_name for deletion in deletion_result]
-        )
-
-        service_ids = self.translate_service_ids(issue.interfaces_to_remove_list)
+        product_names = [
+            deletion.effective_product_name for deletion in deletion_result
+        ]
 
         yield from self.action_iterator_from_deletable(
             issue,
-            service_ids,
+            issue.deletion_interfaces,
             self.deletable_iterator(
                 product_names,
                 issue.interface_type,
-                service_ids,
+                issue.deletion_interfaces,
             ),
         )
 
@@ -128,13 +100,13 @@ class DeletionConsolidatorEngine(DataEngine):
                 issue_product_dict[deletion.jira_issue] = []
 
             issue_product_dict[deletion.jira_issue].append(
-                normalize_product_name(deletion.product_name)
+                deletion.effective_product_name
             )
 
         # map the issues into a dict
         issue_dict = {
             issue.key: issue
-            for issue in DeletionIssue.search()
+            for issue in CdsDeletionIssue.search()
             .filter("terms", key=list(issue_product_dict.keys()))
             .params(ignore=404, size=len(deletion_list))
             .execute()
@@ -149,21 +121,19 @@ class DeletionConsolidatorEngine(DataEngine):
 
             issue = issue_dict[issue_id]
 
-            service_ids = self.translate_service_ids(issue.interfaces_to_remove_list)
-
             yield from self.action_iterator_from_deletable(
                 issue,
-                service_ids,
+                issue.deletion_interfaces,
                 self.deletable_iterator(
                     product_names,
                     issue.interface_type,
-                    service_ids,
+                    issue.deletion_interfaces,
                 ),
             )
 
     def action_iterator_from_deletable(
         self,
-        issue: DeletionIssue,
+        issue: CdsDeletionIssue,
         service_ids: List[str],
         deletable_iterator: Generator,
     ):
@@ -171,7 +141,7 @@ class DeletionConsolidatorEngine(DataEngine):
         Generate bulk action of document marked deleted
 
         Args:
-            issue (DeletionIssue): origin issue
+            issue (CdsDeletionIssue): origin issue
             service_ids (List[str]): list of services to mark as deleted
             deletable_iterator (Generator): a generator of document to mark as deleted
 
@@ -200,6 +170,9 @@ class DeletionConsolidatorEngine(DataEngine):
         Returns:
             Generator:
         """
+
+        # TODO need to handle product name over 10k length
+
         self.logger.debug(
             "Get %d deletables for %s / %s",
             len(products_names),
@@ -207,18 +180,21 @@ class DeletionConsolidatorEngine(DataEngine):
             service_ids,
         )
 
-        products = (
-            CdsProduct.search()
-            .filter("terms", name=products_names)
-            .params(version=True, seq_no_primary_term=True, ignore=404, size=10000)
-            .execute()
-        )
-
         if service_type == "DD":
-            # strip extensions
-            products_names = [
-                remove_extension_from_product_name(name) for name in products_names
-            ]
+            # This will for CDSE only need to remap this with dd_attrs
+            products = (
+                CdsProduct.search()
+                .filter("terms", dddas_name=products_names)
+                .params(version=True, seq_no_primary_term=True, ignore=404, size=10000)
+                .execute()
+            )
+        else:
+            products = (
+                CdsProduct.search()
+                .filter("terms", name=products_names)
+                .params(version=True, seq_no_primary_term=True, ignore=404, size=10000)
+                .execute()
+            )
 
         publications = (
             CdsPublication.search()

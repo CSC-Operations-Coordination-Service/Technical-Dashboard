@@ -12,7 +12,7 @@ from maas_collector.rawdata.implementation import (
 
 from maas_engine.engine.rawdata import DataEngine
 from maas_cds.model import (
-    DeletionIssue,
+    CdsDeletionIssue,
     CdsInterfaceProductDeletion,
     CdsPublication,
 )
@@ -28,35 +28,14 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
     ENGINE_ID = "TRACK_DELETION"
 
-    def __init__(
-        self, args=None, send_reports=True, interface_dict=None, credential_dict=None
-    ):
+    def __init__(self, args=None, send_reports=True, credential_dict=None):
         super().__init__(args, send_reports=send_reports)
-        if not interface_dict:
-            self.logger.error("You must supply an interface dict")
-            interface_dict = {}
 
         if not credential_dict:
             self.logger.error("You must supply an credentials dict")
             credential_dict = {}
 
         self.credential_dict = credential_dict
-        self.interface_dict = interface_dict
-
-    def translate_service_ids(self, names: List[str]) -> List[str]:
-        """
-        Translate user input to real service name using the engine parameter map
-
-        Args:
-            names (List[str]): service names from jira ticket
-
-        Returns:
-            List[str]: translated names
-        """
-
-        if isinstance(names, str):
-            names = [names]
-        return [self.interface_dict.get(name.lower(), name) for name in names]
 
     def action_iterator(self):
         """route the action iterator depending of the payload document class"""
@@ -65,7 +44,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
         if document_class == "CdsInterfaceProductDeletion":
             yield from self.action_iterator_from_deletions(self.input_documents)
 
-        elif document_class == "DeletionIssue":
+        elif document_class == "CdsDeletionIssue":
             for issue in self.input_documents:
                 products_deletion = (
                     CdsInterfaceProductDeletion.search()
@@ -96,17 +75,13 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
             # if hasattr(deletion, "effective_product_name") is not None:
             #     continue
-            deletion_result = DeletionIssue.get_by_id(deletion.jira_issue)
+            deletion_result = CdsDeletionIssue.get_by_id(deletion.jira_issue)
 
             possible_name = list(generate_publication_names(deletion.product_name))
 
-            service_ids = self.translate_service_ids(
-                deletion_result.deletion_interfaces
-            )
+            self.logger.debug("Service IDs : %s", deletion_result.deletion_interfaces)
 
-            self.logger.debug("Service IDs : %s", service_ids)
-
-            for service_id in service_ids:
+            for service_id in deletion_result.deletion_interfaces:
                 # Init
                 if (
                     service_id
@@ -263,6 +238,15 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
         return f"{service_id}_{service_name}"
 
     def collect_product(self, interface_name, product_uuid):
+        """Dammmm we run a collect inside a engine WoW 🛸
+
+        Args:
+            interface_name (str): Name of the interface to collect
+            product_uuid (str): uuid of the product in the catalog
+
+        Returns:
+            status: the status of the product existing, misisng, error etc
+        """
 
         self.logger.info(
             "[%s] - Trying to fetch product %s", interface_name, product_uuid
