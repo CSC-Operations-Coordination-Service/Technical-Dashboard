@@ -170,7 +170,7 @@ def s3_parser():
     """S3 CLI argument parser factory
 
     Returns:
-        ArgumentParser: S2 argument parser
+        ArgumentParser: S3 argument parser
 
     """
     parser = ArgumentParser(add_help=False)

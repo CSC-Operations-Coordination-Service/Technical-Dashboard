@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-03-10T21:55:00.340677+00:00
+Generated date: 2026-03-25T10:34:53.527864+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -18,6 +18,7 @@ Generated from:
     - resources/templates/cds-dataflow_template.json
     - resources/templates/cds-datatake_template.json
     - resources/templates/cds-ddp-data-available_template.json
+    - resources/templates/cds-deletion-issue_template.json
     - resources/templates/cds-downlink-datatake_template.json
     - resources/templates/cds-edrs-acquisition-pass-status_template.json
     - resources/templates/cds-expected_template.json
@@ -122,6 +123,7 @@ __all__ = [
     "CdsDatatake",
     "CdsDatatakeMissingPeriods",
     "CdsDdpDataAvailable",
+    "CdsDeletionIssue",
     "CdsDownlinkDatatake",
     "CdsEdrsAcquisitionPassStatus",
     "CdsExpected",
@@ -1804,6 +1806,37 @@ class CdsDdpDataAvailable(MAASDocument):
     updateTime = ZuluDate()
 
 
+class CdsDeletionIssue(MAASDocument):
+    """
+    Mapping class for index: cds-deletion-issue
+
+    Generated from: resources/templates/cds-deletion-issue_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "cds-deletion-issue"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("cds-deletion-issue")
+
+    deletion_cause = Keyword()
+
+    deletion_date = ZuluDate()
+
+    deletion_interfaces = Keyword()
+
+    interface_name = Keyword()
+
+    interface_type = Keyword()
+
+    key = Keyword()
+
+    reportFolder = Keyword()
+
+
 class CdsDownlinkDatatake(MAASDocument):
     """
     Mapping class for index: cds-downlink-datatake
@@ -2179,6 +2212,18 @@ class CdsInterfaceProductDeletion(MAASDocument):
     _PARTITION_FIELD = "ingestionTime"
 
     _PARTITION_FIELD_FORMAT = "static"
+
+    DD_DAS_status = Keyword()
+
+    LTA_Acri_status = Keyword()
+
+    LTA_CloudFerro_status = Keyword()
+
+    LTA_Exprivia_status = Keyword()
+
+    LTA_S5P_DLR_status = Keyword()
+
+    LTA_Werum_status = Keyword()
 
     interface_type = Keyword()
 

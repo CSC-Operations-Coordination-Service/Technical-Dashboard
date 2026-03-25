@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Earth_Explorer_File xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Earth_Explorer_Header>
+    <Fixed_Header>
+      <File_Name>S1A_OPER_REP__SUP___20251202T152325_20251202T171537_0001</File_Name>
+      <File_Description>FOS and Spacecraft Unavailability Report</File_Description>
+      <Notes/>
+      <Mission>Sentinel-1A</Mission>
+      <File_Class>OPER</File_Class>
+      <File_Type>REP__SUP__</File_Type>
+      <Validity_Period>
+        <Validity_Start>UTC=2025-12-02T15:23:25</Validity_Start>
+        <Validity_Stop>UTC=2025-12-02T17:15:37</Validity_Stop>
+      </Validity_Period>
+      <File_Version>0001</File_Version>
+      <Source>
+        <System>FOS</System>
+        <Creator>MCS</Creator>
+        <Creator_Version>1.0</Creator_Version>
+        <Creation_Date>UTC=2025-12-02T00:00:00</Creation_Date>
+      </Source>
+    </Fixed_Header>
+    <Variable_Header/>
+  </Earth_Explorer_Header>
+  <Data_Block Type="xml">
+    <Unavailability_Reference>S1A-UNA-2025/0039</Unavailability_Reference>
+    <Unavailability_Type>Return to Operations</Unavailability_Type>
+    <Comment>The PDHT was unavailable due to a Passthrough Blockage anomaly re-occurrence (GS1_SC-283) on 02/12/2025 at 15:23:25 UTC. The OCP link with T0 = 16:43:58 UTC was lost.The affected subsystems are detailed in this file.</Comment>
+    <List_Of_Subsystem_Unavailabilities count="3">
+      <Subsystem_Unavailability>
+        <Subsystem>OCP</Subsystem>
+        <StartTime>UTC=2025-12-02T15:23:25</StartTime>
+        <StartDOY>336</StartDOY>
+        <StartOrbit>62138</StartOrbit>
+        <StartAnxOffset>3489</StartAnxOffset>
+        <EndTime>UTC=2025-12-02T17:15:37</EndTime>
+        <EndDOY>336</EndDOY>
+        <EndOrbit>62139</EndOrbit>
+        <EndAnxOffset>4297</EndAnxOffset>
+        <Type>UNPLANNED</Type>
+        <Comment>The PDHT was unavailable due to a Passthrough Blockage anomaly re-occurrence (GS1_SC-283) on 02/12/2025 at 15:23:25 UTC. The OCP link with T0 = 16:43:58 UTC was lost.</Comment>
+      </Subsystem_Unavailability>
+      <Subsystem_Unavailability>
+        <Subsystem>PDHT</Subsystem>
+        <StartTime>UTC=2025-12-02T15:23:25</StartTime>
+        <StartDOY>336</StartDOY>
+        <StartOrbit>62138</StartOrbit>
+        <StartAnxOffset>3489</StartAnxOffset>
+        <EndTime>UTC=2025-12-02T17:15:37</EndTime>
+        <EndDOY>336</EndDOY>
+        <EndOrbit>62139</EndOrbit>
+        <EndAnxOffset>4297</EndAnxOffset>
+        <Type>UNPLANNED</Type>
+        <Comment>The PDHT was unavailable due to a Passthrough Blockage anomaly re-occurrence (GS1_SC-283) on 02/12/2025 at 15:23:25 UTC. The OCP link with T0 = 16:43:58 UTC was lost.</Comment>
+      </Subsystem_Unavailability>
+      <Subsystem_Unavailability>
+        <Subsystem>SAR</Subsystem>
+        <StartTime>UTC=2025-12-02T15:23:25</StartTime>
+        <StartDOY>336</StartDOY>
+        <StartOrbit>62138</StartOrbit>
+        <StartAnxOffset>3489</StartAnxOffset>
+        <EndTime>UTC=2025-12-02T17:15:37</EndTime>
+        <EndDOY>336</EndDOY>
+        <EndOrbit>62139</EndOrbit>
+        <EndAnxOffset>4297</EndAnxOffset>
+        <Type>UNPLANNED</Type>
+        <Comment>The PDHT was unavailable due to a Passthrough Blockage anomaly re-occurrence (GS1_SC-283) on 02/12/2025 at 15:23:25 UTC. The OCP link with T0 = 16:43:58 UTC was lost.</Comment>
+      </Subsystem_Unavailability>
+    </List_Of_Subsystem_Unavailabilities>
+  </Data_Block>
+</Earth_Explorer_File>

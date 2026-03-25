@@ -15,11 +15,15 @@ from maas_cds.engines.reports.post_consolidate_mp_file import (
 
 from maas_cds.engines.reports.consolidate_hktm import HktmConsolidatorEngine
 
-
+# Deletion stuff
 from maas_cds.engines.reports.product_deletion import (
     DeletionConsolidatorEngine,
 )
+from maas_cds.engines.reports.consolidate_deletion_tickets import (
+    DeletionIssueConsolidatorEngine,
+)
 
+#
 from maas_cds.engines.reports.lta_product import LTAProductConsolidatorEngine
 
 from maas_cds.engines.reports.interface_status import InterfaceStatusConsolidatorEngine
