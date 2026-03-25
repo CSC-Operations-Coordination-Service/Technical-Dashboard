@@ -554,8 +554,12 @@ class ODataCollector(HttpCollector, HttpMixin):
                 item_status["status"] = "Missing"
 
             else:
-                item_status["message"] = "Product are available"
-                item_status["status"] = "Available"
+                if not response.json():
+                    item_status["message"] = "Not able to find the product"
+                    item_status["status"] = "Missing"
+                else:
+                    item_status["message"] = "Product are available"
+                    item_status["status"] = "Available"
 
         item_status["probe_end_date"] = datetime_to_zulu(now)
 
