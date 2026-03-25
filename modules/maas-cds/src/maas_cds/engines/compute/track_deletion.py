@@ -77,6 +77,12 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
             #     continue
             deletion_result = CdsDeletionIssue.get_by_id(deletion.jira_issue)
 
+            if deletion_result is None:
+                self.logger.debug(
+                    "No Deletion for jira issue  : %s", deletion_result.jira_issue
+                )
+                continue
+
             possible_name = list(generate_publication_names(deletion.product_name))
 
             self.logger.debug("Service IDs : %s", deletion_result.deletion_interfaces)
