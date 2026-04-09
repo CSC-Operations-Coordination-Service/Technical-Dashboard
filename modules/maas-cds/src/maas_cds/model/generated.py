@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-03-25T10:34:53.527864+00:00
+Generated date: 2026-04-08T22:06:15.770425+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -77,7 +77,11 @@ Generated from:
     - resources/templates/raw-data-mpip-product_template.json
     - resources/templates/raw-data-prip-product_template.json
     - resources/templates/raw-data-product-deletion_template.json
+    - resources/templates/raw-data-s3p-metrics-circulation-agent_template.json
+    - resources/templates/raw-data-s3p-metrics-rest-cadu-polling-agent_template.json
+    - resources/templates/raw-data-s3p-metrics-thin-layer_template.json
     - resources/templates/raw-data-sat-unavailability-product_template.json
+    - resources/templates/s3p-session_template.json
 """
 
 from opensearchpy import (
@@ -174,6 +178,11 @@ __all__ = [
     "MpipProduct",
     "PripProduct",
     "ProductDeletion",
+    "S3pMetricsCirculationAgent",
+    "S3pMetricsRestCaduPollingAgent",
+    "S3pMetricsThinLayer",
+    "S3pSession",
+    "S3pSessionL0PpGranules",
     "SatUnavailabilityProduct",
 ]
 
@@ -4022,6 +4031,226 @@ class ProductDeletion(MAASRawDocument):
     product_name = Keyword()
 
     reportFolder = Keyword()
+
+
+class S3pMetricsCirculationAgent(MAASRawDocument):
+    """
+    Mapping class for index: raw-data-s3p-metrics-circulation-agent
+
+    Generated from: resources/templates/raw-data-s3p-metrics-circulation-agent_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "raw-data-s3p-metrics-circulation-agent"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("raw-data-s3p-metrics-circulation-agent")
+
+    _PARTITION_FIELD = "log_date"
+
+    _PARTITION_FIELD_FORMAT = "%Y-%m"
+
+    action = Keyword()
+
+    code = Keyword()
+
+    domain = Keyword()
+
+    filename = Keyword()
+
+    filesize = Long()
+
+    hostname = Keyword()
+
+    log_date = ZuluDate()
+
+    pid = Keyword()
+
+    queueid = Keyword()
+
+    status = Keyword()
+
+    tourl = Keyword()
+
+
+class S3pMetricsRestCaduPollingAgent(MAASRawDocument):
+    """
+    Mapping class for index: raw-data-s3p-metrics-rest-cadu-polling-agent
+
+    Generated from: resources/templates/raw-data-s3p-metrics-rest-cadu-polling-agent_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "raw-data-s3p-metrics-rest-cadu-polling-agent"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("raw-data-s3p-metrics-rest-cadu-polling-agent")
+
+    _PARTITION_FIELD = "log_date"
+
+    _PARTITION_FIELD_FORMAT = "%Y-%m"
+
+    action = Keyword()
+
+    code = Keyword()
+
+    creationtime = ZuluDate()
+
+    domain = Keyword()
+
+    eventtime = ZuluDate()
+
+    filename = Keyword()
+
+    filesize = Long()
+
+    fromurl = Keyword()
+
+    host = Keyword()
+
+    hostname = Keyword()
+
+    jobid = Keyword()
+
+    log_date = ZuluDate()
+
+    pid = Keyword()
+
+    queueid = Keyword()
+
+    reftime = ZuluDate()
+
+    status = Keyword()
+
+    timelinessKey = Keyword()
+
+    tourl = Keyword()
+
+
+class S3pMetricsThinLayer(MAASRawDocument):
+    """
+    Mapping class for index: raw-data-s3p-metrics-thin-layer
+
+    Generated from: resources/templates/raw-data-s3p-metrics-thin-layer_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "raw-data-s3p-metrics-thin-layer"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("raw-data-s3p-metrics-thin-layer")
+
+    _PARTITION_FIELD = "log_date"
+
+    _PARTITION_FIELD_FORMAT = "%Y-%m"
+
+    check = Keyword()
+
+    day = Integer()
+
+    env = Keyword()
+
+    eventname = Keyword()
+
+    eventtime = ZuluDate()
+
+    filename = Keyword()
+
+    generationtime = ZuluDate()
+
+    hostname = Keyword()
+
+    level = Keyword()
+
+    log_date = ZuluDate()
+
+    message = Text()
+
+    month = Keyword()
+
+    pid = Keyword()
+
+    pmode = Keyword()
+
+    process = Keyword()
+
+    ptype = Keyword()
+
+    reftime = Keyword()
+
+    sat = Keyword()
+
+    time = Keyword()
+
+    timelinessKey = Keyword()
+
+    validitystart = ZuluDate()
+
+    validitystop = ZuluDate()
+
+
+class S3pSessionL0PpGranules(InnerDoc):
+    """
+    Inner document class for parent class: S3pSession
+
+    Generated from property: l0pp_granules
+    """
+
+    product_name = Keyword()
+
+    delivery_date_to_eum = ZuluDate()
+
+
+class S3pSession(MAASDocument):
+    """
+    Mapping class for index: s3p-session
+
+    Generated from: resources/templates/s3p-session_template.json
+    """
+
+    class Index:
+        "inner class for DSL"
+
+        name = "s3p-session"
+
+    @classmethod
+    def _matches(cls, hit):
+        return hit["_index"].startswith("s3p-session")
+
+    acquisition_start_time = ZuluDate()
+
+    acquisition_stop_time = ZuluDate()
+
+    delivery_start_to_eum = ZuluDate()
+
+    delivery_stop_to_eum = ZuluDate()
+
+    downlink_orbit = Keyword()
+
+    downlink_session = Keyword()
+
+    hkraw_delivery_time = ZuluDate()
+
+    hkraw_name = Keyword()
+
+    hkraw_size = Long()
+
+    l0pp_granules = Object(S3pSessionL0PpGranules)
+
+    satellite_id = Keyword()
+
+    timeliness_key = Keyword()
+
+    updateTime = ZuluDate()
 
 
 class SatUnavailabilityProduct(MAASRawDocument):

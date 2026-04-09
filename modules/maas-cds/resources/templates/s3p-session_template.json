@@ -1,0 +1,70 @@
+{
+    "index_patterns": [
+        "s3p-session*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "downlink_session": {
+                "type": "keyword"
+            },
+            "timeliness_key": {
+                "type": "keyword"
+            },
+            "acquisition_start_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "acquisition_stop_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "delivery_start_to_eum": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "delivery_stop_to_eum": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "downlink_orbit": {
+                "type": "keyword"
+            },
+            "satellite_id": {
+                "type": "keyword"
+            },
+            "hkraw_delivery_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "hkraw_name": {
+                "type": "keyword"
+            },
+            "hkraw_size": {
+                "type": "long"
+            },
+            "l0pp_granules": {
+                "type": "object",
+                "properties": {
+                    "product_name": {
+                        "type": "keyword"
+                    },
+                    "delivery_date_to_eum": {
+                        "type": "date",
+                        "locale": "utc"
+                    }
+                }
+            },
+            "updateTime": {
+                "type": "date",
+                "locale": "utc"
+            }
+        },
+        "_meta": {}
+    }
+}

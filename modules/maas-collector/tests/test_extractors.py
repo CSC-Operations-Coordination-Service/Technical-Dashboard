@@ -766,3 +766,232 @@ def test_log_extractor_02():
     )
 
     assert len(extract) == 1
+
+
+def test_log_extractor_cadu_02():
+    lext = LogExtractor(
+        r"^(?P<log_date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2})\s+(?P<hostname>\S+)\s+(RESTCaduPollingAgent)\[(?P<pid>\d+)\]:\s+M&C\|(?P<domain>[^|]+)\|(?P<code>[^|]+)\|(?P<action>[^|]+)\|(?:(?=.*\bjobid=(?P<jobid>\d+)\|))?(?:(?=.*\bhost=\"(?P<host>[^\"]+)\"\|))?(?:(?=.*\bfromurl=\"(?P<fromurl>[^\"]+)\"\|))?(?:(?=.*\bfilename=\"(?P<filename>[^\"]+)\"\|))?(?:(?=.*\bcreationtime=\"(?P<creationtime>[^\"]+)\"\|))?(?:(?=.*\breftime=\"(?P<reftime>[^\"]+)\"\|))?(?:(?=.*\beventtime=\"(?P<eventtime>[^\"]+)\"\|))?(?:(?=.*\bstatus=\"(?P<status>[^\"]+)\"\|))?(?:(?=.*\btimelinessKey=\"(?P<timelinessKey>[^\"]+)\"\|))?(?:(?=.*\btourl=\"(?P<tourl>[^\"]+)\"\|))?(?:(?=.*\bqueueid=(?P<queueid>\d+)\|))?(?:(?=.*\bfilesize=(?P<filesize>\d+)\|))?.*$"
+    )
+
+    extracts = list(
+        lext.extract(
+            os.path.join(
+                DATA_DIR,
+                "Satu",
+                "log-all-sample.md",
+            )
+        )
+    )
+    assert len(extracts) == 11
+
+    assert extracts[0] == {
+        "action": "IN",
+        "code": "IMP",
+        "creationtime": "2026-02-24T12:49:16.262Z",
+        "domain": "Data Import",
+        "eventtime": None,
+        "filename": "S3A_20260224124856052200",
+        "filesize": None,
+        "fromurl": "https://api.esa-copernicus.ksat.no/cadip/odata/v1",
+        "host": "api.esa-copernicus.ksat.no",
+        "hostname": "s3p-s3a-pf-acq-01",
+        "jobid": "10783",
+        "log_date": "2026-02-24T12:57:16.571955+00:00",
+        "pid": "946773",
+        "queueid": None,
+        "reftime": None,
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "timelinessKey": None,
+        "tourl": None,
+    }
+    assert extracts[1] == {
+        "action": "REF",
+        "code": "TL",
+        "creationtime": None,
+        "domain": "Timeliness",
+        "eventtime": "2026-02-24T12:56:49",
+        "filename": None,
+        "filesize": None,
+        "fromurl": None,
+        "host": None,
+        "hostname": "s3p-s3a-pf-acq-01",
+        "jobid": None,
+        "log_date": "2026-02-24T12:58:46.206271+00:00",
+        "pid": "1014681",
+        "queueid": None,
+        "reftime": "ground",
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "timelinessKey": "SVL__DCS_03_S3A_20260224124856052200_dat",
+        "tourl": None,
+    }
+    assert extracts[2] == {
+        "action": "CHECK",
+        "code": "IMP",
+        "creationtime": None,
+        "domain": "Data Import",
+        "eventtime": None,
+        "filename": None,
+        "filesize": None,
+        "fromurl": None,
+        "host": "api.esa-copernicus.ksat.no",
+        "hostname": "s3p-s3a-pf-acq-01",
+        "jobid": None,
+        "log_date": "2026-02-24T14:25:02.475462+00:00",
+        "pid": "946773",
+        "queueid": None,
+        "reftime": None,
+        "reportName": "log-all-sample.md",
+        "status": "NOMINAL",
+        "timelinessKey": None,
+        "tourl": None,
+    }
+    assert extracts[4] == {
+        "action": "IN",
+        "code": "DC",
+        "creationtime": None,
+        "domain": "Data Circulation",
+        "eventtime": None,
+        "filename": "DCS_03_S3A_20260224142835052201_ch1_DSDB_00002.raw",
+        "filesize": "314571600",
+        "fromurl": "https://api.esa-copernicus.ksat.no/cadip/odata/v1",
+        "host": None,
+        "hostname": "s3p-s3a-pf-acq-01",
+        "jobid": None,
+        "log_date": "2026-02-24T14:29:07.309196+00:00",
+        "pid": "946773",
+        "queueid": "11102",
+        "reftime": None,
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "timelinessKey": None,
+        "tourl": None,
+    }
+    assert extracts[10] == {
+        "action": "OUT",
+        "code": "DC",
+        "creationtime": None,
+        "domain": "Data Circulation",
+        "eventtime": None,
+        "filename": "DCS_03_S3A_20260224124856052200_ch1_DSDB_00041.raw",
+        "filesize": "314571600",
+        "fromurl": None,
+        "host": None,
+        "hostname": "s3p-s3a-pf-acq-01",
+        "jobid": None,
+        "log_date": "2026-02-24T12:55:34.824727+00:00",
+        "pid": "946773",
+        "queueid": "10977",
+        "reftime": None,
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "timelinessKey": None,
+        "tourl": "/data/S3GTW/CADU/S3A/SVL_/DCS_03_S3A_20260224124856052200_dat/ch_1",
+    }
+
+
+def test_log_extractor_cadu_03_circulation_agent():
+    lext = LogExtractor(
+        r"^(?P<log_date>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2})\s+(?P<hostname>\S+)\s+(CirculationAgent)\[(?P<pid>\d+)\]:\s+M&C\|(?P<domain>[^|]+)\|(?P<code>[^|]+)\|(?P<action>[^|]+)\|(?:(?=.*\bfilename=\"(?P<filename>[^\"]+)\"\|))?(?:(?=.*\bqueueid=(?P<queueid>\d+)\|))?(?:(?=.*\btourl=\"(?P<tourl>[^\"]+)\"\|))?(?:(?=.*\bfilesize=(?P<filesize>\d+)\|))?(?:(?=.*\bstatus=\"(?P<status>[^\"]+)\"\|))?.*$"
+    )
+
+    extracts = list(
+        lext.extract(
+            os.path.join(
+                DATA_DIR,
+                "Satu",
+                "log-all-sample.md",
+            )
+        )
+    )
+
+    assert len(extracts) == 38
+
+    assert extracts[0] == {
+        "action": "OUT",
+        "code": "DC",
+        "domain": "Data Circulation",
+        "filename": "S3A_OL_0_EFR__G_20260224T112059_20260224T112259_20260224T125814_0120______________SVL_O_NR_OPE.ISIP",
+        "filesize": "916275048",
+        "hostname": "s3p-s3a-pf-acq-01",
+        "log_date": "2026-02-24T12:59:32.857600+00:00",
+        "pid": "1122",
+        "queueid": "11011",
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "tourl": "/data/ACQ_CACHE/Level0-cache/S3A/S3A_OL_0_EFR__G_20260224T112059_20260224T112259_20260224T125814_0120______________SVL_O_NR_OPE.ISIP",
+    }
+    assert extracts[1] == {
+        "action": "RUNNING",
+        "code": "DC",
+        "domain": "Data Circulation",
+        "filename": "S3A_OL_0_EFR__G_20260224T114059_20260224T114259_20260224T125818_0120______________SVL_O_NR_OPE.ISIP",
+        "filesize": None,
+        "hostname": "s3p-s3a-pf-acq-01",
+        "log_date": "2026-02-24T12:59:32.983142+00:00",
+        "pid": "1122",
+        "queueid": "11043",
+        "reportName": "log-all-sample.md",
+        "status": "QUEUE_OUT",
+        "tourl": None,
+    }
+
+    assert extracts[2] == {
+        "action": "OUT",
+        "code": "DC",
+        "domain": "Data Circulation",
+        "filename": "S3A_SR_0_SRA__G_20260225T150316_20260225T151316_20260225T155148_0600______________SVL_O_NR_OPE.ISIP",
+        "filesize": "824695764",
+        "hostname": "s3p-s3a-pf-acq-01",
+        "log_date": "2026-02-25T15:59:19.626365+00:00",
+        "pid": "1122",
+        "queueid": "15236",
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "tourl": "ftp://user:pasword@s3-refidcs01/data/to_MRN/to_IDC_NEW/from_ACQ/High/S3A_SR_0_SRA__G_20260225T150316_20260225T151316_20260225T155148_0600______________SVL_O_NR_OPE.ISIP",
+    }
+
+    assert extracts[29] == {
+        "action": "RUNNING",
+        "code": "DC",
+        "domain": "Data Circulation",
+        "filename": "S3A_OL_0_EFR__G_20260225T155337_20260225T155537_20260225T173122_0120______________SVL_O_NR_OPE.ISIP",
+        "filesize": None,
+        "hostname": "s3p-s3a-pf-acq-01",
+        "log_date": "2026-02-25T17:32:17.173216+00:00",
+        "pid": "1122",
+        "queueid": "15421",
+        "reportName": "log-all-sample.md",
+        "status": "QUEUE_OUT",
+        "tourl": None,
+    }
+    assert extracts[30] == {
+        "action": "OUT",
+        "code": "DC",
+        "domain": "Data Circulation",
+        "filename": "S3A_TM_0_NAT__G_20260225T154252_20260225T172228_20260225T172346_5976______________SVL_O_NR_OPE.ISIP",
+        "filesize": "2560976",
+        "hostname": "s3p-s3a-pf-acq-01",
+        "log_date": "2026-02-25T17:32:17.249249+00:00",
+        "pid": "1122",
+        "queueid": "15383",
+        "reportName": "log-all-sample.md",
+        "status": None,
+        "tourl": "/data/ACQ_CACHE/Level0-cache/S3A/S3A_TM_0_NAT__G_20260225T154252_20260225T172228_20260225T172346_5976______________SVL_O_NR_OPE.ISIP",
+    }
+
+    assert extracts[37] == {
+        "action": "RUNNING",
+        "code": "DC",
+        "domain": "Data Circulation",
+        "filename": "S3A_OL_0_EFR__G_20260225T155537_20260225T155737_20260225T173122_0120______________SVL_O_NR_OPE.ISIP",
+        "filesize": None,
+        "hostname": "s3p-s3a-pf-acq-01",
+        "log_date": "2026-02-25T17:32:18.050624+00:00",
+        "pid": "1122",
+        "queueid": "15423",
+        "reportName": "log-all-sample.md",
+        "status": "QUEUE_OUT",
+        "tourl": None,
+    }

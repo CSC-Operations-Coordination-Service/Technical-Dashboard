@@ -1,0 +1,83 @@
+{
+    "aliases": {
+        "raw-data-s3p-metrics-rest-cadu-polling-agent": {}
+    },
+    "index_patterns": [
+        "raw-data-s3p-metrics-rest-cadu-polling-agent-*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "action": {
+                "type": "keyword"
+            },
+            "code": {
+                "type": "keyword"
+            },
+            "creationtime": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "domain": {
+                "type": "keyword"
+            },
+            "eventtime": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "filename": {
+                "type": "keyword"
+            },
+            "filesize": {
+                "type": "long"
+            },
+            "fromurl": {
+                "type": "keyword"
+            },
+            "host": {
+                "type": "keyword"
+            },
+            "hostname": {
+                "type": "keyword"
+            },
+            "jobid": {
+                "type": "keyword"
+            },
+            "log_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "pid": {
+                "type": "keyword"
+            },
+            "queueid": {
+                "type": "keyword"
+            },
+            "reftime": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "reportName": {
+                "type": "keyword"
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "timelinessKey": {
+                "type": "keyword"
+            },
+            "tourl": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {
+            "partition_field": "log_date",
+            "partition_format": "%Y-%m"
+        }
+    }
+}
