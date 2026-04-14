@@ -51,3 +51,5 @@ from maas_cds.engines.reports.acquisition_pass_status_s5_edrs import (
 from maas_cds.engines.reports.metrics_product import MetricsProductConsolidatorEngine
 from maas_cds.engines.reports.grafana_usage import GrafanaUsageConsolidatorEngine
 from maas_cds.engines.reports.consolidate_databudget import ConsolidateDatabudget
+
+from maas_cds.engines.reports.s3p_session import S3pSessionConsolidatorEngine
