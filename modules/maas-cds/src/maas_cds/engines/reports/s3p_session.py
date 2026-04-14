@@ -80,7 +80,7 @@ class S3pSessionConsolidatorEngine(DataEngine):
 
             session.compute_kpi()
 
-            yield session.to_bulk_actio()
+            yield session.to_bulk_action()
 
     # consolidate_from_ModelClass
     # pylint: disable=C0103
