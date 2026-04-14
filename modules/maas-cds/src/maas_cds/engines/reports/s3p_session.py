@@ -2,8 +2,8 @@
 
 from maas_engine.engine import DataEngine
 
-
 import maas_cds.model as model
+from maas_model.date_utils import datetime_to_zulu
 
 
 class S3pSessionConsolidatorEngine(DataEngine):
@@ -34,6 +34,7 @@ class S3pSessionConsolidatorEngine(DataEngine):
         """
 
         for s3p_metrics_doc in self.input_documents:
+
             session_name = s3p_metrics_doc.s3p_session_name
 
             if session_name is None:
@@ -47,7 +48,6 @@ class S3pSessionConsolidatorEngine(DataEngine):
             session = self.local_session_cache.get(session_name)
             if session is None:
                 session = model.S3pSession.get_by_id(session_name)
-
                 if session is None:
                     session = model.S3pSession.from_session_name(session_name)
 
@@ -78,6 +78,10 @@ class S3pSessionConsolidatorEngine(DataEngine):
                     self.raw_data_type,
                 )
 
+            session.compute_kpi()
+
+            yield session.to_bulk_actio()
+
     # consolidate_from_ModelClass
     # pylint: disable=C0103
     def consolidate_from_S3pMetricsCirculationAgent(
@@ -95,11 +99,60 @@ class S3pSessionConsolidatorEngine(DataEngine):
             document.hkraw_size = raw_document.filesize
             document.hkraw_delivery_time = raw_document.log_date
 
-        elif "_G_" in self.filename:
+        elif "_G_" in raw_document.filename:
             for granule in document.l0pp_granules:
                 if granule.product_name == raw_document.filename:
-                    granule.delivery_date_to_eum = raw_document.log_date
+                    granule.delivery_date_to_eum = datetime_to_zulu(
+                        raw_document.log_date
+                    )
                     break
+            # but a log if a GR is missing
+
+        elif raw_document.domain == "Data Circulation":
+            finded = False
+
+            COND_IN = raw_document.action == "IN"
+            COND_OUT = raw_document.action == "OUT"
+
+            if COND_IN or COND_OUT:
+
+                for cadu in document.cadu_files:
+                    if cadu.cadu_name == raw_document.filename:
+                        finded = True
+
+                        if COND_IN:
+                            document.cadu_delivery_in = datetime_to_zulu(
+                                raw_document.log_date
+                            )
+                        elif COND_OUT:
+                            document.cadu_delivery_out = datetime_to_zulu(
+                                raw_document.log_date
+                            )
+                        else:
+                            self.logger.debug(
+                                "There is nothing to do with this cadu file %s",
+                                raw_document,
+                            )
+                        break
+
+                if not finded:
+                    document.cadu_files.append(
+                        {
+                            "cadu_name": raw_document.filename,
+                            "cadu_delivery_in": (
+                                datetime_to_zulu(raw_document.log_date)
+                                if COND_IN
+                                else None
+                            ),
+                            "cadu_delivery_out": (
+                                datetime_to_zulu(raw_document.log_date)
+                                if COND_OUT
+                                else None
+                            ),
+                        }
+                    )
+            else:
+                self.logger.debug("cadu input therenot handle %s", raw_document)
         else:
             self.logger.warning(
                 "Not the place to be, there is a mismatch between session_name matching and this function"
@@ -114,12 +167,15 @@ class S3pSessionConsolidatorEngine(DataEngine):
         document: model.S3pSession,
     ) -> model.S3pSession:
 
-        if self.domain == "Data Import":
-            document.acquisition_start_time = raw_document.creationtime
+        if raw_document.domain == "Data Import":
+            document.acquisition_start_time = datetime_to_zulu(
+                raw_document.creationtime
+            )
 
-        elif self.domain == "Timeliness":
-            document.acquisition_stop_time = raw_document.eventtime
+        elif raw_document.domain == "Timeliness":
+            document.acquisition_stop_time = datetime_to_zulu(raw_document.eventtime)
             document.timeliness_key = raw_document.timelinessKey
+
         else:
             self.logger.warning(
                 "Not the place to be, there is a mismatch between session_name matching and this function"
@@ -139,12 +195,63 @@ class S3pSessionConsolidatorEngine(DataEngine):
         if document.l0pp_granules is None:
             document.l0pp_granules = []
 
+        raw_log_date = datetime_to_zulu(raw_document.log_date)
+        raw_event_time = datetime_to_zulu(raw_document.eventtime)
+
         for granule in document.l0pp_granules:
 
             if granule.product_name == raw_document.filename:
-                self.logger.warning("This l0pp_granules is already registred")
+
+                granule.validitystart = datetime_to_zulu(raw_document.validitystart)
+                granule.validitystop = datetime_to_zulu(raw_document.validitystop)
+
+                if (
+                    hasattr(granule, "thin_layer_log_date")
+                    and granule.thin_layer_log_date != raw_log_date
+                ):
+
+                    self.logger.warning(
+                        "This l0pp_granules is already but the log_date changed take the new lowest"
+                    )
+                    if granule.thin_layer_log_date and raw_log_date:
+                        granule.thin_layer_log_date = min(
+                            raw_log_date, granule.thin_layer_log_date
+                        )
+                    else:
+                        granule.thin_layer_log_date = (
+                            raw_log_date or granule.thin_layer_log_date
+                        )
+
+                if (
+                    hasattr(granule, "raw_data_generation_time")
+                    and granule.raw_data_generation_time != raw_event_time
+                ):
+
+                    self.logger.warning(
+                        "This l0pp_granules is already but the raw_data_generation_time changed take the new highest"
+                    )
+                    if granule.raw_data_generation_time and raw_event_time:
+
+                        granule.raw_data_generation_time = max(
+                            raw_event_time, granule.raw_data_generation_time
+                        )
+                    else:
+                        granule.raw_data_generation_time = (
+                            raw_event_time or granule.raw_data_generation_time
+                        )
+
+                self.logger.debug("This l0pp_granules is already registred")
                 break
+
         else:
-            document.l0pp_granules.append({"product_name": raw_document.filename})
+            document.l0pp_granules.append(
+                {
+                    "product_name": raw_document.filename,
+                    "thin_layer_log_date": raw_log_date,
+                    "raw_data_generation_time": raw_event_time,
+                    "validitystart": datetime_to_zulu(raw_document.validitystart),
+                    "validitystop": datetime_to_zulu(raw_document.validitystop),
+                }
+            )
 
         return document

@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-04-08T22:06:15.770425+00:00
+Generated date: 2026-04-13T23:19:37.262373+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -182,6 +182,7 @@ __all__ = [
     "S3pMetricsRestCaduPollingAgent",
     "S3pMetricsThinLayer",
     "S3pSession",
+    "S3pSessionCaduFiles",
     "S3pSessionL0PpGranules",
     "SatUnavailabilityProduct",
 ]
@@ -4198,6 +4199,20 @@ class S3pMetricsThinLayer(MAASRawDocument):
     validitystop = ZuluDate()
 
 
+class S3pSessionCaduFiles(InnerDoc):
+    """
+    Inner document class for parent class: S3pSession
+
+    Generated from property: cadu_files
+    """
+
+    cadu_name = Keyword()
+
+    cadu_delivery_in = ZuluDate()
+
+    cadu_delivery_out = ZuluDate()
+
+
 class S3pSessionL0PpGranules(InnerDoc):
     """
     Inner document class for parent class: S3pSession
@@ -4208,6 +4223,14 @@ class S3pSessionL0PpGranules(InnerDoc):
     product_name = Keyword()
 
     delivery_date_to_eum = ZuluDate()
+
+    thin_layer_log_date = ZuluDate()
+
+    raw_data_generation_time = ZuluDate()
+
+    validitystart = ZuluDate()
+
+    validitystop = ZuluDate()
 
 
 class S3pSession(MAASDocument):
@@ -4230,9 +4253,15 @@ class S3pSession(MAASDocument):
 
     acquisition_stop_time = ZuluDate()
 
+    cadu_files = Object(S3pSessionCaduFiles)
+
     delivery_start_to_eum = ZuluDate()
 
     delivery_stop_to_eum = ZuluDate()
+
+    delivery_to_eum_completeness = Float()
+
+    delivery_to_eum_timeliness = Long()
 
     downlink_orbit = Keyword()
 
