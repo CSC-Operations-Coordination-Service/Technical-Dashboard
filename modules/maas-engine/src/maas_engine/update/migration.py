@@ -218,10 +218,11 @@ class MaasMigrator:
             0
         ] = f"migrating-{temp_template_data['index_patterns'][0]}"
 
-        temp_template_data["aliases"] = {
-            f"migrating-{key}": value
-            for key, value in temp_template_data["aliases"].items()
-        }
+        if "aliases" in temp_template_data:
+            temp_template_data["aliases"] = {
+                f"migrating-{key}": value
+                for key, value in temp_template_data["aliases"].items()
+            }
 
         # create the temporary template
         self.es_conn.indices.put_template(

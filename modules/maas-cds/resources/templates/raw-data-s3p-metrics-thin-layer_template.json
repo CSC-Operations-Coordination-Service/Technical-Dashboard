@@ -1,0 +1,96 @@
+{
+    "aliases": {
+        "raw-data-s3p-metrics-thin-layer": {}
+    },
+    "index_patterns": [
+        "raw-data-s3p-metrics-thin-layer-*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "check": {
+                "type": "keyword"
+            },
+            "day": {
+                "type": "integer"
+            },
+            "env": {
+                "type": "keyword"
+            },
+            "eventname": {
+                "type": "keyword"
+            },
+            "eventtime": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "filename": {
+                "type": "keyword"
+            },
+            "generationtime": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "hostname": {
+                "type": "keyword"
+            },
+            "level": {
+                "type": "keyword"
+            },
+            "ptype": {
+                "type": "keyword"
+            },
+            "message": {
+                "type": "text"
+            },
+            "month": {
+                "type": "keyword"
+            },
+            "pid": {
+                "type": "keyword"
+            },
+            "pmode": {
+                "type": "keyword"
+            },
+            "process": {
+                "type": "keyword"
+            },
+            "reftime": {
+                "type": "keyword"
+            },
+            "log_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "reportName": {
+                "type": "keyword"
+            },
+            "sat": {
+                "type": "keyword"
+            },
+            "time": {
+                "type": "keyword"
+            },
+            "timelinessKey": {
+                "type": "keyword"
+            },
+            "validitystart": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "validitystop": {
+                "type": "date",
+                "locale": "utc"
+            }
+        },
+        "_meta": {
+            "partition_field": "log_date",
+            "partition_format": "%Y-%m"
+        }
+    }
+}

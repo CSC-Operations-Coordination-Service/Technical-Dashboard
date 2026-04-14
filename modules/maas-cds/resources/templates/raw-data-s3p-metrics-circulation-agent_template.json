@@ -1,0 +1,59 @@
+{
+    "aliases": {
+        "raw-data-s3p-metrics-circulation-agent": {}
+    },
+    "index_patterns": [
+        "raw-data-s3p-metrics-circulation-agent-*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "action": {
+                "type": "keyword"
+            },
+            "code": {
+                "type": "keyword"
+            },
+            "domain": {
+                "type": "keyword"
+            },
+            "filename": {
+                "type": "keyword"
+            },
+            "filesize": {
+                "type": "long"
+            },
+            "hostname": {
+                "type": "keyword"
+            },
+            "log_date": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "pid": {
+                "type": "keyword"
+            },
+            "queueid": {
+                "type": "keyword"
+            },
+            "reportName": {
+                "type": "keyword"
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "tourl": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {
+            "partition_field": "log_date",
+            "partition_format": "%Y-%m"
+        }
+    }
+}

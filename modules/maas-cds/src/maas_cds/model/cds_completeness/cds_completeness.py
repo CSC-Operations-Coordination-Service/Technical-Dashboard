@@ -8,6 +8,8 @@ from maas_cds.model.datatake import CdsDatatake
 from maas_cds.model import generated
 from maas_cds.model.enumeration import CompletenessScope
 from maas_cds.lib.status import evaluate_completeness_status
+from maas_cds.model.anomaly_mixin import AnomalyMixin
+from opensearchpy import Keyword
 
 __all__ = ["CdsCompleteness"]
 
@@ -16,6 +18,8 @@ LOGGER = logging.getLogger("CdsModelCompleteness")
 
 
 class CdsCompleteness(generated.CdsCompleteness, CdsDatatake):
+
+    cams_tickets = Keyword(multi=True)
 
     def find_brother_products_scan(self, product_type, indices=None):
         """Find products with the same datatake and the same product_type

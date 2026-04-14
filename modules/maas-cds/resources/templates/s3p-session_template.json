@@ -1,0 +1,108 @@
+{
+    "index_patterns": [
+        "s3p-session*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "cadu_files": {
+                "type": "object",
+                "properties": {
+                    "cadu_name": {
+                        "type": "keyword"
+                    },
+                    "cadu_delivery_in": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "cadu_delivery_out": {
+                        "type": "date",
+                        "locale": "utc"
+                    }
+                }
+            },
+            "downlink_session": {
+                "type": "keyword"
+            },
+            "timeliness_key": {
+                "type": "keyword"
+            },
+            "delivery_to_eum_completeness": {
+                "type": "float"
+            },
+            "delivery_to_eum_timeliness": {
+                "type": "long"
+            },
+            "acquisition_start_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "acquisition_stop_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "delivery_start_to_eum": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "delivery_stop_to_eum": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "downlink_orbit": {
+                "type": "keyword"
+            },
+            "satellite_id": {
+                "type": "keyword"
+            },
+            "hkraw_delivery_time": {
+                "type": "date",
+                "locale": "utc"
+            },
+            "hkraw_name": {
+                "type": "keyword"
+            },
+            "hkraw_size": {
+                "type": "long"
+            },
+            "l0pp_granules": {
+                "type": "object",
+                "properties": {
+                    "product_name": {
+                        "type": "keyword"
+                    },
+                    "delivery_date_to_eum": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "thin_layer_log_date": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "raw_data_generation_time": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "validitystart": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "validitystop": {
+                        "type": "date",
+                        "locale": "utc"
+                    }
+                }
+            },
+            "updateTime": {
+                "type": "date",
+                "locale": "utc"
+            }
+        },
+        "_meta": {}
+    }
+}
