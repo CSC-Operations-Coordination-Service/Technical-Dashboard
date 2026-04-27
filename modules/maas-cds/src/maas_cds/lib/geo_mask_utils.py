@@ -20,6 +20,7 @@ from opensearchpy.helpers.utils import AttrDict
 class GeoMaskUtils:
     """Class to manage mask and intersection"""
 
+    # TODO? this can be put in the database as config
     OVER_SPECIFIC_AREA_GEOJSON = {
         "default": {
             "OCN": {
@@ -42,6 +43,7 @@ class GeoMaskUtils:
         "S1D": {
             "SLC": {
                 "0": "world.geojson",
+                "2026-04-22T06:00:00.000Z": "EW_SLC_area_v2.geojson",
             }
         },
     }

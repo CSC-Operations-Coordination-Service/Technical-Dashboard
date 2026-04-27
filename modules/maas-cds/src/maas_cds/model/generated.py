@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-04-13T23:19:37.262373+00:00
+Generated date: 2026-04-22T09:46:52.051757+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -4302,19 +4302,33 @@ class SatUnavailabilityProduct(MAASRawDocument):
 
     _PARTITION_FIELD_FORMAT = "static"
 
+    category = Keyword()
+
     comment = Keyword()
 
+    description = Text()
+
     end_anx_offset = Integer()
+
+    end_doy = Integer()
 
     end_orbit = Keyword()
 
     end_time = Keyword()
 
+    file_class = Keyword()
+
     file_name = Keyword()
+
+    file_type = Keyword()
+
+    file_version = Keyword()
 
     interface_name = Keyword()
 
     mission = Keyword()
+
+    notes = Text()
 
     production_service_name = Keyword()
 
@@ -4322,7 +4336,15 @@ class SatUnavailabilityProduct(MAASRawDocument):
 
     reportFolder = Keyword()
 
+    source_creation_date = ZuluDate()
+
+    source_creator = Keyword()
+
+    source_system = Keyword()
+
     start_anx_offset = Integer()
+
+    start_doy = Integer()
 
     start_orbit = Keyword()
 
@@ -4334,4 +4356,12 @@ class SatUnavailabilityProduct(MAASRawDocument):
 
     unavailability_reference = Keyword()
 
+    unavailability_status = Keyword()
+
     unavailability_type = Keyword()
+
+    unique_identifier = Keyword()
+
+    validity_start = ZuluDate()
+
+    validity_stop = ZuluDate()

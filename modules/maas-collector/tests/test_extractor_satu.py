@@ -198,7 +198,6 @@ def test_satu_extractor_format_v2():
             "production_service_name": {"python": "lambda c: 'Exprivia'"},
         },
         converter_map={
-            #! TODO for all date
             "creation_date": {
                 "type": "python",
                 "python": "lambda creation_date: creation_date[4:]",
@@ -254,6 +253,7 @@ def test_satu_extractor_format_v2():
         "start_doy": "336",
         "unavailability_status": "Closed",
         "unique_identifier": "3e3370bb-e9c6-40b1-b582-3d2f2d1c6584",
+        # ---
         "file_name": "S1A_OPER_REP__SUP___20251202T152325_20251202T171537_0001",
         "mission": "Sentinel-1A",
         "unavailability_reference": "S1A-UNA-2025/0039",
