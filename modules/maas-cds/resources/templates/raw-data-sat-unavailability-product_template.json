@@ -71,6 +71,57 @@
             },
             "production_service_name": {
                 "type": "keyword"
+            },
+            "description": {
+                "type": "text"
+            },
+            "file_version": {
+                "type": "keyword"
+            },
+            "file_class": {
+                "type": "keyword"
+            },
+            "file_type": {
+                "type": "keyword"
+            },
+            "notes": {
+                "type": "text"
+            },
+            "source_creation_date": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "source_creator": {
+                "type": "keyword"
+            },
+            "source_system": {
+                "type": "keyword"
+            },
+            "validity_start": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "validity_stop": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "category": {
+                "type": "keyword"
+            },
+            "end_doy": {
+                "type": "integer"
+            },
+            "start_doy": {
+                "type": "integer"
+            },
+            "unavailability_status": {
+                "type": "keyword"
+            },
+            "unique_identifier": {
+                "type": "keyword"
             }
         },
         "_meta": {

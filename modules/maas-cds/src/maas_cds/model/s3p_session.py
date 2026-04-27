@@ -166,9 +166,17 @@ class S3pSession(generated.S3pSession):
                 self.l0pp_granules
             )
         else:
+            LOGGER.debug("No gr set the completeness to 0")
             self.delivery_to_eum_completeness = 0
 
         if latest_gr_published_to_eum and self.acquisition_stop_time:
             self.delivery_to_eum_timeliness = (
                 latest_gr_published_to_eum - self.acquisition_stop_time
             ).total_seconds()
+        else:
+
+            LOGGER.debug(
+                "Missing information can't set timeliness: stop  %s  latest %s",
+                self.acquisition_stop_time,
+                latest_gr_published_to_eum,
+            )
