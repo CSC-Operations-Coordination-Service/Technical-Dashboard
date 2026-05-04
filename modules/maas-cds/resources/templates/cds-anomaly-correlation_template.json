@@ -12,6 +12,7 @@
         "properties": {
             "updateTime": {
                 "type": "date",
+                "format": "date_time",
                 "locale": "utc"
             },
             "key": {

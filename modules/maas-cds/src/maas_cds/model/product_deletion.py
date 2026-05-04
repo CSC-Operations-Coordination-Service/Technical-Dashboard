@@ -4,17 +4,13 @@ from maas_model import ZuluDate
 
 from maas_cds.model import generated
 
-
 __all__ = ["ProductDeletion", "CdsInterfaceProductDeletion"]
 
 
 class CdsInterfaceProductDeletion(generated.CdsInterfaceProductDeletion):
     """
-    CdsInterfaceProductDeletion override because ingestionTime is excluded from
-    generation
+    CdsInterfaceProductDeletion override
     """
-
-    ingestionTime = ZuluDate()
 
 
 class ProductDeletion(generated.ProductDeletion):

@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-05-04T14:25:32.452342+00:00
+Generated date: 2026-05-04T22:17:57.208182+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -1395,6 +1395,8 @@ class CdsCamsTickets(MAASDocument):
 
     title = Keyword()
 
+    updateTime = ZuluDate()
+
     updated = ZuluDate()
 
     urgency = Keyword()
@@ -1846,6 +1848,8 @@ class CdsDeletionIssue(MAASDocument):
 
     reportFolder = Keyword()
 
+    updateTime = ZuluDate()
+
 
 class CdsDownlinkDatatake(MAASDocument):
     """
@@ -2219,8 +2223,6 @@ class CdsInterfaceProductDeletion(MAASDocument):
     def _matches(cls, hit):
         return hit["_index"].startswith("cds-interface-product-deletion")
 
-    _PARTITION_FIELD = "ingestionTime"
-
     _PARTITION_FIELD_FORMAT = "static"
 
     DD_DAS_status = Keyword()
@@ -2242,6 +2244,8 @@ class CdsInterfaceProductDeletion(MAASDocument):
     jira_issue = Keyword()
 
     product_name = Keyword()
+
+    updateTime = ZuluDate()
 
 
 class CdsInterfaceStatus(MAASDocument):
