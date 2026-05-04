@@ -76,6 +76,9 @@
                     "product_name": {
                         "type": "keyword"
                     },
+                    "product_type": {
+                        "type": "keyword"
+                    },
                     "delivery_date_to_eum": {
                         "type": "date",
                         "locale": "utc"
@@ -95,6 +98,9 @@
                     "validitystop": {
                         "type": "date",
                         "locale": "utc"
+                    },
+                    "filesize": {
+                        "type": "long"
                     }
                 }
             },
