@@ -99,9 +99,10 @@ class DeletionConsolidatorEngine(DataEngine):
             if deletion.jira_issue not in issue_product_dict:
                 issue_product_dict[deletion.jira_issue] = []
 
-            issue_product_dict[deletion.jira_issue].append(
-                deletion.effective_product_name
-            )
+            if deletion.effective_product_name:
+                issue_product_dict[deletion.jira_issue].append(
+                    deletion.effective_product_name
+                )
 
         # map the issues into a dict
         issue_dict = {

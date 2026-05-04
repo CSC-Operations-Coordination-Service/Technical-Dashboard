@@ -1,5 +1,6 @@
 """S3P Session consolidation"""
 
+from maas_cds.lib.parsing_name.parsing_name_s3 import extract_data_from_product_name_s3
 from maas_engine.engine import DataEngine
 
 import maas_cds.model as model
@@ -105,6 +106,7 @@ class S3pSessionConsolidatorEngine(DataEngine):
                     granule.delivery_date_to_eum = datetime_to_zulu(
                         raw_document.log_date
                     )
+                    granule.filesize = raw_document.filesize
                     break
             # but a log if a GR is missing
 
@@ -251,6 +253,9 @@ class S3pSessionConsolidatorEngine(DataEngine):
                     "raw_data_generation_time": raw_event_time,
                     "validitystart": datetime_to_zulu(raw_document.validitystart),
                     "validitystop": datetime_to_zulu(raw_document.validitystop),
+                    "product_type": extract_data_from_product_name_s3(
+                        raw_document.filename
+                    )["product_type"],
                 }
             )
 

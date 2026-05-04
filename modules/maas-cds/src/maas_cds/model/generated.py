@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-04-22T09:46:52.051757+00:00
+Generated date: 2026-05-04T14:25:32.452342+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -2235,6 +2235,8 @@ class CdsInterfaceProductDeletion(MAASDocument):
 
     LTA_Werum_status = Keyword()
 
+    effective_product_name = Keyword()
+
     interface_type = Keyword()
 
     jira_issue = Keyword()
@@ -4222,6 +4224,8 @@ class S3pSessionL0PpGranules(InnerDoc):
 
     product_name = Keyword()
 
+    product_type = Keyword()
+
     delivery_date_to_eum = ZuluDate()
 
     thin_layer_log_date = ZuluDate()
@@ -4231,6 +4235,8 @@ class S3pSessionL0PpGranules(InnerDoc):
     validitystart = ZuluDate()
 
     validitystop = ZuluDate()
+
+    filesize = Long()
 
 
 class S3pSession(MAASDocument):

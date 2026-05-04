@@ -47,6 +47,9 @@
             },
             "LTA_Werum_status": {
                 "type": "keyword"
+            },
+            "effective_product_name": {
+                "type": "keyword"
             }
         },
         "_meta": {

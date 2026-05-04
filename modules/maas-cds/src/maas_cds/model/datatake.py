@@ -267,6 +267,8 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         """
 
         if self.product_type_with_duplicated(product_type):
+
+            # Here depend of the product type adjust the method
             indicator = compute_duplicated_indicator(related_products)
             for key_indicator, value in indicator.items():
                 setattr(self, f"{product_type}_duplicated_{key_indicator}", value)
