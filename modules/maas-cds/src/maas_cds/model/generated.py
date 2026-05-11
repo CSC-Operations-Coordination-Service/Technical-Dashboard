@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-05-04T22:17:57.208182+00:00
+Generated date: 2026-05-07T09:09:42.734681+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -165,6 +165,7 @@ __all__ = [
     "MaasConfigDataflow",
     "MaasConfigDataflowMetadata",
     "MaasConfigDataflowRecords",
+    "MaasConfigDataflowRecordsAuxip",
     "MaasConfigDataflowRecordsServicesConfig",
     "MaasConfigMission",
     "MaasConfigSatellite",
@@ -3467,6 +3468,20 @@ class MaasConfigDataflowRecordsServicesConfig(InnerDoc):
     """
 
 
+class MaasConfigDataflowRecordsAuxip(InnerDoc):
+    """
+    Inner document class for parent class: MaasConfigDataflowRecords
+
+    Generated from property: AUXIP
+    """
+
+    frequency = Long()
+
+    provider = Keyword()
+
+    timeliness = Long()
+
+
 class MaasConfigDataflowRecords(InnerDoc):
     """
     Inner document class for parent class: MaasConfigDataflow
@@ -3487,6 +3502,8 @@ class MaasConfigDataflowRecords(InnerDoc):
     mode = Keyword()
 
     services_config = Object(MaasConfigDataflowRecordsServicesConfig)
+
+    AUXIP = Object(MaasConfigDataflowRecordsAuxip)
 
 
 class MaasConfigDataflow(MAASDocument):
@@ -4232,6 +4249,8 @@ class S3pSessionL0PpGranules(InnerDoc):
 
     delivery_date_to_eum = ZuluDate()
 
+    delivery_start_date_to_eum = ZuluDate()
+
     thin_layer_log_date = ZuluDate()
 
     raw_data_generation_time = ZuluDate()
@@ -4241,6 +4260,10 @@ class S3pSessionL0PpGranules(InnerDoc):
     validitystop = ZuluDate()
 
     filesize = Long()
+
+    transfer_bandwith_to_eum = Float()
+
+    transfer_duration_to_eum = Long()
 
 
 class S3pSession(MAASDocument):
@@ -4273,9 +4296,13 @@ class S3pSession(MAASDocument):
 
     delivery_to_eum_timeliness = Long()
 
+    delivery_to_eum_timeliness_from_acq_start = Long()
+
     downlink_orbit = Keyword()
 
     downlink_session = Keyword()
+
+    generation_timeliness_from_acq_start = Long()
 
     hkraw_delivery_time = ZuluDate()
 

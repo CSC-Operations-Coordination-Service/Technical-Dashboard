@@ -55,6 +55,10 @@ class DeletionIssueConsolidatorEngine(ReplicatorEngine):
         document = super().consolidate(raw_document, document)
 
         if document.deletion_interfaces:
+
+            if isinstance(document.deletion_interfaces, str):
+                document.deletion_interfaces = [document.deletion_interfaces]
+
             unique_interfaces = {name.strip() for name in document.deletion_interfaces}
 
             document.deletion_interfaces = [

@@ -10,6 +10,11 @@
     },
     "mappings": {
         "properties": {
+            "updateTime": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
             "cadu_files": {
                 "type": "object",
                 "properties": {
@@ -36,6 +41,12 @@
                 "type": "float"
             },
             "delivery_to_eum_timeliness": {
+                "type": "long"
+            },
+            "generation_timeliness_from_acq_start": {
+                "type": "long"
+            },
+            "delivery_to_eum_timeliness_from_acq_start": {
                 "type": "long"
             },
             "acquisition_start_time": {
@@ -83,6 +94,10 @@
                         "type": "date",
                         "locale": "utc"
                     },
+                    "delivery_start_date_to_eum": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
                     "thin_layer_log_date": {
                         "type": "date",
                         "locale": "utc"
@@ -101,12 +116,14 @@
                     },
                     "filesize": {
                         "type": "long"
+                    },
+                    "transfer_bandwith_to_eum": {
+                        "type": "float"
+                    },
+                    "transfer_duration_to_eum": {
+                        "type": "long"
                     }
                 }
-            },
-            "updateTime": {
-                "type": "date",
-                "locale": "utc"
             }
         },
         "_meta": {}
