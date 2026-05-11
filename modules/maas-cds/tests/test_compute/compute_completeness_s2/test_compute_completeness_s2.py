@@ -760,6 +760,12 @@ def test_compute_from_empty_datatake(
             "relative_orbit": "72",
             "satellite_unit": "S2A",
             "timeliness": "NOMINAL",
+            "MSI_L0__GR_duplicated_gr": 0,
+            "MSI_L1B_GR_duplicated_gr": 0,
+            "MSI_L1C_TC_duplicated_tuile": 0,
+            "MSI_L2A_TC_duplicated_tuile": 0,
+            "MSI_L1C_TL_duplicated_tuile": 0,
+            "MSI_L2A_TL_duplicated_tuile": 0,
         },
     }
 

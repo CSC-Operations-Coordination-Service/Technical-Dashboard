@@ -144,6 +144,7 @@ def test_auxip_product_consolidation(mock_find_datatake, auxip_product_1, datata
         "AUXIP_Exprivia_publication_date": datetime.datetime(
             2022, 2, 23, 4, 34, 16, 559000, tzinfo=datetime.timezone.utc
         ),
+        "AUXIP_Exprivia_content_length": 466397,
         "nb_auxip_served": 1,
         "key": "3f465f68e5d494b50cefc1171aed06ca",
         "mission": "S1",
@@ -273,6 +274,7 @@ def test_auxip_product_consolidation_1(dd_attrs):
     assert output.to_dict() == {
         "AUXIP_Exprivia_id": "17a1f3d6-e238-11ec-8988-fa163e7968e5",
         "AUXIP_Exprivia_is_published": True,
+        "AUXIP_Exprivia_content_length": 25279336,
         "AUXIP_Exprivia_publication_date": datetime.datetime(
             2022, 6, 2, 5, 51, 48, 415000, tzinfo=datetime.timezone.utc
         ),
@@ -325,6 +327,7 @@ def test_auxip_product_consolidation_2():
     assert output.to_dict() == {
         "AUXIP_Exprivia_id": "b1301c7e-2ba9-11ee-8b4d-fa163e7968e5",
         "AUXIP_Exprivia_is_published": True,
+        "AUXIP_Exprivia_content_length": 331841,
         "AUXIP_Exprivia_publication_date": datetime.datetime(
             2023, 7, 26, 11, 43, 51, 723000, tzinfo=datetime.timezone.utc
         ),

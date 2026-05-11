@@ -168,6 +168,7 @@ def test_prip_product_consolidation(prip_product_1, dd_attrs):
         "name": "S5P_OFFL_L1B_IR_SIR_20171115T103323_20171115T121452_00469_01_001200_20171115T143947.nc",
         "product_level": "L1_",
         "product_type": "L1B_IR_SIR",
+        "PRIP_S5P_DLR_content_length": 6486596,
         "satellite_unit": "S5P",
         "sensing_start_date": "2017-11-15T10:32:23.000Z",
         "sensing_end_date": "2017-11-15T12:15:52.000Z",

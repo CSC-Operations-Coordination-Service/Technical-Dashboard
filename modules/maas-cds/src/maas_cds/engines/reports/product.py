@@ -278,6 +278,7 @@ class ProductConsolidatorEngine(
                 None,
             ),
             (f"{raw_document.interface_name}_id", "product_id", "MISSING"),
+            (f"{raw_document.interface_name}_content_length", "content_length", None),
         ]
 
         # set dynamic attributes

@@ -99,6 +99,7 @@ def test_prip_product_consolidation_s1_bug_wont_consolidate(
         "timeliness": "_",
         "content_length": 11487,
         "LTA_CloudFerro_is_published": True,
+        "LTA_CloudFerro_content_length": 11487,
         "LTA_CloudFerro_publication_date": datetime.datetime(
             2020, 12, 22, 6, 12, 39, 839000, tzinfo=datetime.timezone.utc
         ),

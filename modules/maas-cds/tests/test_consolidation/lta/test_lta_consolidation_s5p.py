@@ -98,6 +98,7 @@ def test_lta_product_consolidation(lta_product_1):
         "LTA_S5P_DLR_publication_date": datestr_to_utc_datetime(
             "2021-07-07T12:50:45.770Z"
         ),
+        "LTA_S5P_DLR_content_length": 6486596,
         "expected_lta_number": 4,
         "nb_lta_served": 1,
         "datatake_id": "S5P-00469",
@@ -135,6 +136,7 @@ def test_lta_l5p_product_consolidation(s5_lta_product_l0):
         "LTA_S5P_DLR_publication_date": datestr_to_utc_datetime(
             "2022-07-01T13:41:03.872Z"
         ),
+        "LTA_S5P_DLR_content_length": 384888,
         "nb_lta_served": 5,
         "datatake_id": "S5P-24429",
     }
