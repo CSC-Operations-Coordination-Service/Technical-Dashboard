@@ -61,6 +61,20 @@
                     "services_config": {
                         "type": "object",
                         "properties": {}
+                    },
+                    "AUXIP": {
+                        "type": "object",
+                        "properties": {
+                            "frequency": {
+                                "type": "long"
+                            },
+                            "provider": {
+                                "type": "keyword"
+                            },
+                            "timeliness": {
+                                "type": "long"
+                            }
+                        }
                     }
                 }
             }

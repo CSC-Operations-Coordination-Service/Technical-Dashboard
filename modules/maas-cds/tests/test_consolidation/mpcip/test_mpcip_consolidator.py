@@ -58,6 +58,7 @@ def test_mpcip_product_consolidation(mpcip_product):
         "datatake_id": "______",
         "name": "S2B_OPER_GIP_R2EQOG_MPC__20221114T162000_V20221116T010000_21000101T000000_B12.TGZ",
         "product_type": "GIP_R2EQOG",
+        "MPCIP_Acri_content_length": 345439,
         "satellite_unit": "S2B",
         "sensing_start_date": "2022-11-16T01:00:00.000Z",
         "sensing_end_date": "2100-01-01T00:00:00.000Z",

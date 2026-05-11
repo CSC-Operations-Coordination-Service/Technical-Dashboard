@@ -1,10 +1,11 @@
 """S3P Session consolidation"""
 
 from maas_cds.lib.parsing_name.parsing_name_s3 import extract_data_from_product_name_s3
+from maas_cds.model.s3p_session import S3pMetricsCirculationAgent
 from maas_engine.engine import DataEngine
 
 import maas_cds.model as model
-from maas_model.date_utils import datetime_to_zulu
+from maas_model.date_utils import datestr_to_utc_datetime, datetime_to_zulu
 
 
 class S3pSessionConsolidatorEngine(DataEngine):
@@ -107,7 +108,37 @@ class S3pSessionConsolidatorEngine(DataEngine):
                         raw_document.log_date
                     )
                     granule.filesize = raw_document.filesize
-                    break
+                    thinlayer_transfer_start = (
+                        S3pMetricsCirculationAgent.search()
+                        .filter("term", queueid=raw_document.queueid)
+                        .filter("term", filename=raw_document.filename)
+                        .filter("term", action="RUNNING")
+                        .filter("term", status="QUEUE_OUT")
+                        .sort({"log_date": {"order": "asc"}})
+                        .execute()
+                    )
+                    if len(thinlayer_transfer_start) == 0:
+                        self.logger.warning(
+                            "Not able to find the transfer start for raw_data_type: %s",
+                            raw_document,
+                        )
+                    else:
+                        granule.delivery_start_date_to_eum = datetime_to_zulu(
+                            thinlayer_transfer_start[0].log_date
+                        )
+
+                        granule.transfer_duration_to_eum = (
+                            datestr_to_utc_datetime(granule.delivery_date_to_eum)
+                            - datestr_to_utc_datetime(
+                                granule.delivery_start_date_to_eum
+                            )
+                        ).total_seconds()
+
+                        granule.transfer_bandwith_to_eum = (
+                            granule.filesize / granule.transfer_duration_to_eum
+                        )
+
+                        break
             # but a log if a GR is missing
 
         elif raw_document.domain == "Data Circulation":
@@ -198,7 +229,7 @@ class S3pSessionConsolidatorEngine(DataEngine):
             document.l0pp_granules = []
 
         raw_log_date = datetime_to_zulu(raw_document.log_date)
-        raw_event_time = datetime_to_zulu(raw_document.eventtime)
+        generation_time = datetime_to_zulu(raw_document.generationtime)
 
         for granule in document.l0pp_granules:
 
@@ -226,20 +257,20 @@ class S3pSessionConsolidatorEngine(DataEngine):
 
                 if (
                     hasattr(granule, "raw_data_generation_time")
-                    and granule.raw_data_generation_time != raw_event_time
+                    and granule.raw_data_generation_time != generation_time
                 ):
 
                     self.logger.warning(
                         "This l0pp_granules is already but the raw_data_generation_time changed take the new highest"
                     )
-                    if granule.raw_data_generation_time and raw_event_time:
+                    if granule.raw_data_generation_time and generation_time:
 
                         granule.raw_data_generation_time = max(
-                            raw_event_time, granule.raw_data_generation_time
+                            generation_time, granule.raw_data_generation_time
                         )
                     else:
                         granule.raw_data_generation_time = (
-                            raw_event_time or granule.raw_data_generation_time
+                            generation_time or granule.raw_data_generation_time
                         )
 
                 self.logger.debug("This l0pp_granules is already registred")
@@ -250,7 +281,7 @@ class S3pSessionConsolidatorEngine(DataEngine):
                 {
                     "product_name": raw_document.filename,
                     "thin_layer_log_date": raw_log_date,
-                    "raw_data_generation_time": raw_event_time,
+                    "raw_data_generation_time": generation_time,
                     "validitystart": datetime_to_zulu(raw_document.validitystart),
                     "validitystop": datetime_to_zulu(raw_document.validitystop),
                     "product_type": extract_data_from_product_name_s3(

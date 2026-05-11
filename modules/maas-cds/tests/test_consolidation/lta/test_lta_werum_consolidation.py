@@ -89,6 +89,7 @@ def test_lta_werum_product_consolidation(mock_search, mock_execute, lta_product_
         "sensing_duration": 12084000000.0,
         "expected_lta_number": 4,
         "LTA_Werum_is_published": True,
+        "LTA_Werum_content_length": 2519,
         "LTA_Werum_id": "9484cbcc-c1d0-48d8-0de6-0104621c7d82",
         "datatake_id": "______",
         "LTA_Werum_publication_date": datetime.datetime(

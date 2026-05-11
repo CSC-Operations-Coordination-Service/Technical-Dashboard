@@ -198,6 +198,15 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
                     for product_uuid in product_uuids:
 
+                        if getattr(deletion, status_attr_name) == "Missing":
+                            self.logger.info(
+                                "[%s] - Product status is already handle skipping status check %s - %s",
+                                deletion.jira_issue,
+                                interface_name,
+                                product_uuid,
+                            )
+                            continue
+
                         status = self.collect_product(interface_name, product_uuid)
 
                         if status is None:

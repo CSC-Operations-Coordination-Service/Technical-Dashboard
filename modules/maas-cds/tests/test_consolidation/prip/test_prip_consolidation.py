@@ -341,6 +341,7 @@ def test_prip_product_consolidation(mock_mget_by_ids, prip_product_s1, dd_attrs)
     assert product.to_dict() == {
         "absolute_orbit": "41259",
         "datatake_id": "321363",
+        "PRIP_S1_Legacy_content_length": 3850694465,
         "PRIP_S1_Legacy_id": "44aa2042-edc1-4cbb-b8df-355a53676c96",
         "PRIP_S1_Legacy_is_published": True,
         "PRIP_S1_Legacy_publication_date": datetime.datetime(
@@ -583,6 +584,7 @@ def test_prip_footprint_consolidation(
         "name": "S2A_OPER_MSI_L1C_DS_ATOS_20220623T234807_S20220623T220803_N04.00.tar",
         "product_level": "L1_",
         "product_type": "MSI_L1C_DS",
+        "PRIP_S2A_ATOS_content_length": 4966400,
         "satellite_unit": "S2A",
         "site_center": "ATOS",
         "sensing_start_date": "2022-06-23T22:08:03.000Z",
@@ -644,6 +646,7 @@ def test_prip_contained_product_consolidation(
         "tile_number": "43XDG",
         "timeliness": "_",
         "datatake_id": "______",
+        "PRIP_S2A_ATOS_content_length": 93419,
         "PRIP_S2A_ATOS_id": "1d3c9b81-990b-44a0-b306-3ef104896de8",
         "PRIP_S2A_ATOS_is_published": True,
         "PRIP_S2A_ATOS_publication_date": datetime.datetime(

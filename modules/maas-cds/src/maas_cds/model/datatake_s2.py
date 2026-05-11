@@ -460,6 +460,9 @@ class CdsDatatakeS2(CdsDatatake):
             brother_of_datatake_documents = set()
 
             intermediary_buffer = {}
+
+            duplicated_item = 0
+
             for product in products_scan:
                 if product.sensing_start_date and product.detector_id:
                     key = (product.detector_id, product.datastrip_id)
@@ -491,6 +494,7 @@ class CdsDatatakeS2(CdsDatatake):
                         and product_date.timestamp() - prev
                         <= self.TOLERENCE_SENSING_START_GRANULE
                     ):
+                        duplicated_item += 1
                         LOGGER.warning(
                             "[%s] - Potential duplicate GR for datatake detector_id %s datastrip_id %s sensing %s",
                             self.datatake_id,
@@ -508,14 +512,20 @@ class CdsDatatakeS2(CdsDatatake):
                                 datastrip_id,
                             )
                         )
+            setattr(self, f"{product_type}_duplicated_gr", duplicated_item)
 
         elif key_field in ["TL", "TC", "__"]:
             # get unique TL/TC number
             brother_of_datatake_documents = set()
 
+            duplicated_item = 0
             for product in products_scan:
                 if product.tile_number:
-                    brother_of_datatake_documents.add(product.tile_number)
+                    if product.tile_number in brother_of_datatake_documents:
+                        duplicated_item += 1
+                    else:
+                        brother_of_datatake_documents.add(product.tile_number)
+
                 else:
                     LOGGER.warning(
                         "[%s][%s] - Failed to add it in document brothers [ %s, %s]",
@@ -524,6 +534,7 @@ class CdsDatatakeS2(CdsDatatake):
                         product.sensing_start_date,
                         product.tile_number,
                     )
+            setattr(self, f"{product_type}_duplicated_tuile", duplicated_item)
 
         elif key_field in ["DS"]:
             brother_of_datatake_documents = []

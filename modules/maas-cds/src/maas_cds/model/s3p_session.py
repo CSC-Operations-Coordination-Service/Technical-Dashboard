@@ -149,11 +149,20 @@ class S3pSession(generated.S3pSession):
             default=None,
         )
         if latest_gr_published_to_eum and isinstance(latest_gr_published_to_eum, str):
-
             latest_gr_published_to_eum = datestr_to_utc_datetime(
                 latest_gr_published_to_eum
             )
 
+        latest_gr_generated = max(
+            (
+                f.raw_data_generation_time
+                for f in self.l0pp_granules
+                if hasattr(f, "raw_data_generation_time") and f.raw_data_generation_time
+            ),
+            default=None,
+        )
+        if latest_gr_generated and isinstance(latest_gr_generated, str):
+            latest_gr_generated = datestr_to_utc_datetime(latest_gr_generated)
         if self.l0pp_granules:
 
             # GR Completeness
@@ -162,9 +171,11 @@ class S3pSession(generated.S3pSession):
                 for f in self.l0pp_granules
                 if hasattr(f, "delivery_date_to_eum") and f.delivery_date_to_eum
             ]
+
             self.delivery_to_eum_completeness = len(gr_delivered) / len(
                 self.l0pp_granules
             )
+
         else:
             LOGGER.debug("No gr set the completeness to 0")
             self.delivery_to_eum_completeness = 0
@@ -174,9 +185,41 @@ class S3pSession(generated.S3pSession):
                 latest_gr_published_to_eum - self.acquisition_stop_time
             ).total_seconds()
         else:
-
             LOGGER.debug(
                 "Missing information can't set timeliness: stop  %s  latest %s",
                 self.acquisition_stop_time,
                 latest_gr_published_to_eum,
+            )
+
+        if latest_gr_published_to_eum and self.acquisition_start_time:
+            self.delivery_to_eum_timeliness_from_acq_start = (
+                latest_gr_published_to_eum - self.acquisition_start_time
+            ).total_seconds()
+        else:
+            LOGGER.debug(
+                "Missing information can't set timeliness: start  %s  latest %s",
+                self.acquisition_start_time,
+                latest_gr_published_to_eum,
+            )
+
+        if latest_gr_generated and self.acquisition_start_time:
+            self.generation_timeliness_from_acq_start = (
+                latest_gr_generated - self.acquisition_start_time
+            ).total_seconds()
+        else:
+            LOGGER.debug(
+                "Missing information can't set timeliness: stop  %s  latest %s",
+                self.acquisition_start_time,
+                latest_gr_generated,
+            )
+
+        if latest_gr_generated and self.acquisition_stop_time:
+            self.generation_timeliness_from_acq_stop = (
+                latest_gr_generated - self.acquisition_stop_time
+            ).total_seconds()
+        else:
+            LOGGER.debug(
+                "Missing information can't set timeliness: stop  %s  latest %s",
+                self.acquisition_stop_time,
+                latest_gr_generated,
             )

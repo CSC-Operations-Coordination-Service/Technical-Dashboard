@@ -156,6 +156,7 @@ def test_prip_publication_consolidation_s1_sm_footprint_bug(
         "product_type": "S6_RAW__0S",
         "product_level": "L0_",
         "satellite_unit": "S1A",
+        "PRIP_S1A_Serco_content_length": 1497084027,
         "sensing_start_date": "2023-10-04T08:29:29.717Z",
         "sensing_end_date": "2023-10-04T08:30:02.417Z",
         "sensing_duration": 32700000,
@@ -248,6 +249,7 @@ def test_prip_publication_consolidation_s1c_ew_footprint_bug_antimeridian(
         "sensing_end_date": "2025-04-14T18:46:36.182Z",
         "sensing_duration": 49470000,
         "timeliness": "NTC",
+        "PRIP_S1C_Werum_content_length": 743895196,
         "content_length": 743895196,
         "PRIP_S1C_Werum_is_published": True,
         "PRIP_S1C_Werum_publication_date": datetime.datetime(

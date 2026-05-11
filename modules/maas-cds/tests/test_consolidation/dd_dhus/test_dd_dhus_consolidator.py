@@ -40,6 +40,7 @@ def test_dd_dhus_product_consolidation(mock_get_by_id, s1_dd_product_1, dd_attrs
     assert product.to_dict() == {
         "DD_DHUS_id": "7fe19497-072c-4ff0-87a3-903ec8b87903",
         "DD_DHUS_is_published": True,
+        "DD_DHUS_content_length": 6808830,
         "DD_DHUS_publication_date": datetime.datetime(
             2022, 2, 7, 12, 33, 2, 606000, tzinfo=datetime.timezone.utc
         ),
@@ -58,7 +59,7 @@ def test_dd_dhus_product_consolidation(mock_get_by_id, s1_dd_product_1, dd_attrs
         "satellite_unit": "S1A",
         "sensing_start_date": "2022-02-07T08:34:48.170Z",
         "sensing_end_date": "2022-02-07T08:35:13.169Z",
-        "sensing_duration": 24999000.0,
+        "sensing_duration": 24999000,
         "content_length": 6808830,
         "timeliness": "NTC",
     }
