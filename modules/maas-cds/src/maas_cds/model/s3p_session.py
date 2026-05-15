@@ -75,6 +75,7 @@ class S3pMetricsRestCaduPollingAgent(generated.S3pMetricsRestCaduPollingAgent):
     @property
     def s3p_session_name(self) -> str:
         # Start CASE
+        # lucene query : domain: "Data Import" AND code: IMP AND action: IN
         if (
             self.domain == "Data Import"
             and self.code == "IMP"
@@ -161,8 +162,15 @@ class S3pSession(generated.S3pSession):
             ),
             default=None,
         )
+
         if latest_gr_generated and isinstance(latest_gr_generated, str):
             latest_gr_generated = datestr_to_utc_datetime(latest_gr_generated)
+
+        if self.acquisition_start_time and isinstance(self.acquisition_start_time, str):
+            self.acquisition_start_time = datestr_to_utc_datetime(
+                self.acquisition_start_time
+            )
+
         if self.l0pp_granules:
 
             # GR Completeness
