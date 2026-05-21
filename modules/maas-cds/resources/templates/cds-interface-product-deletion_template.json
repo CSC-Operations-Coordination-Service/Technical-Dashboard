@@ -1,9 +1,6 @@
 {
-    "aliases": {
-        "cds-interface-product-deletion": {}
-    },
     "index_patterns": [
-        "cds-interface-product-deletion-*"
+        "cds-interface-product-deletion*"
     ],
     "settings": {
         "index": {
@@ -52,9 +49,6 @@
                 "type": "keyword"
             }
         },
-        "_meta": {
-            "partition_field": [],
-            "partition_format": "static"
-        }
+        "_meta": {}
     }
 }
