@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-05-20T14:19:12.118879+00:00
+Generated date: 2026-05-21T14:31:20.119194+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -2229,8 +2229,6 @@ class CdsInterfaceProductDeletion(MAASDocument):
     @classmethod
     def _matches(cls, hit):
         return hit["_index"].startswith("cds-interface-product-deletion")
-
-    _PARTITION_FIELD_FORMAT = "static"
 
     DD_DAS_status = Keyword()
 
