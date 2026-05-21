@@ -24,6 +24,17 @@
             "key": {
                 "type": "keyword"
             },
+            "created": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "satellite": {
+                "type": "keyword"
+            },
             "interface_name": {
                 "type": "keyword"
             },

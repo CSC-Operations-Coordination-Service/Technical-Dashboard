@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-05-07T09:09:42.734681+00:00
+Generated date: 2026-05-20T14:19:12.118879+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -1835,6 +1835,8 @@ class CdsDeletionIssue(MAASDocument):
     def _matches(cls, hit):
         return hit["_index"].startswith("cds-deletion-issue")
 
+    created = ZuluDate()
+
     deletion_cause = Keyword()
 
     deletion_date = ZuluDate()
@@ -1848,6 +1850,10 @@ class CdsDeletionIssue(MAASDocument):
     key = Keyword()
 
     reportFolder = Keyword()
+
+    satellite = Keyword()
+
+    status = Keyword()
 
     updateTime = ZuluDate()
 
@@ -3138,6 +3144,8 @@ class DeletionIssue(MAASRawDocument):
 
     _PARTITION_FIELD_FORMAT = "static"
 
+    created = ZuluDate()
+
     deletion_cause = Keyword()
 
     deletion_date = ZuluDate()
@@ -3151,6 +3159,10 @@ class DeletionIssue(MAASRawDocument):
     key = Keyword()
 
     reportFolder = Keyword()
+
+    satellite = Keyword()
+
+    status = Keyword()
 
 
 class DownloadVolumeCount(MAASRawDocument):
