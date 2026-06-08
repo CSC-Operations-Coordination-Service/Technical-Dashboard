@@ -62,9 +62,14 @@ def find_datatake_from_sensing(mission, satellite, start_date, end_date, delta=2
         )
 
     # sort by distance from middle
+
     product_start_date = start_date.timestamp()
     product_end_date = end_date.timestamp()
     middle_date = product_start_date + (product_end_date - product_start_date) / 2
+
+    if satellite == "S2C":
+        # Move the middle of 30 seconds due to the offset
+        middle_date += 30
 
     datatake_document_that_match.sort(
         key=lambda datatake_doc: abs(
