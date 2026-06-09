@@ -26,8 +26,13 @@ def find_datatake_from_sensing(mission, satellite, start_date, end_date, delta=2
         list(CdsDatatake): the list of the datatake that match the input
     """
 
-    start_date = start_date + timedelta(seconds=delta)
-    end_date = end_date - timedelta(seconds=delta)
+    adjsuted_start_date = start_date + timedelta(seconds=delta)
+    adjsuted_end_date = end_date - timedelta(seconds=delta)
+
+    if satellite == "S2C":
+        # Move the product to 30sec in the futur base on mp shift
+        adjsuted_start_date += timedelta(seconds=30)
+        adjsuted_end_date += timedelta(seconds=30)
 
     # FIXME: Magic number 8
     max_document = 8
@@ -37,8 +42,8 @@ def find_datatake_from_sensing(mission, satellite, start_date, end_date, delta=2
         CdsDatatake.search()
         .filter("term", satellite_unit=satellite)
         .filter("term", mission=mission)
-        .filter("range", observation_time_start={"lte": start_date})
-        .filter("range", observation_time_stop={"gte": end_date})
+        .filter("range", observation_time_start={"lte": adjsuted_start_date})
+        .filter("range", observation_time_stop={"gte": adjsuted_end_date})
         .params(ignore=404, size=max_document)
     )
 
