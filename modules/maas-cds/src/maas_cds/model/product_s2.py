@@ -12,7 +12,6 @@ from maas_cds.model.product import CdsProduct
 from datetime import timedelta
 import maas_cds.lib.parsing_name.utils as utils
 
-
 __all__ = ["CdsProductS2"]
 
 
@@ -54,11 +53,14 @@ class CdsProductS2(CdsProduct):
         if self.product_type in CdsProductS2.NO_DATATAKE_PRODUCT_TYPES:
             return
 
-        datatake_document_that_match = find_datatake_from_product_group_id(
-            mission=self.mission,
-            satellite=self.satellite_unit,
-            product_group_id=self.product_group_id,
-        )
+        datatake_document_that_match = []
+
+        if self.product_type[-2:] != "DS":
+            datatake_document_that_match = find_datatake_from_product_group_id(
+                mission=self.mission,
+                satellite=self.satellite_unit,
+                product_group_id=self.product_group_id,
+            )
 
         #! For GR and TL/TC we need to be careful of MP shift and only trust product_group_id
         if len(datatake_document_that_match) == 0 and self.product_type[-2:] == "DS":
@@ -78,12 +80,6 @@ class CdsProductS2(CdsProduct):
             ).total_seconds()
 
             for dt in datatake_document_that_match:
-                # Skip datatakes that already have product_group_ids
-                if (
-                    hasattr(dt, "product_group_ids")
-                    and dt.product_group_ids is not None
-                ):
-                    continue
 
                 # Calculate datatake duration
                 datatake_duration = (
@@ -134,6 +130,8 @@ class CdsProductS2(CdsProduct):
             self, "nb_datatake_document_that_match", nb_datatake_document_that_match
         )
         setattr(self, "datatake_id", product_datatake_id)
+
+        return product_datatake_id
 
     def get_compute_key(self):
         if self.product_type[-2:] not in ["GR", "TL", "TC", "DS"]:
