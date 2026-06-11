@@ -3,6 +3,7 @@
 from typing import List
 
 from maas_cds.model.generated import MaasConfigCollector
+from maas_cds.model.product import CdsProduct
 from maas_collector.rawdata.collector.credentialmixin import CredentialMixin
 
 from maas_collector.rawdata.configuration import build_collector_configuration
@@ -158,7 +159,15 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                         deletion.product_name,
                     )
 
-                    setattr(deletion, status_attr_name, "Never published")
+                    # for S2 We need to try to find the container name associated to the deleted product
+                    if container_product := self.retrieve_associated_container(
+                        deletion, service_id, possible_name
+                    ):
+                        self.import_product_dddas_to_deletion(
+                            deletion, container_product, service_id
+                        )
+                    else:
+                        setattr(deletion, status_attr_name, "Never published")
 
                 elif nb_publication_find > 1:
 
@@ -249,6 +258,27 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
             publication.product_uuid
         )
 
+    def import_product_dddas_to_deletion(self, deletion, product, service_id):
+        self.logger.debug(
+            "[%s - %s] There is a container product for %s named : %s",
+            deletion.interface_type,
+            service_id,
+            deletion.product_name,
+            product.name,
+        )
+
+        deletion.effective_product_name = product.dddas_container_name
+        setattr(
+            deletion,
+            self.local_attribute_prefix(deletion.interface_type, service_id)
+            + "_product_uuid",
+            product.dddas_id,
+        )
+
+        self.products_id_to_download[deletion.interface_type][service_id].append(
+            product.dddas_id
+        )
+
     def local_attribute_prefix(self, service_id, service_name):
         return f"{service_id}_{service_name}"
 
@@ -292,3 +322,51 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
         )
 
         return item_status
+
+    def retrieve_associated_container(self, deletion, service_id, possible_name):
+
+        if (
+            deletion.interface_type != "DD"
+            or deletion.interface_type != "DD"
+            or deletion.product_name[:2] != "S2"
+            or service_id != "DAS"
+        ):
+            # Product not eligible to container
+            return
+
+        products_query = (
+            CdsProduct.search()
+            .filter(
+                "exists",
+                field="dddas_id",
+            )
+            .filter(
+                "exists",
+                field="dddas_container_name",
+            )
+            .filter(
+                "terms",
+                name=possible_name,
+            )
+        )
+
+        products = list(
+            products_query.params(
+                version=True, seq_no_primary_term=True, ignore=404, size=10
+            ).execute()
+        )
+
+        nb_products_find = len(products)
+
+        if nb_products_find == 1:
+            return products[0]
+
+        if nb_products_find > 1:
+            self.logger.warning(
+                "[%s - %s] There is to many product for %s",
+                deletion.interface_type,
+                service_id,
+                deletion.product_name,
+            )
+        else:
+            self.logger.info("Container not find for this product")
