@@ -84,6 +84,8 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
                 )
                 continue
 
+            deletion.product_name = "".join(deletion.product_name.split())
+
             possible_name = list(generate_publication_names(deletion.product_name))
 
             self.logger.debug("Service IDs : %s", deletion_result.deletion_interfaces)
