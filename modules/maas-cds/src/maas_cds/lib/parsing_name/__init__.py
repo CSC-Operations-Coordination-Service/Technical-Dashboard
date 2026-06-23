@@ -33,6 +33,7 @@ PREFIX_WHITE_LIST = (
     "S2C",
     "S3A",
     "S3B",
+    "S3C",
     "S5P",
 )
 
