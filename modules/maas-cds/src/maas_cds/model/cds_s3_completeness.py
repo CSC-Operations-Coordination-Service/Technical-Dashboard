@@ -274,6 +274,9 @@ class CdsS3Completeness(AnomalyMixin, generated.CdsS3Completeness):
                 "2022-04-01T00:00:00.000Z": ["PRIP_S3B_SERCO"],  # Approx
                 "2025-02-01T00:00:00.000Z": ["PRIP_S3B_TPZ"],
             },
+            "S3C": {
+                "0": ["PRIP_S3C_ACRI"],
+            },
         }
 
         config_completeness = completeness_service_dict.get(self.satellite_unit, None)
@@ -285,7 +288,7 @@ class CdsS3Completeness(AnomalyMixin, generated.CdsS3Completeness):
             return None
 
         # Maybe use
-        (nearest_time_indicator, allowed_prip_name) = (
+        nearest_time_indicator, allowed_prip_name = (
             get_good_threshold_config_from_value(
                 config_completeness, datetime_to_zulu(self.observation_time_start)
             )
