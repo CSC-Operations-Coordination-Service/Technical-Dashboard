@@ -52,7 +52,9 @@ class DeletionConsolidatorEngine(DataEngine):
             deletion_result = (
                 CdsInterfaceProductDeletion.search()
                 .filter("term", jira_issue=issue.key)
-                .filter("term", interface_type=issue.interface_type)
+                .filter(
+                    "term", interface_type=issue.interface_type
+                )  # This to ensure good attachements are only handle
                 .params(size=10000)
                 .execute()
             )
@@ -63,8 +65,13 @@ class DeletionConsolidatorEngine(DataEngine):
             return
 
         # get the deletion related to the issue
+        # skip deletions not yet consolidated (effective_product_name is None),
+        # otherwise the terms query would contain null values and OpenSearch
+        # rejects it with "No value specified for terms query"
         product_names = [
-            deletion.effective_product_name for deletion in deletion_result
+            deletion.effective_product_name
+            for deletion in deletion_result
+            if deletion.effective_product_name
         ]
 
         yield from self.action_iterator_from_deletable(
@@ -180,6 +187,11 @@ class DeletionConsolidatorEngine(DataEngine):
             service_type,
             service_ids,
         )
+
+        # nothing to mark as deleted: avoid building terms queries with empty/null
+        # values that OpenSearch rejects ("No value specified for terms query")
+        if not products_names:
+            return iter(())
 
         if service_type == "DD":
             # This will for CDSE only need to remap this with dd_attrs
