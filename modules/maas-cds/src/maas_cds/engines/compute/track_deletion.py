@@ -80,7 +80,7 @@ class TrackDeletionEngine(DataEngine, CredentialMixin):
 
             if deletion_result is None:
                 self.logger.debug(
-                    "No Deletion for jira issue  : %s", deletion_result.jira_issue
+                    "No Deletion for jira issue  : %s", deletion.jira_issue
                 )
                 continue
 
