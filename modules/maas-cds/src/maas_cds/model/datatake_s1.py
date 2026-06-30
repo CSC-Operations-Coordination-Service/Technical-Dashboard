@@ -8,7 +8,11 @@ from opensearchpy import Q
 from maas_cds.model.datatake import CdsDatatake
 from maas_cds.model import CdsProduct
 from maas_cds.lib.config import get_good_threshold_config_from_value
-from maas_cds.lib.periodutils import compute_total_sensing_product, Period
+from maas_cds.lib.periodutils import (
+    compute_total_sensing_product,
+    Period,
+    DuplicationCandidate,
+)
 
 from maas_cds.model.enumeration import CompletenessScope
 
@@ -525,7 +529,10 @@ class CdsDatatakeS1(CdsDatatake):
         """
         # TODO MAAS_CDS-1236: make a single query to find all the whole brotherhood
 
-        query_scan = self.find_brother_products_scan(product_type)
+        # Fetch all products once (deleted included): the result is cached and
+        # shared by both completeness passes. The deleted products are filtered
+        # out in memory during the live pass.
+        query_scan = self.find_brother_products_scan(product_type, include_deleted=True)
 
         brother_of_datatake_documents = []
 
@@ -535,8 +542,24 @@ class CdsDatatakeS1(CdsDatatake):
                 and product.sensing_start_date
                 and product.sensing_end_date
             ):
+                # Keep the product identity and deletion trace so duplicated items
+                # can be reported. Only ``start`` / ``end`` are used by the
+                # completeness compute, so a DuplicationCandidate is a drop-in
+                # replacement for Period.
+                to_be_deleted, deletion_issue = product.deletion_trace()
+
+                # Live pass ignores the products already deleted.
+                if to_be_deleted and not self._include_deleted_products:
+                    continue
+
                 brother_of_datatake_documents.append(
-                    Period(product.sensing_start_date, product.sensing_end_date)
+                    DuplicationCandidate(
+                        product.name,
+                        product.sensing_start_date,
+                        product.sensing_end_date,
+                        to_be_deleted,
+                        deletion_issue,
+                    )
                 )
 
             else:

@@ -2,7 +2,11 @@ import datetime
 from unittest.mock import patch
 from maas_cds.model.datatake import CdsDatatake
 
-from maas_cds.lib.periodutils import compute_total_sensing_product, Period
+from maas_cds.lib.periodutils import (
+    compute_total_sensing_product,
+    Period,
+    DuplicationCandidate,
+)
 
 from maas_model.date_utils import datestr_to_utc_datetime
 import pytest
@@ -250,13 +254,16 @@ def test_compute_related_products(
     datatake.compute_local_value("MSI_L0__DS", related_products_arg)
 
     assert related_products_arg == [
-        Period(
-            start=datetime.datetime(
+        DuplicationCandidate(
+            product.name,
+            datetime.datetime(
                 2022, 3, 29, 14, 37, 22, 7000, tzinfo=datetime.timezone.utc
             ),
-            end=datetime.datetime(
+            datetime.datetime(
                 2022, 3, 29, 14, 57, 47, 471000, tzinfo=datetime.timezone.utc
             ),
+            False,
+            None,
         )
     ]
 

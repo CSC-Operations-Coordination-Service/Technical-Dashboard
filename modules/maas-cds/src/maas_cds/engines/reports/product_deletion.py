@@ -7,6 +7,7 @@ from opensearchpy.exceptions import NotFoundError
 
 from maas_engine.engine.rawdata import DataEngine
 
+from maas_cds.engines.reports.mission_mixin import MissionMixinEngine
 from maas_cds.model import (
     CdsDeletionIssue,
     CdsInterfaceProductDeletion,
@@ -15,8 +16,16 @@ from maas_cds.model import (
 )
 
 
-class DeletionConsolidatorEngine(DataEngine):
-    """Consolidate CdsInterfaceProductDeletion / CdsDeletionIssue"""
+class DeletionConsolidatorEngine(MissionMixinEngine, DataEngine):
+    """Consolidate CdsInterfaceProductDeletion / CdsDeletionIssue
+
+    Inherits from :class:`MissionMixinEngine` so that the products and
+    publications marked as deleted are reported on mission-dedicated routing keys
+    (``update.cds-product-s2``, ``update.cds-publication-s2``, ...) with their
+    mission-specific document class. This is what triggers the completeness
+    recompute (COMPUTE_COMPLETENESS / COMPUTE_COMPLETENESS_V2) of the datatake
+    the deleted products belong to.
+    """
 
     ENGINE_ID = "CONSOLIDATE_DELETION"
 

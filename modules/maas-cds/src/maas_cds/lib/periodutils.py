@@ -6,6 +6,17 @@ from typing import List
 
 Period = namedtuple("Period", ("start", "end"))
 
+# A product candidate for duplicated items detection. Unlike ``Period`` it keeps
+# the product identity (``name``) and its deletion trace so a duplicated pair can
+# be traced back to the actual products (e.g. to know which one is targeted for
+# deletion). Only ``start`` / ``end`` are used by the completeness computations,
+# so a ``DuplicationCandidate`` can be used wherever a ``Period`` is expected.
+DuplicationCandidate = namedtuple(
+    "DuplicationCandidate",
+    ("name", "start", "end", "to_be_deleted", "deletion_issue"),
+    defaults=(False, None),
+)
+
 
 def compute_total_sensing_product(periods: list[Period]) -> int:
     """Compute total sensing period
@@ -226,3 +237,78 @@ def compute_duplicated_indicator(
     }
 
     return duplicated_indicator
+
+
+def compute_overlap_percentage(previous: Period, brother: Period) -> float:
+    """Compute the overlap percentage of two periods.
+
+    The percentage is expressed relative to the duration of ``previous``
+    (same convention as :func:`compute_duplicated_indicator`).
+
+    Returns 0.0 when the periods do not overlap or when ``previous`` has a null
+    duration.
+    """
+
+    if brother.start >= previous.end:
+        return 0.0
+
+    common_time = (min(previous.end, brother.end) - brother.start).total_seconds()
+    total_period = (previous.end - previous.start).total_seconds()
+
+    if total_period <= 0:
+        return 0.0
+
+    return common_time / total_period * 100
+
+
+def compute_duplicated_items(
+    candidates: List[DuplicationCandidate],
+    threshold: float = 30.0,
+) -> List[dict]:
+    """Identify duplicated products among a list of candidates.
+
+    Two *consecutive* products (sorted by sensing start date) whose overlap
+    percentage is greater than or equal to ``threshold`` are considered as
+    duplicated of each other. Both members of such a pair are returned.
+
+    Args:
+        candidates (List[DuplicationCandidate]): the products to evaluate, each
+            carrying its ``name`` and sensing period. Must be sorted by start.
+        threshold (float): minimal overlap percentage to flag a pair.
+
+    Returns:
+        List[dict]: one entry per duplicated product, with keys ``name``,
+            ``sensing_start_date``, ``sensing_end_date``, ``duplicated_percentage``,
+            ``paired_with`` (the name of the other product of the pair),
+            ``to_be_deleted`` and ``deletion_issue``. A product involved in several
+            consecutive overlaps appears once per pair.
+    """
+
+    duplicated_items = []
+
+    if len(candidates) < 2:
+        return duplicated_items
+
+    def _item(candidate, paired_with, percentage):
+        return {
+            "name": candidate.name,
+            "sensing_start_date": candidate.start,
+            "sensing_end_date": candidate.end,
+            "duplicated_percentage": float(percentage),
+            "paired_with": paired_with.name,
+            "to_be_deleted": candidate.to_be_deleted,
+            "deletion_issue": candidate.deletion_issue,
+        }
+
+    for previous, brother in zip(candidates[:-1], candidates[1:]):
+
+        percentage = compute_overlap_percentage(
+            Period(previous.start, previous.end),
+            Period(brother.start, brother.end),
+        )
+
+        if percentage >= threshold:
+            duplicated_items.append(_item(previous, brother, percentage))
+            duplicated_items.append(_item(brother, previous, percentage))
+
+    return duplicated_items

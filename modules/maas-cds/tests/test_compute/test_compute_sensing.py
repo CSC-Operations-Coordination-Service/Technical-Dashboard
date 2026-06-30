@@ -1,7 +1,11 @@
 from unittest.mock import patch
 import datetime
 
-from maas_cds.lib.periodutils import compute_total_sensing_product, Period
+from maas_cds.lib.periodutils import (
+    compute_total_sensing_product,
+    Period,
+    DuplicationCandidate,
+)
 
 from maas_cds.model.datatake_s1 import (
     CdsDatatakeS1,
@@ -11,12 +15,16 @@ from maas_cds.model.datatake_s1 import (
 class ProductTest:
     """test class"""
 
-    def __init__(self, sensing_start_date, sensing_end_date):
+    def __init__(self, sensing_start_date, sensing_end_date, name="KEYKEY"):
         self.sensing_start_date = sensing_start_date
         self.sensing_end_date = sensing_end_date
         self.sensing_duration = sensing_end_date - sensing_start_date
         self.key = "KEYKEY"
+        self.name = name
         self.datatake_id = "RANDOM_DATATAKE_ID"
+
+    def deletion_trace(self):
+        return False, None
 
 
 @patch("maas_cds.model.datatake.CdsDatatake.find_brother_products_scan")
@@ -46,15 +54,19 @@ def test_get_datatake_product_type_brother(mock_find_brother_products_scan):
     list_result = datatake_doc.get_datatake_product_type_brother("PRODUCT_TYPE")
 
     assert list_result == [
-        Period(
-            start=datetime.datetime(2022, 12, 7, 15, 0, tzinfo=datetime.timezone.utc),
-            end=datetime.datetime(2022, 12, 7, 15, 0, 20, tzinfo=datetime.timezone.utc),
+        DuplicationCandidate(
+            "KEYKEY",
+            datetime.datetime(2022, 12, 7, 15, 0, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 12, 7, 15, 0, 20, tzinfo=datetime.timezone.utc),
+            False,
+            None,
         ),
-        Period(
-            start=datetime.datetime(
-                2022, 12, 7, 15, 0, 10, tzinfo=datetime.timezone.utc
-            ),
-            end=datetime.datetime(2022, 12, 7, 15, 0, 20, tzinfo=datetime.timezone.utc),
+        DuplicationCandidate(
+            "KEYKEY",
+            datetime.datetime(2022, 12, 7, 15, 0, 10, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 12, 7, 15, 0, 20, tzinfo=datetime.timezone.utc),
+            False,
+            None,
         ),
     ]
 
@@ -80,17 +92,19 @@ def test_get_period_output_is_sort_1(mock_find_brother_products_scan):
     list_result = datatake_doc.get_datatake_product_type_brother("PRODUCT_TYPE")
 
     assert list_result == [
-        Period(
-            start=datetime.datetime(
-                2022, 12, 7, 15, 0, 0, tzinfo=datetime.timezone.utc
-            ),
-            end=datetime.datetime(2022, 12, 7, 15, 0, 20, tzinfo=datetime.timezone.utc),
+        DuplicationCandidate(
+            "KEYKEY",
+            datetime.datetime(2022, 12, 7, 15, 0, 0, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 12, 7, 15, 0, 20, tzinfo=datetime.timezone.utc),
+            False,
+            None,
         ),
-        Period(
-            start=datetime.datetime(
-                2022, 12, 7, 15, 0, 0, tzinfo=datetime.timezone.utc
-            ),
-            end=datetime.datetime(2022, 12, 7, 15, 0, 30, tzinfo=datetime.timezone.utc),
+        DuplicationCandidate(
+            "KEYKEY",
+            datetime.datetime(2022, 12, 7, 15, 0, 0, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 12, 7, 15, 0, 30, tzinfo=datetime.timezone.utc),
+            False,
+            None,
         ),
     ]
 
@@ -131,37 +145,49 @@ def test_get_period_output_is_sort_2(mock_find_brother_products_scan):
     list_result = datatake_doc.get_datatake_product_type_brother("PRODUCT_TYPE")
 
     assert list_result == [
-        Period(
+        DuplicationCandidate(
+            "KEYKEY",
             datetime.datetime(
                 2022, 12, 7, 14, 0, 0, 000000, tzinfo=datetime.timezone.utc
             ),
             datetime.datetime(
                 2022, 12, 7, 14, 0, 29, 000000, tzinfo=datetime.timezone.utc
             ),
+            False,
+            None,
         ),
-        Period(
+        DuplicationCandidate(
+            "KEYKEY",
             datetime.datetime(
                 2022, 12, 7, 15, 0, 0, 000000, tzinfo=datetime.timezone.utc
             ),
             datetime.datetime(
                 2022, 12, 7, 15, 0, 20, 000000, tzinfo=datetime.timezone.utc
             ),
+            False,
+            None,
         ),
-        Period(
+        DuplicationCandidate(
+            "KEYKEY",
             datetime.datetime(
                 2022, 12, 7, 15, 0, 0, 000000, tzinfo=datetime.timezone.utc
             ),
             datetime.datetime(
                 2022, 12, 7, 15, 0, 30, 000000, tzinfo=datetime.timezone.utc
             ),
+            False,
+            None,
         ),
-        Period(
+        DuplicationCandidate(
+            "KEYKEY",
             datetime.datetime(
                 2022, 12, 7, 15, 0, 20, 000000, tzinfo=datetime.timezone.utc
             ),
             datetime.datetime(
                 2022, 12, 7, 15, 0, 50, 000000, tzinfo=datetime.timezone.utc
             ),
+            False,
+            None,
         ),
     ]
 

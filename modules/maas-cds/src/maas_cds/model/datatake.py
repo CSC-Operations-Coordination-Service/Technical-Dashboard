@@ -13,7 +13,9 @@ from maas_cds.lib.dateutils import get_microseconds_delta
 from maas_cds.lib.status import evaluate_completeness_status
 from maas_cds.lib.periodutils import (
     Period,
+    DuplicationCandidate,
     compute_duplicated_indicator,
+    compute_duplicated_items,
     compute_missing_sensing_periods,
 )
 from maas_cds.model import generated
@@ -38,6 +40,27 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     STATIC_COMPLETENESS_VALUE = {}
 
     MISSING_PERIODS_MAXIMAL_OFFSET = None
+
+    # Duplication detection: minimal overlap percentage between two consecutive
+    # products to consider them as duplicated of each other.
+    DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD = 30.0
+
+    # Transient compute flags (never persisted on the document).
+
+    # When True, the current completeness pass keeps the products already flagged
+    # as deleted (the "original" / with-all-products pass). When False (the live
+    # pass) the deleted products are filtered out in memory.
+    _include_deleted_products = False
+
+    # When set to a dict, the completeness setters write into it instead of on the
+    # document attributes (used to capture the "original completeness" without
+    # clobbering the live values). When None, setters write on the document.
+    _completeness_sink = None
+
+    # Per-datatake cache of the brother products materialized once per
+    # (product_type, indices, include_deleted) so the two completeness passes
+    # share a single query instead of hitting the database twice.
+    _brother_products_cache = None
 
     cams_tickets = Keyword(multi=True)
 
@@ -207,6 +230,12 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 this datatake/product-type
         """
 
+        # ``missing_periods`` is a mapped field reflecting the live products: only
+        # compute it during the live pass, not during the "original" (with all
+        # products) pass which only captures completeness values.
+        if self._completeness_sink is not None:
+            return
+
         if (
             self.product_type_with_missing_periods(product_type)
             and self.MISSING_PERIODS_MAXIMAL_OFFSET is not None
@@ -271,7 +300,77 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             # Here depend of the product type adjust the method
             indicator = compute_duplicated_indicator(related_products)
             for key_indicator, value in indicator.items():
-                setattr(self, f"{product_type}_duplicated_{key_indicator}", value)
+                self.store_completeness_value(
+                    f"{product_type}_duplicated_{key_indicator}", value
+                )
+
+            # Detailed duplicated items (both members of each duplicated pair) are
+            # only collected during the include-deleted pass so that a pair stays
+            # visible even after one of its products has been deleted.
+            if self._include_deleted_products:
+                candidates = [
+                    product
+                    for product in related_products
+                    if isinstance(product, DuplicationCandidate)
+                ]
+                self.add_duplicated_items(product_type, candidates)
+
+    def append_duplicated_pair(self, product_type, first, second, percentage=100.0):
+        """Append both members of a duplicated pair to ``duplicateds_items``.
+
+        Used by detections that do not rely on the time-overlap percentage (e.g. S2
+        granules or tiles), where two products are considered full duplicates.
+
+        Args:
+            product_type (str): the current product type
+            first (dict): first product, keys ``name``, ``sensing_start_date``,
+                ``sensing_end_date``, ``to_be_deleted``, ``deletion_issue``
+            second (dict): the other product of the pair (same keys)
+            percentage (float): duplicated percentage to store on both items
+        """
+        if not isinstance(self.duplicateds_items, list):
+            self.duplicateds_items = []
+
+        for item, other in ((first, second), (second, first)):
+            self.duplicateds_items.append(
+                generated.CdsDatatakeDuplicatedsItems(
+                    product_type=product_type,
+                    name=item["name"],
+                    sensing_start_date=item.get("sensing_start_date"),
+                    sensing_end_date=item.get("sensing_end_date"),
+                    duplicated_percentage=float(percentage),
+                    paired_with=other["name"],
+                    to_be_deleted=item.get("to_be_deleted", False),
+                    deletion_issue=item.get("deletion_issue"),
+                )
+            )
+
+    def add_duplicated_items(
+        self, product_type: str, candidates: List[DuplicationCandidate]
+    ):
+        """Append duplicated products of a product type to ``duplicateds_items``.
+
+        Two consecutive products overlapping by more than
+        ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent are considered as
+        duplicated of each other and both are added to the list.
+
+        Args:
+            product_type (str): the current product type
+            candidates (List[DuplicationCandidate]): products carrying their
+                identity and deletion trace, sorted by sensing start date
+        """
+
+        items = compute_duplicated_items(
+            candidates, self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD
+        )
+
+        for item in items:
+            self.duplicateds_items.append(
+                generated.CdsDatatakeDuplicatedsItems(
+                    product_type=product_type,
+                    **item,
+                )
+            )
 
     def load_data_before_compute(self):
         """Some step need to be done before starting compute all completeness"""
@@ -356,6 +455,35 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             f"Must be implement in subclasses in CdsDatatake{self.mission} : {product_type}"
         )
 
+    def store_completeness_value(self, attr_name, value):
+        """Store a computed completeness value.
+
+        Writes either on the document (live pass) or into the
+        ``_completeness_sink`` dict (the "original completeness" pass), so the live
+        values are not clobbered while computing the completeness with all products.
+        """
+        if self._completeness_sink is None:
+            setattr(self, attr_name, value)
+        else:
+            self._completeness_sink[attr_name] = value
+
+    def read_completeness_value(self, attr_name, default=0):
+        """Read a completeness value from the current completeness target.
+
+        Mirror of :meth:`store_completeness_value`: reads from the
+        ``_completeness_sink`` dict during the original pass, from the document
+        otherwise.
+        """
+        if self._completeness_sink is None:
+            return getattr(self, attr_name, default)
+        return self._completeness_sink.get(attr_name, default)
+
+    def completeness_items(self):
+        """Items of the current completeness target (sink dict or document)."""
+        if self._completeness_sink is None:
+            return self.to_dict().items()
+        return self._completeness_sink.items()
+
     def set_completeness(
         self,
         scope: CompletenessScope,
@@ -386,7 +514,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             if completeness_value:
                 # set value if it his different than 0  to raise conflict if expected is compute in parallel
                 attr_name_value = f"{key_field}_{scope.value}_value"
-                setattr(self, attr_name_value, completeness_value)
+                self.store_completeness_value(attr_name_value, completeness_value)
         else:
             # compute other value (avoid value superior to expected )
             adjusted_value = min(completeness_value, expected_value)
@@ -431,25 +559,24 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
 
         # value
         attr_name_value = f"{key_field}_{scope.value}_value"
-        setattr(self, attr_name_value, completeness_value)
+        self.store_completeness_value(attr_name_value, completeness_value)
 
         # expected
         attr_name_expected_value = f"{key_field}_{scope.value}_expected"
-        setattr(self, attr_name_expected_value, expected_value)
+        self.store_completeness_value(attr_name_expected_value, expected_value)
 
         # adjusted
         attr_name_value_adjusted = f"{key_field}_{scope.value}_value_adjusted"
-        setattr(self, attr_name_value_adjusted, adjusted_value)
+        self.store_completeness_value(attr_name_value_adjusted, adjusted_value)
 
         # percentage
         if completeness_status_value != CompletenessStatus.UNKNOWN.value:
             attr_name_value_percentage = f"{key_field}_{scope.value}_percentage"
-            setattr(self, attr_name_value_percentage, percentage_value)
+            self.store_completeness_value(attr_name_value_percentage, percentage_value)
 
         # status
         attr_name_completeness_status = f"{key_field}_{scope.value}_status"
-        setattr(
-            self,
+        self.store_completeness_value(
             attr_name_completeness_status,
             completeness_status_value,
         )
@@ -467,7 +594,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         global_values = {}
         global_duplication_indicator = {"max_duration": 0, "max_percentage": 0.0}
 
-        doc_dict = self.to_dict().items()
+        doc_dict = self.completeness_items()
 
         for key, value in doc_dict:
             # maybe we can use a function that returns all product_type
@@ -494,7 +621,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         # Set
         for key_field, value in global_duplication_indicator.items():
             global_key = f"duplicated_{CompletenessScope.GLOBAL.value}_{key_field}"
-            setattr(self, global_key, value)
+            self.store_completeness_value(global_key, value)
 
         # update global completness
         for key_field, value in global_values.items():
@@ -505,6 +632,46 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     def compute_extra_completeness(self):
         """Method to add specific completeness compute"""
 
+    def compute_completeness(self):
+        """Compute the local and global completeness of this datatake.
+
+        Products are fetched once (including the ones flagged as deleted) and the
+        completeness is computed twice:
+
+        - an "original" pass over all the products, captured into the
+          ``original_completeness`` dict and used to also collect the detailed
+          ``duplicateds_items``;
+        - the regular live pass which ignores the deleted products and writes the
+          completeness values on the document.
+
+        Comparing ``original_completeness`` with the live values tells whether a
+        product deletion impacts the completeness.
+        """
+
+        # Enable the single-query cache shared by both passes.
+        self._brother_products_cache = {}
+
+        try:
+            # --- Original pass: all products, results captured in a dict ---
+            self.duplicateds_items = []
+            original_completeness = {}
+            self._completeness_sink = original_completeness
+            self._include_deleted_products = True
+            try:
+                self.compute_all_local_completeness()
+                self.compute_global_completeness()
+            finally:
+                self._completeness_sink = None
+                self._include_deleted_products = False
+
+            self.original_completeness = original_completeness
+
+            # --- Live pass: deleted products ignored, results on the document ---
+            self.compute_all_local_completeness()
+            self.compute_global_completeness()
+        finally:
+            self._brother_products_cache = None
+
     def get_related_documents_query(self) -> Q:
         """
         Builds a query for documents related to this datatake. Typically product
@@ -514,13 +681,16 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             Q: ES query
         """
 
-    def find_brother_products_scan(self, product_type, indices=None):
+    def find_brother_products_scan(self, product_type, indices=None, include_deleted=False):
         """Find products with the same datatake and the same product_type
 
         Note: Seek only product with a prip_id
 
         Args:
             product_type (str): product_type searched
+            indices: optional indices to restrict the search to
+            include_deleted (bool): when True, products already flagged as deleted
+                (``nb_dd_deleted`` / ``nb_lta_deleted``) are kept in the result.
 
         Returns:
             list(CdsProduct): list of products matching datatake_id and product_type
@@ -528,6 +698,15 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         # TODO MAAS_CDS-1236: make a single query to find all the whole brotherhood
         # with list of datatake / product types later post-processed to be grouped by
         # tuple (datatake_id, product_type) in a dict
+
+        # Reuse a previously fetched result during the two completeness passes so a
+        # single query is issued for both the "with all products" and the live pass.
+        cache_key = (product_type, tuple(indices) if indices else None, include_deleted)
+        if (
+            self._brother_products_cache is not None
+            and cache_key in self._brother_products_cache
+        ):
+            return self._brother_products_cache[cache_key]
 
         completeness_service = self.get_service_for_completeness()
 
@@ -559,26 +738,35 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             .filter("range", sensing_start_date={"lte": time_stop_with_tolerance})
             .filter("range", sensing_end_date={"gte": time_start_with_tolerance})
             .filter("exists", field="prip_id")
-            .filter(
+        )
+
+        # Unless explicitly asked to include them, exclude products already flagged
+        # as deleted so the live completeness is not impacted by deletions.
+        if not include_deleted:
+            search_request = search_request.filter(
                 "bool",
                 should=[
                     {"bool": {"must_not": {"exists": {"field": "nb_dd_deleted"}}}},
                     {"term": {"nb_dd_deleted": 0}},
                 ],
-            )
-            .filter(
+            ).filter(
                 "bool",
                 should=[
                     {"bool": {"must_not": {"exists": {"field": "nb_lta_deleted"}}}},
                     {"term": {"nb_lta_deleted": 0}},
                 ],
             )
-        )
+
         search_request = search_request.params(ignore=404, ignore_unavailable=True)
 
-        query_scan = search_request.scan()
+        # When caching is active (completeness two-pass) the result must be
+        # materialized so it can be iterated twice.
+        if self._brother_products_cache is not None:
+            result = list(search_request.scan())
+            self._brother_products_cache[cache_key] = result
+            return result
 
-        return query_scan
+        return search_request.scan()
 
     def retrieve_additional_fields_from_product(self, product: CdsProduct):
         """Abstract function which allow to fill additional
