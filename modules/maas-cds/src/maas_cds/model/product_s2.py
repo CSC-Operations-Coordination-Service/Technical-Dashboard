@@ -9,7 +9,6 @@ from maas_cds.lib.queryutils.find_datatake_from_product_group_id import (
     find_datatake_from_product_group_id,
 )
 from maas_cds.model.product import CdsProduct
-from datetime import timedelta
 import maas_cds.lib.parsing_name.utils as utils
 
 __all__ = ["CdsProductS2"]
@@ -72,41 +71,26 @@ class CdsProductS2(CdsProduct):
                 satellite=self.satellite_unit,
             )
 
-            # Filter out datatakes that already have a product_group_id and
-            # order by nearest sensing duration, filtering out those with duration lower than product
-            filtered_datatakes = []
+            # `find_datatake_from_sensing` already ranks the candidates by the
+            # distance of the product middle to the datatake window (0 when the
+            # middle falls inside the window) and applies the S2C +30s shift
+            # consistently. We must NOT re-sort here with a divergent heuristic /
+            # shift, otherwise a product whose middle sits inside a long datatake
+            # gets stolen by an adjacent datatake whose edge happens to be closer.
+            # We only keep the duration guard, which preserves the incoming order.
             product_duration = (
                 self.sensing_end_date - self.sensing_start_date
             ).total_seconds()
 
-            for dt in datatake_document_that_match:
-
-                # Calculate datatake duration
-                datatake_duration = (
+            # Filter out datatakes with duration lower than product duration (tolerance of 6 sec)
+            datatake_document_that_match = [
+                dt
+                for dt in datatake_document_that_match
+                if (
                     dt.observation_time_stop - dt.observation_time_start
                 ).total_seconds()
-
-                # Filter out datatakes with duration lower than product duration (tolerance of 11 sec)
-                if datatake_duration >= (product_duration - 6):
-                    filtered_datatakes.append(dt)
-            # Sort by nearest datatake (by middle point distance to product middle)
-            product_middle = (
-                self.sensing_start_date
-                + (self.sensing_end_date - self.sensing_start_date) / 2
-            )
-
-            # For S2C, adjust product middle by 10 seconds to handle timing differences
-            if self.satellite_unit == "S2C":
-                product_middle = product_middle + timedelta(seconds=20)
-
-            # This can be improve using nb ds expected and also the datastrips_groups
-            datatake_document_that_match = sorted(
-                filtered_datatakes,
-                key=lambda dt: min(
-                    abs((dt.observation_time_start - product_middle).total_seconds()),
-                    abs((dt.observation_time_stop - product_middle).total_seconds()),
-                ),
-            )
+                >= (product_duration - 6)
+            ]
 
         nb_datatake_document_that_match = len(datatake_document_that_match)
 

@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-05-21T14:31:20.119194+00:00
+Generated date: 2026-06-30T21:03:35.654693+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -125,6 +125,7 @@ __all__ = [
     "CdsDatabudget",
     "CdsDataflow",
     "CdsDatatake",
+    "CdsDatatakeDuplicatedsItems",
     "CdsDatatakeMissingPeriods",
     "CdsDdpDataAvailable",
     "CdsDeletionIssue",
@@ -1673,6 +1674,30 @@ class CdsDataflow(MAASDocument):
     type = Keyword()
 
 
+class CdsDatatakeDuplicatedsItems(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatake
+
+    Generated from property: duplicateds_items
+    """
+
+    name = Keyword()
+
+    product_type = Keyword()
+
+    sensing_start_date = ZuluDate()
+
+    sensing_end_date = ZuluDate()
+
+    duplicated_percentage = Float()
+
+    paired_with = Keyword()
+
+    to_be_deleted = Boolean()
+
+    deletion_issue = Keyword()
+
+
 class CdsDatatakeMissingPeriods(InnerDoc):
     """
     Inner document class for parent class: CdsDatatake
@@ -1724,6 +1749,8 @@ class CdsDatatake(MAASDocument):
     datastrip_ids = Keyword()
 
     datatake_id = Keyword()
+
+    duplicateds_items = Object(CdsDatatakeDuplicatedsItems)
 
     hex_datatake_id = Keyword()
 

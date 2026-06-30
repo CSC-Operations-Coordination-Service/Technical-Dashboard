@@ -38,25 +38,39 @@ def find_datatake_from_product_group_id(
 
     # nominal use for search datake with product date information expected one datatake only
 
-    search_request = (
-        CdsDatatake.search()
-        .filter("term", mission=mission)
-        .filter("term", satellite_unit=satellite)
-        .filter("term", absolute_orbit=product_id_data["absolute_orbit"])
-        .filter(
-            "range",
-            observation_time_start={
-                "lte": product_id_data["date"] + datetime.timedelta(seconds=20)
-            },
+    if satellite == "S2C":
+        # S2C datatake observation times carry a ~30s MP shift compared to the
+        # product naming date, which makes the observation-time window match
+        # attach GR / TL / TC products to the previous datatake. Instead, rely on
+        # the exact product_group_id already registered on the datatake by the DS
+        # path (datatake.product_group_ids): only the right datatake holds it.
+        search_request = (
+            CdsDatatake.search()
+            .filter("term", mission=mission)
+            .filter("term", satellite_unit=satellite)
+            .filter("term", product_group_ids=product_group_id)
+            .params(ignore=404)
         )
-        .filter(
-            "range",
-            observation_time_stop={
-                "gte": product_id_data["date"] - datetime.timedelta(seconds=20)
-            },
+    else:
+        search_request = (
+            CdsDatatake.search()
+            .filter("term", mission=mission)
+            .filter("term", satellite_unit=satellite)
+            .filter("term", absolute_orbit=product_id_data["absolute_orbit"])
+            .filter(
+                "range",
+                observation_time_start={
+                    "lte": product_id_data["date"] + datetime.timedelta(seconds=20)
+                },
+            )
+            .filter(
+                "range",
+                observation_time_stop={
+                    "gte": product_id_data["date"] - datetime.timedelta(seconds=20)
+                },
+            )
+            .params(ignore=404)
         )
-        .params(ignore=404)
-    )
 
     res = search_request.execute()
 

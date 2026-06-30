@@ -119,9 +119,7 @@ class ComputeCompletenessEngine(DataEngine):
 
             yield from datatake_doc.load_data_before_compute()
 
-            datatake_doc.compute_all_local_completeness()
-
-            datatake_doc.compute_global_completeness()
+            datatake_doc.compute_completeness()
 
             if original_datatake_dict != datatake_doc.to_dict():
                 self.logger.info("[ITER][Datatake] - Pushing update %s", datatake_doc)

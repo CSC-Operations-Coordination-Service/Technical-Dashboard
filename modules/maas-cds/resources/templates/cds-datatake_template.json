@@ -133,6 +133,37 @@
                         "type": "long"
                     }
                 }
+            },
+            "duplicateds_items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "keyword"
+                    },
+                    "product_type": {
+                        "type": "keyword"
+                    },
+                    "sensing_start_date": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "sensing_end_date": {
+                        "type": "date",
+                        "locale": "utc"
+                    },
+                    "duplicated_percentage": {
+                        "type": "float"
+                    },
+                    "paired_with": {
+                        "type": "keyword"
+                    },
+                    "to_be_deleted": {
+                        "type": "boolean"
+                    },
+                    "deletion_issue": {
+                        "type": "keyword"
+                    }
+                }
             }
         },
         "_meta": {

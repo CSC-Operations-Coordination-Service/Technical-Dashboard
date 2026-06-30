@@ -42,6 +42,33 @@ class CdsProduct(
     def publication_date(self):
         return self.prip_publication_date
 
+    def deletion_trace(self) -> typing.Tuple[bool, typing.Optional[str]]:
+        """Trace whether this product has been (or is being) deleted.
+
+        Reads the deletion counters (``nb_dd_deleted`` / ``nb_lta_deleted``) and the
+        per-interface ``*_deletion_issue`` fields populated by
+        :meth:`mark_as_deleted`.
+
+        Returns:
+            tuple: ``(to_be_deleted, deletion_issue)`` where ``to_be_deleted`` is
+                True when the product has been deleted from at least one interface,
+                and ``deletion_issue`` is the related Jira issue key if available.
+        """
+        nb_deleted = (getattr(self, "nb_dd_deleted", 0) or 0) + (
+            getattr(self, "nb_lta_deleted", 0) or 0
+        )
+
+        if not nb_deleted:
+            return False, None
+
+        deletion_issue = None
+        for field, value in self.to_dict().items():
+            if field.endswith("_deletion_issue") and value:
+                deletion_issue = value
+                break
+
+        return True, deletion_issue
+
     @property
     def product_type_with_timeliness(self):
         if self.timeliness is None or self.product_type is None:

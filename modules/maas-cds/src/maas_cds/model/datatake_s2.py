@@ -12,7 +12,11 @@ from opensearchpy import Q
 from maas_cds.model.datatake import CdsDatatake
 from maas_cds.lib.status import evaluate_completeness_status
 
-from maas_cds.lib.periodutils import compute_total_sensing_product, Period
+from maas_cds.lib.periodutils import (
+    compute_total_sensing_product,
+    Period,
+    DuplicationCandidate,
+)
 
 
 from maas_cds.model.enumeration import CompletenessScope
@@ -449,8 +453,13 @@ class CdsDatatakeS2(CdsDatatake):
             product_type,
         )
 
+        # Fetch all products once (deleted included): the result is cached and
+        # shared by both completeness passes. Deleted products are filtered out in
+        # memory during the live pass.
         products_scan = self.find_brother_products_scan(
-            product_type, self.get_product_partitionning(day_precision=1)
+            product_type,
+            self.get_product_partitionning(day_precision=1),
+            include_deleted=True,
         )
         brother_of_datatake_documents = []
 
@@ -465,12 +474,25 @@ class CdsDatatakeS2(CdsDatatake):
 
             for product in products_scan:
                 if product.sensing_start_date and product.detector_id:
-                    key = (product.detector_id, product.datastrip_id)
-                    if key not in intermediary_buffer:
-                        intermediary_buffer[key] = []
+                    to_be_deleted, deletion_issue = product.deletion_trace()
 
-                    # Group Sensing per detector id and datastrip_id
-                    intermediary_buffer[key].append(product.sensing_start_date)
+                    # Live pass ignores the products already deleted.
+                    if to_be_deleted and not self._include_deleted_products:
+                        continue
+
+                    key = (product.detector_id, product.datastrip_id)
+
+                    # Group product info per detector id and datastrip_id, keeping
+                    # the product identity to be able to report duplicated items.
+                    intermediary_buffer.setdefault(key, []).append(
+                        {
+                            "name": product.name,
+                            "sensing_start_date": product.sensing_start_date,
+                            "sensing_end_date": product.sensing_end_date,
+                            "to_be_deleted": to_be_deleted,
+                            "deletion_issue": deletion_issue,
+                        }
+                    )
                 else:
                     LOGGER.warning(
                         "[%s][%s] - Failed to add it in document brothers [ %s, %s, %s]",
@@ -485,13 +507,16 @@ class CdsDatatakeS2(CdsDatatake):
             for (
                 detector_id,
                 datastrip_id,
-            ), sensing_start_date_list in intermediary_buffer.items():
-                ordered_sensing = sorted(sensing_start_date_list)
+            ), product_info_list in intermediary_buffer.items():
+                ordered_products = sorted(
+                    product_info_list, key=lambda info: info["sensing_start_date"]
+                )
                 prev = None
-                for product_date in ordered_sensing:
+                for product_info in ordered_products:
                     if (
                         prev
-                        and product_date.timestamp() - prev
+                        and product_info["sensing_start_date"].timestamp()
+                        - prev["sensing_start_date"].timestamp()
                         <= self.TOLERENCE_SENSING_START_GRANULE
                     ):
                         duplicated_item += 1
@@ -500,31 +525,60 @@ class CdsDatatakeS2(CdsDatatake):
                             self.datatake_id,
                             detector_id,
                             datastrip_id,
-                            product_date,
+                            product_info["sensing_start_date"],
                         )
 
+                        if self._include_deleted_products:
+                            self.append_duplicated_pair(
+                                product_type, prev, product_info
+                            )
+
                     else:
-                        prev = product_date.timestamp()
+                        prev = product_info
                         brother_of_datatake_documents.add(
                             (
-                                product_date,
+                                product_info["sensing_start_date"],
                                 detector_id,
                                 datastrip_id,
                             )
                         )
-            setattr(self, f"{product_type}_duplicated_gr", duplicated_item)
+            self.store_completeness_value(
+                f"{product_type}_duplicated_gr", duplicated_item
+            )
 
         elif key_field in ["TL", "TC", "__"]:
             # get unique TL/TC number
             brother_of_datatake_documents = set()
 
             duplicated_item = 0
+            tile_first_product = {}
             for product in products_scan:
                 if product.tile_number:
+                    to_be_deleted, deletion_issue = product.deletion_trace()
+
+                    # Live pass ignores the products already deleted.
+                    if to_be_deleted and not self._include_deleted_products:
+                        continue
+
+                    product_info = {
+                        "name": product.name,
+                        "sensing_start_date": product.sensing_start_date,
+                        "sensing_end_date": product.sensing_end_date,
+                        "to_be_deleted": to_be_deleted,
+                        "deletion_issue": deletion_issue,
+                    }
+
                     if product.tile_number in brother_of_datatake_documents:
                         duplicated_item += 1
+                        if self._include_deleted_products:
+                            self.append_duplicated_pair(
+                                product_type,
+                                tile_first_product[product.tile_number],
+                                product_info,
+                            )
                     else:
                         brother_of_datatake_documents.add(product.tile_number)
+                        tile_first_product[product.tile_number] = product_info
 
                 else:
                     LOGGER.warning(
@@ -534,7 +588,9 @@ class CdsDatatakeS2(CdsDatatake):
                         product.sensing_start_date,
                         product.tile_number,
                     )
-            setattr(self, f"{product_type}_duplicated_tuile", duplicated_item)
+            self.store_completeness_value(
+                f"{product_type}_duplicated_tuile", duplicated_item
+            )
 
         elif key_field in ["DS"]:
             brother_of_datatake_documents = []
@@ -545,8 +601,23 @@ class CdsDatatakeS2(CdsDatatake):
                     and product.sensing_start_date
                     and product.sensing_end_date
                 ):
+                    to_be_deleted, deletion_issue = product.deletion_trace()
+
+                    # Live pass ignores the products already deleted.
+                    if to_be_deleted and not self._include_deleted_products:
+                        continue
+
+                    # DuplicationCandidate is a drop-in replacement for Period (only
+                    # start / end are used by the compute) and lets the base class
+                    # report duplicated DS items via the time-overlap detection.
                     brother_of_datatake_documents.append(
-                        Period(product.sensing_start_date, product.sensing_end_date)
+                        DuplicationCandidate(
+                            product.name,
+                            product.sensing_start_date,
+                            product.sensing_end_date,
+                            to_be_deleted,
+                            deletion_issue,
+                        )
                     )
 
                 else:
@@ -630,13 +701,19 @@ class CdsDatatakeS2(CdsDatatake):
                 product_type = f"MSI_{product_level}_{key}"
 
                 attr_product_type_value = f"{product_type}_local_value_adjusted"
-                product_type_value = getattr(self, attr_product_type_value, 0)
+                product_type_value = self.read_completeness_value(
+                    attr_product_type_value, 0
+                )
 
                 attr_expected_ds_value = f"MSI_{product_level}_DS_local_expected"
-                expected_ds_value = getattr(self, attr_expected_ds_value, 0)
+                expected_ds_value = self.read_completeness_value(
+                    attr_expected_ds_value, 0
+                )
 
                 attr_product_type_expected = f"{product_type}_local_expected"
-                expected_value = getattr(self, attr_product_type_expected, 0)
+                expected_value = self.read_completeness_value(
+                    attr_product_type_expected, 0
+                )
 
                 if 0 in (expected_ds_value, expected_value):
                     # Sometime geometry arrive later
@@ -676,12 +753,16 @@ class CdsDatatakeS2(CdsDatatake):
                     product_level_value / product_level_expected * 100
                 )
 
-            setattr(self, f"{product_level}_local_value", product_level_value)
-            setattr(self, f"{product_level}_local_expected", product_level_expected)
-
-            setattr(self, f"{product_level}_local_percentage", product_level_percentage)
-            setattr(
-                self,
+            self.store_completeness_value(
+                f"{product_level}_local_value", product_level_value
+            )
+            self.store_completeness_value(
+                f"{product_level}_local_expected", product_level_expected
+            )
+            self.store_completeness_value(
+                f"{product_level}_local_percentage", product_level_percentage
+            )
+            self.store_completeness_value(
                 f"{product_level}_local_status",
                 evaluate_completeness_status(product_level_percentage),
             )
@@ -696,12 +777,11 @@ class CdsDatatakeS2(CdsDatatake):
         else:
             percentage = final_value / final_expected * 100
 
-        setattr(self, "final_completeness_value", final_value)
-        setattr(self, "final_completeness_expected", final_expected)
-
-        setattr(self, "final_completeness_percentage", percentage)
-        setattr(
-            self, "final_completeness_status", evaluate_completeness_status(percentage)
+        self.store_completeness_value("final_completeness_value", final_value)
+        self.store_completeness_value("final_completeness_expected", final_expected)
+        self.store_completeness_value("final_completeness_percentage", percentage)
+        self.store_completeness_value(
+            "final_completeness_status", evaluate_completeness_status(percentage)
         )
 
     def get_related_documents_query(self) -> Q:
