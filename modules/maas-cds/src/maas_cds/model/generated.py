@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-06-30T21:03:35.654693+00:00
+Generated date: 2026-07-01T10:09:45.877043+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -2431,6 +2431,8 @@ class CdsProduct(MAASDocument):
 
     datastrip_id = Keyword()
 
+    datatake_cams_ticket = Keyword()
+
     datatake_id = Keyword()
 
     ddcreodias_id = Keyword()
@@ -2569,6 +2571,8 @@ class CdsPublication(MAASDocument):
     content_length = Long()
 
     datastrip_id = Keyword()
+
+    datatake_cams_ticket = Keyword()
 
     datatake_id = Keyword()
 

@@ -25,6 +25,10 @@ class CdsProduct(
 
     cams_tickets = Keyword(multi=True)
 
+    # CAMS ticket propagated from the product's datatake (datatake.last_attached_ticket).
+    # Kept distinct from ``cams_tickets`` which holds direct product-level correlations.
+    datatake_cams_ticket = Keyword()
+
     _PARTITION_FIELDS = [
         "PRIP_.*_publication_date",  # Format to keep
         "prip_publication_date",  # current -

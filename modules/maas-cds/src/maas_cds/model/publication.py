@@ -24,6 +24,10 @@ class CdsPublication(
 
     cams_tickets = Keyword(multi=True)
 
+    # CAMS ticket propagated from the publication's datatake (datatake.last_attached_ticket).
+    # Kept distinct from ``cams_tickets`` which holds direct correlations.
+    datatake_cams_ticket = Keyword()
+
     _PARTITION_FIELDS = [
         "publication_date",
     ]
