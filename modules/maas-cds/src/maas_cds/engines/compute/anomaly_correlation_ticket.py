@@ -130,6 +130,11 @@ class CorrelateAnomalyTicketEngine(DataEngine):
 
     PRODUCT_IMPACTED = (CdsProduct, CdsPublication)
 
+    # Missions for which a datatake CAMS ticket is propagated down to the products
+    # and publications of the datatake (``datatake_cams_ticket`` field).
+    # Restricted to S1 for now; add "S2", "S3", "S5" here to extend it.
+    DATATAKE_TICKET_PROPAGATION_MISSIONS = ("S1",)
+
     def action_iterator(self) -> Iterator[Dict[str, Any]]:
 
         self.logger.debug("START ACTION ITERATOR")
@@ -291,6 +296,7 @@ class CorrelateAnomalyTicketEngine(DataEngine):
         class_obj,
         linked_documents: list[MAASDocument],
         target_ids_or_documents: list,
+        touched_documents: list[MAASDocument] | None = None,
     ) -> Iterator[Dict[str, Any]]:
         """
         Correlate ticket to document from a given class
@@ -301,6 +307,10 @@ class CorrelateAnomalyTicketEngine(DataEngine):
             linked_documents (list[MAASDocument]): list of documents ob
             target_ids_or_documents (list): a list of documents or
                 indentifiers to impact
+            touched_documents (list[MAASDocument] | None): when provided, every
+                document whose ticket attachment changed (linked or unlinked) is
+                appended to this list so the caller can post-process it (e.g.
+                propagate the datatake ticket to its products).
 
         Yields:
             Dict[str, Any]: bulk actions
@@ -383,6 +393,9 @@ class CorrelateAnomalyTicketEngine(DataEngine):
 
             to_link_document.set_last_attached_ticket(ticket)
 
+            if touched_documents is not None:
+                touched_documents.append(to_link_document)
+
             yield to_link_document.to_bulk_action()
 
         for to_unlink_document in [
@@ -395,6 +408,9 @@ class CorrelateAnomalyTicketEngine(DataEngine):
             to_unlink_document.cams_tickets.remove(ticket.key)
 
             to_unlink_document.unset_last_attached_ticket()
+
+            if touched_documents is not None:
+                touched_documents.append(to_unlink_document)
 
             yield to_unlink_document.to_bulk_action()
 
@@ -421,6 +437,10 @@ class CorrelateAnomalyTicketEngine(DataEngine):
                 mission_datatake_dict[mission].append(datatake_id)
 
         self.logger.debug("mission_datatake_dict: %s", mission_datatake_dict)
+
+        # datatake / completeness documents whose ticket attachment changed, so the
+        # new datatake-level ticket can be propagated down to their products.
+        touched_datatakes = []
 
         for (
             mission,
@@ -468,12 +488,78 @@ class CorrelateAnomalyTicketEngine(DataEngine):
                     f"Invalid retrieve_method_type:  {retrieve_method_type}"
                 )
 
+            # only collect touched documents for missions where propagation is enabled
+            propagate = mission in self.DATATAKE_TICKET_PROPAGATION_MISSIONS
+
             yield from self.apply_correlation(
                 ticket,
                 class_obj,
                 existing_documents,
                 correlate_arg,
+                touched_documents=touched_datatakes if propagate else None,
             )
+
+        # once every datatake has its ticket state finalized, mirror the
+        # datatake-level ticket onto the products of each datatake.
+        yield from self.propagate_ticket_to_products(touched_datatakes)
+
+    def propagate_ticket_to_products(
+        self, datatakes: list[MAASDocument]
+    ) -> Iterator[Dict[str, Any]]:
+        """Propagate a datatake ticket to the products attached to that datatake.
+
+        For each datatake (or completeness) whose CAMS ticket attachment changed,
+        every product and publication sharing its ``datatake_id`` /
+        ``satellite_unit`` mirrors the datatake ``last_attached_ticket`` value in
+        their ``datatake_cams_ticket`` field. The value is cleared (set to None)
+        when the datatake no longer has any attached ticket.
+
+        Args:
+            datatakes (list[MAASDocument]): datatake / completeness documents whose
+                ticket attachment just changed.
+
+        Yields:
+            Iterator[Dict[str, Any]]: bulk actions for the impacted products.
+        """
+        for datatake in datatakes:
+            ticket_value = getattr(datatake, "last_attached_ticket", None)
+
+            for class_obj in self.PRODUCT_IMPACTED:
+                results = (
+                    class_obj.search()
+                    .filter("term", datatake_id=datatake.datatake_id)
+                    .filter("term", satellite_unit=datatake.satellite_unit)
+                    .params(
+                        version=True,
+                        seq_no_primary_term=True,
+                        size=10000,
+                    )
+                    .execute()
+                )
+
+                if results.hits.total.value > len(results):
+                    self.logger.warning(
+                        "Datatake %s has %s %s but only the first %s are propagated",
+                        datatake.datatake_id,
+                        results.hits.total.value,
+                        class_obj.__name__,
+                        len(results),
+                    )
+
+                for document in results:
+                    if document.datatake_cams_ticket == ticket_value:
+                        continue
+
+                    self.logger.debug(
+                        "Propagate datatake ticket %s to %s %s",
+                        ticket_value,
+                        class_obj.__name__,
+                        document.meta.id,
+                    )
+
+                    document.datatake_cams_ticket = ticket_value
+
+                    yield document.to_bulk_action()
 
     def correlate_acquisitions(
         self, ticket: CdsCamsTickets, linked_documents: dict

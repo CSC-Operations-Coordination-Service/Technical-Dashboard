@@ -219,6 +219,9 @@
             "cams_tickets": {
                 "type": "keyword"
             },
+            "datatake_cams_ticket": {
+                "type": "keyword"
+            },
             "last_attached_ticket": {
                 "type": "keyword"
             },
