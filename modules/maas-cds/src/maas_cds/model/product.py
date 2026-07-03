@@ -73,6 +73,39 @@ class CdsProduct(
 
         return True, deletion_issue
 
+    def deletion_trace_by_interface(
+        self,
+    ) -> typing.Dict[str, typing.Tuple[bool, typing.Optional[str]]]:
+        """Trace deletion split by interface type (``DD`` / ``LTA``).
+
+        Same logic as :meth:`deletion_trace` but keeps the two interfaces apart:
+        the ``nb_dd_deleted`` / ``nb_lta_deleted`` counters tell whether the product
+        has been deleted from that interface, and the first matching
+        ``{interface}_*_deletion_issue`` field gives the related Jira issue key.
+
+        Returns:
+            dict: ``{"DD": (deleted, issue), "LTA": (deleted, issue)}`` where
+                ``deleted`` is True when the product has been deleted from that
+                interface and ``issue`` is the related Jira issue key if available.
+        """
+        counters = {
+            "DD": getattr(self, "nb_dd_deleted", 0) or 0,
+            "LTA": getattr(self, "nb_lta_deleted", 0) or 0,
+        }
+
+        issues = {"DD": None, "LTA": None}
+        for field, value in self.to_dict().items():
+            if not value or not field.endswith("_deletion_issue"):
+                continue
+            for interface in issues:
+                if issues[interface] is None and field.startswith(f"{interface}_"):
+                    issues[interface] = value
+
+        return {
+            interface: (bool(counters[interface]), issues[interface])
+            for interface in counters
+        }
+
     @property
     def product_type_with_timeliness(self):
         if self.timeliness is None or self.product_type is None:

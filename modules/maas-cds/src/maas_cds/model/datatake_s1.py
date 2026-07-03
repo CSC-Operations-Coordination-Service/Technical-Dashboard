@@ -552,6 +552,10 @@ class CdsDatatakeS1(CdsDatatake):
                 if to_be_deleted and not self._include_deleted_products:
                     continue
 
+                by_interface = product.deletion_trace_by_interface()
+                dd_deleted, dd_issue = by_interface["DD"]
+                lta_deleted, lta_issue = by_interface["LTA"]
+
                 brother_of_datatake_documents.append(
                     DuplicationCandidate(
                         product.name,
@@ -559,6 +563,10 @@ class CdsDatatakeS1(CdsDatatake):
                         product.sensing_end_date,
                         to_be_deleted,
                         deletion_issue,
+                        dd_deleted,
+                        dd_issue,
+                        lta_deleted,
+                        lta_issue,
                     )
                 )
 

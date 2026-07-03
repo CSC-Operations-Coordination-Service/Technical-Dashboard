@@ -3,7 +3,6 @@ import datetime
 from collections import namedtuple
 from typing import List
 
-
 Period = namedtuple("Period", ("start", "end"))
 
 # A product candidate for duplicated items detection. Unlike ``Period`` it keeps
@@ -13,8 +12,20 @@ Period = namedtuple("Period", ("start", "end"))
 # so a ``DuplicationCandidate`` can be used wherever a ``Period`` is expected.
 DuplicationCandidate = namedtuple(
     "DuplicationCandidate",
-    ("name", "start", "end", "to_be_deleted", "deletion_issue"),
-    defaults=(False, None),
+    (
+        "name",
+        "start",
+        "end",
+        "to_be_deleted",
+        "deletion_issue",
+        # Per-interface deletion trace (see CdsProduct.deletion_trace_by_interface),
+        # used to split the duplicated items reporting by DD / LTA.
+        "dd_deleted",
+        "dd_issue",
+        "lta_deleted",
+        "lta_issue",
+    ),
+    defaults=(False, None, False, None, False, None),
 )
 
 
@@ -269,7 +280,8 @@ def compute_duplicated_items(
 
     Two *consecutive* products (sorted by sensing start date) whose overlap
     percentage is greater than or equal to ``threshold`` are considered as
-    duplicated of each other. Both members of such a pair are returned.
+    duplicated of each other. Every such consecutive pair is returned (each
+    element is compared only with the next one).
 
     Args:
         candidates (List[DuplicationCandidate]): the products to evaluate, each
@@ -277,11 +289,12 @@ def compute_duplicated_items(
         threshold (float): minimal overlap percentage to flag a pair.
 
     Returns:
-        List[dict]: one entry per duplicated product, with keys ``name``,
-            ``sensing_start_date``, ``sensing_end_date``, ``duplicated_percentage``,
-            ``paired_with`` (the name of the other product of the pair),
-            ``to_be_deleted`` and ``deletion_issue``. A product involved in several
-            consecutive overlaps appears once per pair.
+        List[dict]: one entry per duplicated *pair* (not per member), with keys
+            ``name`` and ``paired_with`` (the two products), ``sensing_start_date``,
+            ``sensing_end_date``, ``duplicated_percentage`` and ``deleted_product``
+            (``{"DD": name|None, "LTA": name|None}`` naming the pair member deleted
+            from each interface). A product involved in several consecutive overlaps
+            yields one pair entry per overlap.
     """
 
     duplicated_items = []
@@ -289,15 +302,24 @@ def compute_duplicated_items(
     if len(candidates) < 2:
         return duplicated_items
 
-    def _item(candidate, paired_with, percentage):
+    def _deleted_product(first, second):
+        """Name the member of the pair deleted from each interface (or None)."""
+        deleted_product = {"DD": None, "LTA": None}
+        for candidate in (first, second):
+            if candidate.dd_deleted:
+                deleted_product["DD"] = candidate.name
+            if candidate.lta_deleted:
+                deleted_product["LTA"] = candidate.name
+        return deleted_product
+
+    def _item(candidate, paired_with, percentage, deleted_product):
         return {
             "name": candidate.name,
             "sensing_start_date": candidate.start,
             "sensing_end_date": candidate.end,
             "duplicated_percentage": float(percentage),
             "paired_with": paired_with.name,
-            "to_be_deleted": candidate.to_be_deleted,
-            "deletion_issue": candidate.deletion_issue,
+            "deleted_product": dict(deleted_product),
         }
 
     for previous, brother in zip(candidates[:-1], candidates[1:]):
@@ -308,7 +330,9 @@ def compute_duplicated_items(
         )
 
         if percentage >= threshold:
-            duplicated_items.append(_item(previous, brother, percentage))
-            duplicated_items.append(_item(brother, previous, percentage))
+            deleted_product = _deleted_product(previous, brother)
+            duplicated_items.append(
+                _item(previous, brother, percentage, deleted_product)
+            )
 
     return duplicated_items

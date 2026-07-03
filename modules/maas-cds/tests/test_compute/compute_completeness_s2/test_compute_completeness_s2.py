@@ -97,6 +97,7 @@ def test_all_expected_nobs(mock_find_brother_products_scan, datatake_s2_dict):
 
     datatake.compute_all_local_completeness()
     datatake.compute_global_completeness()
+    datatake.compute_extra_completeness()
 
     datatake_dict = datatake.to_dict()
 
@@ -656,8 +657,8 @@ def test_compute_from_empty_datatake(
     mock_search_expected_tiles.return_value = []
 
     s2_datatake_S2A_38107_1.compute_all_local_completeness()
-
     s2_datatake_S2A_38107_1.compute_global_completeness()
+    s2_datatake_S2A_38107_1.compute_extra_completeness()
 
     bulk_action = s2_datatake_S2A_38107_1.to_bulk_action()
 

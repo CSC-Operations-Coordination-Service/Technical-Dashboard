@@ -1,5 +1,6 @@
 """Custom CDS model definition"""
 
+from collections import Counter
 from datetime import datetime
 import logging
 from typing import List
@@ -61,6 +62,14 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     # (product_type, indices, include_deleted) so the two completeness passes
     # share a single query instead of hitting the database twice.
     _brother_products_cache = None
+
+    # Buffers feeding ``finalize_duplicateds`` (declared as class attributes so the
+    # DSL keeps them as plain Python objects instead of wrapping them in AttrDict).
+    _dup_items = None
+    _dup_pair_count = 0
+    _dup_paired_names = None
+    _dup_deleted = None
+    _dup_pairs_with_deletion = None
 
     cams_tickets = Keyword(multi=True)
 
@@ -144,7 +153,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             return None
 
         # Maybe use
-        (nearest_time_indicator, allowed_prip_name) = (
+        nearest_time_indicator, allowed_prip_name = (
             get_good_threshold_config_from_value(
                 config_completeness, datetime_to_zulu(self.observation_time_start)
             )
@@ -315,8 +324,68 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 ]
                 self.add_duplicated_items(product_type, candidates)
 
+    @staticmethod
+    def _duplicated_product_info(product, to_be_deleted, deletion_issue):
+        """Build the per-product dict consumed by ``append_duplicated_pair``.
+
+        Carries the product identity, sensing period and both the global and the
+        per-interface (DD / LTA) deletion trace.
+        """
+        by_interface = product.deletion_trace_by_interface()
+        dd_deleted, dd_issue = by_interface["DD"]
+        lta_deleted, lta_issue = by_interface["LTA"]
+        return {
+            "name": product.name,
+            "sensing_start_date": product.sensing_start_date,
+            "sensing_end_date": product.sensing_end_date,
+            "to_be_deleted": to_be_deleted,
+            "deletion_issue": deletion_issue,
+            "dd_deleted": dd_deleted,
+            "dd_issue": dd_issue,
+            "lta_deleted": lta_deleted,
+            "lta_issue": lta_issue,
+        }
+
+    def _init_duplicateds_buffers(self):
+        """(Re)set the datatake-level buffers feeding ``finalize_duplicateds``."""
+        self._dup_items = []
+        self._dup_pair_count = 0
+        self._dup_paired_names = set()
+        # name -> deletion issue, per interface, for every deleted product seen
+        self._dup_deleted = {"DD": {}, "LTA": {}}
+        # number of duplicated pairs whose deleted product is set, per interface
+        self._dup_pairs_with_deletion = {"DD": 0, "LTA": 0}
+
+    def _record_deleted_product(
+        self, name, dd_deleted, dd_issue, lta_deleted, lta_issue
+    ):
+        """Remember a deleted product and its ticket, per interface."""
+        if dd_deleted:
+            self._dup_deleted["DD"][name] = dd_issue
+        if lta_deleted:
+            self._dup_deleted["LTA"][name] = lta_issue
+
+    def _register_pair_item(self, item):
+        """Buffer a single duplicated pair (one entry per pair).
+
+        ``item`` is a dict with keys ``product_type``, ``name``, ``paired_with``,
+        ``deleted_product`` and the sensing period. Both members are recorded as
+        paired, and the pair is counted (globally and, per interface, whenever it
+        carries a deleted product).
+        """
+        self._dup_paired_names.add(item["name"])
+        self._dup_paired_names.add(item["paired_with"])
+
+        deleted_product = item["deleted_product"]
+        for interface in ("DD", "LTA"):
+            if deleted_product.get(interface):
+                self._dup_pairs_with_deletion[interface] += 1
+
+        self._dup_items.append(generated.CdsDatatakeDuplicatedsItems(**item))
+        self._dup_pair_count += 1
+
     def append_duplicated_pair(self, product_type, first, second, percentage=100.0):
-        """Append both members of a duplicated pair to ``duplicateds_items``.
+        """Register a duplicated pair as a single item.
 
         Used by detections that do not rely on the time-overlap percentage (e.g. S2
         granules or tiles), where two products are considered full duplicates.
@@ -324,35 +393,45 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         Args:
             product_type (str): the current product type
             first (dict): first product, keys ``name``, ``sensing_start_date``,
-                ``sensing_end_date``, ``to_be_deleted``, ``deletion_issue``
+                ``sensing_end_date`` and the per-interface deletion trace
+                (``dd_deleted`` / ``dd_issue`` / ``lta_deleted`` / ``lta_issue``)
             second (dict): the other product of the pair (same keys)
-            percentage (float): duplicated percentage to store on both items
+            percentage (float): duplicated percentage to store on the item
         """
-        if not isinstance(self.duplicateds_items, list):
-            self.duplicateds_items = []
-
-        for item, other in ((first, second), (second, first)):
-            self.duplicateds_items.append(
-                generated.CdsDatatakeDuplicatedsItems(
-                    product_type=product_type,
-                    name=item["name"],
-                    sensing_start_date=item.get("sensing_start_date"),
-                    sensing_end_date=item.get("sensing_end_date"),
-                    duplicated_percentage=float(percentage),
-                    paired_with=other["name"],
-                    to_be_deleted=item.get("to_be_deleted", False),
-                    deletion_issue=item.get("deletion_issue"),
-                )
+        deleted_product = {"DD": None, "LTA": None}
+        for info in (first, second):
+            if info.get("dd_deleted"):
+                deleted_product["DD"] = info["name"]
+            if info.get("lta_deleted"):
+                deleted_product["LTA"] = info["name"]
+            self._record_deleted_product(
+                info["name"],
+                info.get("dd_deleted"),
+                info.get("dd_issue"),
+                info.get("lta_deleted"),
+                info.get("lta_issue"),
             )
+
+        self._register_pair_item(
+            {
+                "product_type": product_type,
+                "name": first["name"],
+                "sensing_start_date": first.get("sensing_start_date"),
+                "sensing_end_date": first.get("sensing_end_date"),
+                "duplicated_percentage": float(percentage),
+                "paired_with": second["name"],
+                "deleted_product": deleted_product,
+            }
+        )
 
     def add_duplicated_items(
         self, product_type: str, candidates: List[DuplicationCandidate]
     ):
-        """Append duplicated products of a product type to ``duplicateds_items``.
+        """Register duplicated products of a product type.
 
         Two consecutive products overlapping by more than
         ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent are considered as
-        duplicated of each other and both are added to the list.
+        duplicated of each other; the pair is added once to the buffer.
 
         Args:
             product_type (str): the current product type
@@ -364,13 +443,75 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             candidates, self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD
         )
 
+        # ``compute_duplicated_items`` returns one entry per detected pair.
         for item in items:
-            self.duplicateds_items.append(
-                generated.CdsDatatakeDuplicatedsItems(
-                    product_type=product_type,
-                    **item,
-                )
+            self._register_pair_item({"product_type": product_type, **item})
+
+        # Record every deleted product of the type (including those not part of a
+        # pair) so ``finalize_duplicateds`` can report deleted-not-duplicated.
+        for candidate in candidates:
+            self._record_deleted_product(
+                candidate.name,
+                candidate.dd_deleted,
+                candidate.dd_issue,
+                candidate.lta_deleted,
+                candidate.lta_issue,
             )
+
+    def finalize_duplicateds(self):
+        """Assemble the nested ``duplicateds`` object from the buffers.
+
+        Called once at the end of the include-deleted completeness pass, when both
+        members of every duplicated pair and all deleted products are known.
+        """
+        deletion = {
+            "ticket": {},
+            "targeted_products_count": {},
+            "surviving_pairs_count": {},
+            "deleted_not_duplicated_products": {},
+            "deleted_not_duplicated_products_count": {},
+        }
+
+        for interface in ("DD", "LTA"):
+            deleted = self._dup_deleted[interface]  # name -> issue
+
+            issues = [issue for issue in deleted.values() if issue]
+            distinct_issues = set(issues)
+            if len(distinct_issues) > 1:
+                LOGGER.warning(
+                    "[%s] Several %s deletion tickets on duplicated products: %s",
+                    self.datatake_id,
+                    interface,
+                    distinct_issues,
+                )
+            ticket = Counter(issues).most_common(1)[0][0] if issues else None
+
+            # Products deleted from this interface in this datatake.
+            targeted = sorted(deleted)
+            # Deleted here but not part of any duplicated pair.
+            not_duplicated = sorted(
+                name for name in targeted if name not in self._dup_paired_names
+            )
+            # Duplicated pairs that survived: present without a product deleted
+            # from this interface (we cannot tell which single product "should"
+            # survive, so this is counted at the pair level).
+            surviving_pairs = (
+                self._dup_pair_count - self._dup_pairs_with_deletion[interface]
+            )
+
+            deletion["ticket"][interface] = ticket
+            deletion["targeted_products_count"][interface] = len(targeted)
+            deletion["surviving_pairs_count"][interface] = surviving_pairs
+            deletion["deleted_not_duplicated_products"][interface] = not_duplicated
+            deletion["deleted_not_duplicated_products_count"][interface] = len(
+                not_duplicated
+            )
+
+        self.duplicateds = generated.CdsDatatakeDuplicateds(
+            items=self._dup_items,
+            pairs_count=self._dup_pair_count,
+            deletion=generated.CdsDatatakeDuplicatedsDeletion(**deletion),
+        )
 
     def load_data_before_compute(self):
         """Some step need to be done before starting compute all completeness"""
@@ -627,7 +768,6 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         for key_field, value in global_values.items():
             self.set_completeness(CompletenessScope.GLOBAL, key_field, value)
         # compute extra completness
-        self.compute_extra_completeness()
 
     def compute_extra_completeness(self):
         """Method to add specific completeness compute"""
@@ -639,8 +779,8 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         completeness is computed twice:
 
         - an "original" pass over all the products, captured into the
-          ``original_completeness`` dict and used to also collect the detailed
-          ``duplicateds_items``;
+          ``original_completeness`` dict and used to also assemble the nested
+          ``duplicateds`` object;
         - the regular live pass which ignores the deleted products and writes the
           completeness values on the document.
 
@@ -653,13 +793,17 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
 
         try:
             # --- Original pass: all products, results captured in a dict ---
-            self.duplicateds_items = []
+            self._init_duplicateds_buffers()
             original_completeness = {}
             self._completeness_sink = original_completeness
             self._include_deleted_products = True
             try:
                 self.compute_all_local_completeness()
                 self.compute_global_completeness()
+                self.compute_extra_completeness()
+                # Both members of every duplicated pair and all deleted products
+                # are now known: assemble the nested ``duplicateds`` object.
+                self.finalize_duplicateds()
             finally:
                 self._completeness_sink = None
                 self._include_deleted_products = False
@@ -669,6 +813,8 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             # --- Live pass: deleted products ignored, results on the document ---
             self.compute_all_local_completeness()
             self.compute_global_completeness()
+            self.compute_extra_completeness()
+
         finally:
             self._brother_products_cache = None
 
@@ -681,7 +827,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             Q: ES query
         """
 
-    def find_brother_products_scan(self, product_type, indices=None, include_deleted=False):
+    def find_brother_products_scan(
+        self, product_type, indices=None, include_deleted=False
+    ):
         """Find products with the same datatake and the same product_type
 
         Note: Seek only product with a prip_id

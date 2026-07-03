@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-07-01T10:09:45.877043+00:00
+Generated date: 2026-07-02T15:47:57.670840+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -125,7 +125,15 @@ __all__ = [
     "CdsDatabudget",
     "CdsDataflow",
     "CdsDatatake",
+    "CdsDatatakeDuplicateds",
+    "CdsDatatakeDuplicatedsDeletion",
+    "CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProducts",
+    "CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProductsCount",
+    "CdsDatatakeDuplicatedsDeletionSurvivingPairsCount",
+    "CdsDatatakeDuplicatedsDeletionTargetedProductsCount",
+    "CdsDatatakeDuplicatedsDeletionTicket",
     "CdsDatatakeDuplicatedsItems",
+    "CdsDatatakeDuplicatedsItemsDeletedProduct",
     "CdsDatatakeMissingPeriods",
     "CdsDdpDataAvailable",
     "CdsDeletionIssue",
@@ -1674,11 +1682,23 @@ class CdsDataflow(MAASDocument):
     type = Keyword()
 
 
+class CdsDatatakeDuplicatedsItemsDeletedProduct(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsItems
+
+    Generated from property: deleted_product
+    """
+
+    DD = Keyword()
+
+    LTA = Keyword()
+
+
 class CdsDatatakeDuplicatedsItems(InnerDoc):
     """
-    Inner document class for parent class: CdsDatatake
+    Inner document class for parent class: CdsDatatakeDuplicateds
 
-    Generated from property: duplicateds_items
+    Generated from property: items
     """
 
     name = Keyword()
@@ -1693,9 +1713,105 @@ class CdsDatatakeDuplicatedsItems(InnerDoc):
 
     paired_with = Keyword()
 
-    to_be_deleted = Boolean()
+    deleted_product = Object(CdsDatatakeDuplicatedsItemsDeletedProduct)
 
-    deletion_issue = Keyword()
+
+class CdsDatatakeDuplicatedsDeletionTicket(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
+
+    Generated from property: ticket
+    """
+
+    DD = Keyword()
+
+    LTA = Keyword()
+
+
+class CdsDatatakeDuplicatedsDeletionTargetedProductsCount(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
+
+    Generated from property: targeted_products_count
+    """
+
+    DD = Integer()
+
+    LTA = Integer()
+
+
+class CdsDatatakeDuplicatedsDeletionSurvivingPairsCount(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
+
+    Generated from property: surviving_pairs_count
+    """
+
+    DD = Integer()
+
+    LTA = Integer()
+
+
+class CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProducts(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
+
+    Generated from property: deleted_not_duplicated_products
+    """
+
+    DD = Keyword()
+
+    LTA = Keyword()
+
+
+class CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProductsCount(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
+
+    Generated from property: deleted_not_duplicated_products_count
+    """
+
+    DD = Integer()
+
+    LTA = Integer()
+
+
+class CdsDatatakeDuplicatedsDeletion(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicateds
+
+    Generated from property: deletion
+    """
+
+    ticket = Object(CdsDatatakeDuplicatedsDeletionTicket)
+
+    targeted_products_count = Object(
+        CdsDatatakeDuplicatedsDeletionTargetedProductsCount
+    )
+
+    surviving_pairs_count = Object(CdsDatatakeDuplicatedsDeletionSurvivingPairsCount)
+
+    deleted_not_duplicated_products = Object(
+        CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProducts
+    )
+
+    deleted_not_duplicated_products_count = Object(
+        CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProductsCount
+    )
+
+
+class CdsDatatakeDuplicateds(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatake
+
+    Generated from property: duplicateds
+    """
+
+    items = Object(CdsDatatakeDuplicatedsItems)
+
+    pairs_count = Integer()
+
+    deletion = Object(CdsDatatakeDuplicatedsDeletion)
 
 
 class CdsDatatakeMissingPeriods(InnerDoc):
@@ -1750,7 +1866,7 @@ class CdsDatatake(MAASDocument):
 
     datatake_id = Keyword()
 
-    duplicateds_items = Object(CdsDatatakeDuplicatedsItems)
+    duplicateds = Object(CdsDatatakeDuplicateds)
 
     hex_datatake_id = Keyword()
 
