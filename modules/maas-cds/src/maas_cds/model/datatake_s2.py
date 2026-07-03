@@ -485,13 +485,9 @@ class CdsDatatakeS2(CdsDatatake):
                     # Group product info per detector id and datastrip_id, keeping
                     # the product identity to be able to report duplicated items.
                     intermediary_buffer.setdefault(key, []).append(
-                        {
-                            "name": product.name,
-                            "sensing_start_date": product.sensing_start_date,
-                            "sensing_end_date": product.sensing_end_date,
-                            "to_be_deleted": to_be_deleted,
-                            "deletion_issue": deletion_issue,
-                        }
+                        self._duplicated_product_info(
+                            product, to_be_deleted, deletion_issue
+                        )
                     )
                 else:
                     LOGGER.warning(
@@ -560,13 +556,9 @@ class CdsDatatakeS2(CdsDatatake):
                     if to_be_deleted and not self._include_deleted_products:
                         continue
 
-                    product_info = {
-                        "name": product.name,
-                        "sensing_start_date": product.sensing_start_date,
-                        "sensing_end_date": product.sensing_end_date,
-                        "to_be_deleted": to_be_deleted,
-                        "deletion_issue": deletion_issue,
-                    }
+                    product_info = self._duplicated_product_info(
+                        product, to_be_deleted, deletion_issue
+                    )
 
                     if product.tile_number in brother_of_datatake_documents:
                         duplicated_item += 1
@@ -607,6 +599,10 @@ class CdsDatatakeS2(CdsDatatake):
                     if to_be_deleted and not self._include_deleted_products:
                         continue
 
+                    by_interface = product.deletion_trace_by_interface()
+                    dd_deleted, dd_issue = by_interface["DD"]
+                    lta_deleted, lta_issue = by_interface["LTA"]
+
                     # DuplicationCandidate is a drop-in replacement for Period (only
                     # start / end are used by the compute) and lets the base class
                     # report duplicated DS items via the time-overlap detection.
@@ -617,6 +613,10 @@ class CdsDatatakeS2(CdsDatatake):
                             product.sensing_end_date,
                             to_be_deleted,
                             deletion_issue,
+                            dd_deleted,
+                            dd_issue,
+                            lta_deleted,
+                            lta_issue,
                         )
                     )
 

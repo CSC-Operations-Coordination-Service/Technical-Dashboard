@@ -26,6 +26,9 @@ class ProductTest:
     def deletion_trace(self):
         return False, None
 
+    def deletion_trace_by_interface(self):
+        return {"DD": (False, None), "LTA": (False, None)}
+
 
 @patch("maas_cds.model.datatake.CdsDatatake.find_brother_products_scan")
 def test_get_datatake_product_type_brother(mock_find_brother_products_scan):

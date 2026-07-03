@@ -1,4 +1,4 @@
-""" Module to test periodutils function"""
+"""Module to test periodutils function"""
 
 from unittest.mock import patch
 import unittest
@@ -14,43 +14,87 @@ from maas_cds.model.product import CdsProduct
 from maas_model import datestr_to_utc_datetime
 
 
-def _candidate(name, start, end, to_be_deleted=False, deletion_issue=None):
+def _candidate(
+    name,
+    start,
+    end,
+    to_be_deleted=False,
+    deletion_issue=None,
+    dd_deleted=False,
+    dd_issue=None,
+    lta_deleted=False,
+    lta_issue=None,
+):
     return DuplicationCandidate(
         name,
         datestr_to_utc_datetime(start),
         datestr_to_utc_datetime(end),
         to_be_deleted,
         deletion_issue,
+        dd_deleted,
+        dd_issue,
+        lta_deleted,
+        lta_issue,
     )
 
 
 def test_compute_overlap_percentage():
     # B starts at half of A -> 50% of A duration
-    a = Period(datestr_to_utc_datetime("20240205T100000"), datestr_to_utc_datetime("20240205T100010"))
-    b = Period(datestr_to_utc_datetime("20240205T100005"), datestr_to_utc_datetime("20240205T100020"))
+    a = Period(
+        datestr_to_utc_datetime("20240205T100000"),
+        datestr_to_utc_datetime("20240205T100010"),
+    )
+    b = Period(
+        datestr_to_utc_datetime("20240205T100005"),
+        datestr_to_utc_datetime("20240205T100020"),
+    )
     assert compute_overlap_percentage(a, b) == 50.0
 
     # no overlap
-    c = Period(datestr_to_utc_datetime("20240205T100020"), datestr_to_utc_datetime("20240205T100030"))
+    c = Period(
+        datestr_to_utc_datetime("20240205T100020"),
+        datestr_to_utc_datetime("20240205T100030"),
+    )
     assert compute_overlap_percentage(a, c) == 0.0
 
 
-def test_compute_duplicated_items_emits_both_members_over_threshold():
+def test_compute_duplicated_items_emits_one_entry_per_pair():
     candidates = [
         _candidate("A", "20240205T100000", "20240205T100100"),
-        _candidate("B", "20240205T100030", "20240205T100130", to_be_deleted=True, deletion_issue="J-1"),
+        _candidate(
+            "B",
+            "20240205T100030",
+            "20240205T100130",
+            to_be_deleted=True,
+            deletion_issue="J-1",
+            dd_deleted=True,
+            dd_issue="J-1",
+        ),
+    ]
+
+    items = compute_duplicated_items(candidates, 30.0)
+
+    # a single entry per duplicated pair (not one per member)
+    assert [item["name"] for item in items] == ["A"]
+    assert items[0]["paired_with"] == "B"
+    assert items[0]["duplicated_percentage"] == 50.0
+    # the deleted member of the pair is traced per interface
+    assert items[0]["deleted_product"] == {"DD": "B", "LTA": None}
+
+
+def test_compute_duplicated_items_compares_each_element_with_the_next():
+    # A overlaps B and B overlaps C: each consecutive pair yields one entry, so
+    # B (overlapping both neighbours) appears in two distinct pairs.
+    candidates = [
+        _candidate("A", "20240205T100000", "20240205T100100"),
+        _candidate("B", "20240205T100030", "20240205T100130"),
+        _candidate("C", "20240205T100040", "20240205T100140"),
     ]
 
     items = compute_duplicated_items(candidates, 30.0)
 
     assert [item["name"] for item in items] == ["A", "B"]
-    assert items[0]["paired_with"] == "B"
-    assert items[1]["paired_with"] == "A"
-    assert items[0]["duplicated_percentage"] == 50.0
-    # deletion trace is carried per item
-    assert items[0]["to_be_deleted"] is False
-    assert items[1]["to_be_deleted"] is True
-    assert items[1]["deletion_issue"] == "J-1"
+    assert [item["paired_with"] for item in items] == ["B", "C"]
 
 
 def test_compute_duplicated_items_below_threshold_is_empty():
@@ -66,7 +110,9 @@ def test_compute_duplicated_items_below_threshold_is_empty():
 def test_compute_duplicated_items_needs_at_least_two():
     assert compute_duplicated_items([], 30.0) == []
     assert (
-        compute_duplicated_items([_candidate("A", "20240205T100000", "20240205T100100")], 30.0)
+        compute_duplicated_items(
+            [_candidate("A", "20240205T100000", "20240205T100100")], 30.0
+        )
         == []
     )
 

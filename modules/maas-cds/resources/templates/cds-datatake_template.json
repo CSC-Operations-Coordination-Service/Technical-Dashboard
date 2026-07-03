@@ -134,34 +134,107 @@
                     }
                 }
             },
-            "duplicateds_items": {
+            "duplicateds": {
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "keyword"
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "keyword"
+                            },
+                            "product_type": {
+                                "type": "keyword"
+                            },
+                            "sensing_start_date": {
+                                "type": "date",
+                                "locale": "utc"
+                            },
+                            "sensing_end_date": {
+                                "type": "date",
+                                "locale": "utc"
+                            },
+                            "duplicated_percentage": {
+                                "type": "float"
+                            },
+                            "paired_with": {
+                                "type": "keyword"
+                            },
+                            "deleted_product": {
+                                "type": "object",
+                                "properties": {
+                                    "DD": {
+                                        "type": "keyword"
+                                    },
+                                    "LTA": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            }
+                        }
                     },
-                    "product_type": {
-                        "type": "keyword"
+                    "pairs_count": {
+                        "type": "integer"
                     },
-                    "sensing_start_date": {
-                        "type": "date",
-                        "locale": "utc"
-                    },
-                    "sensing_end_date": {
-                        "type": "date",
-                        "locale": "utc"
-                    },
-                    "duplicated_percentage": {
-                        "type": "float"
-                    },
-                    "paired_with": {
-                        "type": "keyword"
-                    },
-                    "to_be_deleted": {
-                        "type": "boolean"
-                    },
-                    "deletion_issue": {
-                        "type": "keyword"
+                    "deletion": {
+                        "type": "object",
+                        "properties": {
+                            "ticket": {
+                                "type": "object",
+                                "properties": {
+                                    "DD": {
+                                        "type": "keyword"
+                                    },
+                                    "LTA": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            },
+                            "targeted_products_count": {
+                                "type": "object",
+                                "properties": {
+                                    "DD": {
+                                        "type": "integer"
+                                    },
+                                    "LTA": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            "surviving_pairs_count": {
+                                "type": "object",
+                                "properties": {
+                                    "DD": {
+                                        "type": "integer"
+                                    },
+                                    "LTA": {
+                                        "type": "integer"
+                                    }
+                                }
+                            },
+                            "deleted_not_duplicated_products": {
+                                "type": "object",
+                                "properties": {
+                                    "DD": {
+                                        "type": "keyword"
+                                    },
+                                    "LTA": {
+                                        "type": "keyword"
+                                    }
+                                }
+                            },
+                            "deleted_not_duplicated_products_count": {
+                                "type": "object",
+                                "properties": {
+                                    "DD": {
+                                        "type": "integer"
+                                    },
+                                    "LTA": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
