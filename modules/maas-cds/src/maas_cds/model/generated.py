@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-07-02T15:47:57.670840+00:00
+Generated date: 2026-07-03T13:54:35.086613+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -126,12 +126,7 @@ __all__ = [
     "CdsDataflow",
     "CdsDatatake",
     "CdsDatatakeDuplicateds",
-    "CdsDatatakeDuplicatedsDeletion",
-    "CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProducts",
-    "CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProductsCount",
-    "CdsDatatakeDuplicatedsDeletionSurvivingPairsCount",
-    "CdsDatatakeDuplicatedsDeletionTargetedProductsCount",
-    "CdsDatatakeDuplicatedsDeletionTicket",
+    "CdsDatatakeDuplicatedsDeletions",
     "CdsDatatakeDuplicatedsItems",
     "CdsDatatakeDuplicatedsItemsDeletedProduct",
     "CdsDatatakeMissingPeriods",
@@ -1716,88 +1711,28 @@ class CdsDatatakeDuplicatedsItems(InnerDoc):
     deleted_product = Object(CdsDatatakeDuplicatedsItemsDeletedProduct)
 
 
-class CdsDatatakeDuplicatedsDeletionTicket(InnerDoc):
-    """
-    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
-
-    Generated from property: ticket
-    """
-
-    DD = Keyword()
-
-    LTA = Keyword()
-
-
-class CdsDatatakeDuplicatedsDeletionTargetedProductsCount(InnerDoc):
-    """
-    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
-
-    Generated from property: targeted_products_count
-    """
-
-    DD = Integer()
-
-    LTA = Integer()
-
-
-class CdsDatatakeDuplicatedsDeletionSurvivingPairsCount(InnerDoc):
-    """
-    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
-
-    Generated from property: surviving_pairs_count
-    """
-
-    DD = Integer()
-
-    LTA = Integer()
-
-
-class CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProducts(InnerDoc):
-    """
-    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
-
-    Generated from property: deleted_not_duplicated_products
-    """
-
-    DD = Keyword()
-
-    LTA = Keyword()
-
-
-class CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProductsCount(InnerDoc):
-    """
-    Inner document class for parent class: CdsDatatakeDuplicatedsDeletion
-
-    Generated from property: deleted_not_duplicated_products_count
-    """
-
-    DD = Integer()
-
-    LTA = Integer()
-
-
-class CdsDatatakeDuplicatedsDeletion(InnerDoc):
+class CdsDatatakeDuplicatedsDeletions(InnerDoc):
     """
     Inner document class for parent class: CdsDatatakeDuplicateds
 
-    Generated from property: deletion
+    Generated from property: deletions
     """
 
-    ticket = Object(CdsDatatakeDuplicatedsDeletionTicket)
+    service_type = Keyword()
 
-    targeted_products_count = Object(
-        CdsDatatakeDuplicatedsDeletionTargetedProductsCount
-    )
+    ticket = Keyword()
 
-    surviving_pairs_count = Object(CdsDatatakeDuplicatedsDeletionSurvivingPairsCount)
+    targeted_products_count = Integer()
 
-    deleted_not_duplicated_products = Object(
-        CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProducts
-    )
+    surviving_pairs_count = Integer()
 
-    deleted_not_duplicated_products_count = Object(
-        CdsDatatakeDuplicatedsDeletionDeletedNotDuplicatedProductsCount
-    )
+    deleted_not_duplicated_products = Keyword()
+
+    deleted_not_duplicated_products_count = Integer()
+
+    expected_pairs_count = Integer()
+
+    deletion_completenness_percentange = Float()
 
 
 class CdsDatatakeDuplicateds(InnerDoc):
@@ -1811,7 +1746,7 @@ class CdsDatatakeDuplicateds(InnerDoc):
 
     pairs_count = Integer()
 
-    deletion = Object(CdsDatatakeDuplicatedsDeletion)
+    deletions = Object(CdsDatatakeDuplicatedsDeletions)
 
 
 class CdsDatatakeMissingPeriods(InnerDoc):

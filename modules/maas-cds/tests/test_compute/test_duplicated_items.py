@@ -77,18 +77,22 @@ def test_compute_completeness_duplicated_items_and_original(mock_scan, *_mocks):
     assert item.deleted_product["DD"] == "B"
     assert item.deleted_product["LTA"] is None
 
-    # deletion aggregate (DD)
-    deletion = datatake.duplicateds.deletion
-    assert deletion.ticket["DD"] == "GSANOM-1"
-    assert deletion.targeted_products_count["DD"] == 1
-    assert deletion.deleted_not_duplicated_products["DD"] == []
-    assert deletion.deleted_not_duplicated_products_count["DD"] == 0
+    # deletion aggregate: one row per service_type
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+    assert deletion["DD"].ticket == "GSANOM-1"
+    assert deletion["DD"].targeted_products_count == 1
+    assert deletion["DD"].deleted_not_duplicated_products == []
+    assert deletion["DD"].deleted_not_duplicated_products_count == 0
     # the single pair carries a DD deletion, so no DD pair survives
-    assert deletion.surviving_pairs_count["DD"] == 0
+    assert deletion["DD"].surviving_pairs_count == 0
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["DD"].deletion_completenness_percentange == 100.0
     # nothing on LTA: the pair has no LTA deletion, so it survives on LTA
-    assert deletion.ticket["LTA"] is None
-    assert deletion.targeted_products_count["LTA"] == 0
-    assert deletion.surviving_pairs_count["LTA"] == 1
+    assert deletion["LTA"].ticket is None
+    assert deletion["LTA"].targeted_products_count == 0
+    assert deletion["LTA"].surviving_pairs_count == 1
+    assert deletion["LTA"].expected_pairs_count == 1
+    assert deletion["LTA"].deletion_completenness_percentange == 0.0
 
     # --- original vs live completeness ---
     # live ignores deleted B : A(0-100) + C(200-300) = 200s
@@ -166,15 +170,17 @@ def test_compute_completeness_deletion_aggregate_not_duplicated(mock_scan, *_moc
     (item,) = list(datatake.duplicateds.items)
     assert {item.name, item.paired_with} == {"A", "B"}
 
-    deletion = datatake.duplicateds.deletion
-    assert deletion.ticket["DD"] == "GSANOM-1"
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+    assert deletion["DD"].ticket == "GSANOM-1"
     # B and D are both deleted from DD under the ticket.
-    assert deletion.targeted_products_count["DD"] == 2
+    assert deletion["DD"].targeted_products_count == 2
     # only D is deleted without being part of a duplicated pair.
-    assert deletion.deleted_not_duplicated_products["DD"] == ["D"]
-    assert deletion.deleted_not_duplicated_products_count["DD"] == 1
+    assert deletion["DD"].deleted_not_duplicated_products == ["D"]
+    assert deletion["DD"].deleted_not_duplicated_products_count == 1
     # the single pair carries a DD deletion, so no DD pair survives.
-    assert deletion.surviving_pairs_count["DD"] == 0
+    assert deletion["DD"].surviving_pairs_count == 0
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["DD"].deletion_completenness_percentange == 100.0
 
 
 @patch.object(CdsDatatakeS1, "get_expected_value", return_value=500_000_000)
@@ -215,12 +221,16 @@ def test_compute_completeness_deletion_aggregate_dd_and_lta(mock_scan, *_mocks):
     assert items_by_name["A"].deleted_product == {"DD": "B", "LTA": None}
     assert items_by_name["C"].deleted_product == {"DD": None, "LTA": "D"}
 
-    deletion = datatake.duplicateds.deletion
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
     # DD: only the A-B pair carries a DD deletion -> 1 of 2 pairs survives on DD
-    assert deletion.ticket["DD"] == "SOA-DD"
-    assert deletion.targeted_products_count["DD"] == 1
-    assert deletion.surviving_pairs_count["DD"] == 1
+    assert deletion["DD"].ticket == "SOA-DD"
+    assert deletion["DD"].targeted_products_count == 1
+    assert deletion["DD"].surviving_pairs_count == 1
+    assert deletion["DD"].expected_pairs_count == 2
+    assert deletion["DD"].deletion_completenness_percentange == 50.0
     # LTA: only the C-D pair carries an LTA deletion -> 1 of 2 pairs survives on LTA
-    assert deletion.ticket["LTA"] == "SOA-LTA"
-    assert deletion.targeted_products_count["LTA"] == 1
-    assert deletion.surviving_pairs_count["LTA"] == 1
+    assert deletion["LTA"].ticket == "SOA-LTA"
+    assert deletion["LTA"].targeted_products_count == 1
+    assert deletion["LTA"].surviving_pairs_count == 1
+    assert deletion["LTA"].expected_pairs_count == 2
+    assert deletion["LTA"].deletion_completenness_percentange == 50.0

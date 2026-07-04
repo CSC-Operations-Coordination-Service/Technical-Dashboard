@@ -464,14 +464,10 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         Called once at the end of the include-deleted completeness pass, when both
         members of every duplicated pair and all deleted products are known.
         """
-        deletion = {
-            "ticket": {},
-            "targeted_products_count": {},
-            "surviving_pairs_count": {},
-            "deleted_not_duplicated_products": {},
-            "deleted_not_duplicated_products_count": {},
-        }
+        expected_pairs = self._dup_pair_count
 
+        # One row per service_type (DD / LTA): a flat, Grafana-friendly shape.
+        deletions = []
         for interface in ("DD", "LTA"):
             deleted = self._dup_deleted[interface]  # name -> issue
 
@@ -495,22 +491,34 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             # Duplicated pairs that survived: present without a product deleted
             # from this interface (we cannot tell which single product "should"
             # survive, so this is counted at the pair level).
-            surviving_pairs = (
-                self._dup_pair_count - self._dup_pairs_with_deletion[interface]
-            )
+            surviving_pairs = expected_pairs - self._dup_pairs_with_deletion[interface]
 
-            deletion["ticket"][interface] = ticket
-            deletion["targeted_products_count"][interface] = len(targeted)
-            deletion["surviving_pairs_count"][interface] = surviving_pairs
-            deletion["deleted_not_duplicated_products"][interface] = not_duplicated
-            deletion["deleted_not_duplicated_products_count"][interface] = len(
-                not_duplicated
+            # Share of duplicated pairs whose duplicate was actually deleted from
+            # this interface. 100% when there is no pair to delete.
+            if expected_pairs:
+                completeness = round(
+                    (expected_pairs - surviving_pairs) / expected_pairs * 100, 2
+                )
+            else:
+                completeness = 100.0
+
+            deletions.append(
+                generated.CdsDatatakeDuplicatedsDeletions(
+                    service_type=interface,
+                    ticket=ticket,
+                    targeted_products_count=len(targeted),
+                    surviving_pairs_count=surviving_pairs,
+                    deleted_not_duplicated_products=not_duplicated,
+                    deleted_not_duplicated_products_count=len(not_duplicated),
+                    expected_pairs_count=expected_pairs,
+                    deletion_completenness_percentange=completeness,
+                )
             )
 
         self.duplicateds = generated.CdsDatatakeDuplicateds(
             items=self._dup_items,
             pairs_count=self._dup_pair_count,
-            deletion=generated.CdsDatatakeDuplicatedsDeletion(**deletion),
+            deletions=deletions,
         )
 
     def load_data_before_compute(self):
