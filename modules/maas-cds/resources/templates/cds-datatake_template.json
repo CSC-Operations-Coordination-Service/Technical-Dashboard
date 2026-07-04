@@ -176,63 +176,32 @@
                     "pairs_count": {
                         "type": "integer"
                     },
-                    "deletion": {
+                    "deletions": {
                         "type": "object",
                         "properties": {
+                            "service_type": {
+                                "type": "keyword"
+                            },
                             "ticket": {
-                                "type": "object",
-                                "properties": {
-                                    "DD": {
-                                        "type": "keyword"
-                                    },
-                                    "LTA": {
-                                        "type": "keyword"
-                                    }
-                                }
+                                "type": "keyword"
                             },
                             "targeted_products_count": {
-                                "type": "object",
-                                "properties": {
-                                    "DD": {
-                                        "type": "integer"
-                                    },
-                                    "LTA": {
-                                        "type": "integer"
-                                    }
-                                }
+                                "type": "integer"
                             },
                             "surviving_pairs_count": {
-                                "type": "object",
-                                "properties": {
-                                    "DD": {
-                                        "type": "integer"
-                                    },
-                                    "LTA": {
-                                        "type": "integer"
-                                    }
-                                }
+                                "type": "integer"
                             },
                             "deleted_not_duplicated_products": {
-                                "type": "object",
-                                "properties": {
-                                    "DD": {
-                                        "type": "keyword"
-                                    },
-                                    "LTA": {
-                                        "type": "keyword"
-                                    }
-                                }
+                                "type": "keyword"
                             },
                             "deleted_not_duplicated_products_count": {
-                                "type": "object",
-                                "properties": {
-                                    "DD": {
-                                        "type": "integer"
-                                    },
-                                    "LTA": {
-                                        "type": "integer"
-                                    }
-                                }
+                                "type": "integer"
+                            },
+                            "expected_pairs_count": {
+                                "type": "integer"
+                            },
+                            "deletion_completenness_percentange": {
+                                "type": "float"
                             }
                         }
                     }
