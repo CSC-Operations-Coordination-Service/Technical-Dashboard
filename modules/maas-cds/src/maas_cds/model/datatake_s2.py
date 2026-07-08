@@ -2,10 +2,13 @@
 
 import logging
 
+from collections import Counter
 from datetime import timedelta
 import typing
 from maas_cds.lib.parsing_name import utils
+from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.model.product import CdsProduct
+from maas_cds.model import generated
 
 from opensearchpy import Q
 
@@ -14,6 +17,7 @@ from maas_cds.lib.status import evaluate_completeness_status
 
 from maas_cds.lib.periodutils import (
     compute_total_sensing_product,
+    compute_overlap_percentage,
     Period,
     DuplicationCandidate,
 )
@@ -35,6 +39,36 @@ class CdsDatatakeS2(CdsDatatake):
 
     RATIO_GRANULE_TILE = 10
     TOLERENCE_SENSING_START_GRANULE = 0.002
+
+    # The L0 datastrip is "the datastrip": two MSI_L0__DS whose sensing overlap
+    # beyond the duplicated threshold are a duplicated datastrip pair, see
+    # compute_duplicated_datastrips. Its identity is the product name.
+    DUPLICATED_DATASTRIP_REFERENCE_TYPE = "MSI_L0__DS"
+
+    # Higher-level datastrip product types. L1x granules / tiles reference their
+    # OWN level DS (not the L0 DS), so the DS of these levels whose sensing is
+    # included in the L0 DS are resolved to reattach their products to the L0
+    # datastrip.
+    DUPLICATED_DATASTRIP_LEVEL_TYPES = [
+        "MSI_L1A_DS",
+        "MSI_L1B_DS",
+        "MSI_L1C_DS",
+        "MSI_L2A_DS",
+    ]
+
+    # GR / TL product types (all levels) attached to a datastrip through their
+    # ``datastrip_id`` (which holds a DS product name).
+    DUPLICATED_DATASTRIP_PRODUCT_TYPES = [
+        "MSI_L0__GR",
+        "MSI_L1A_GR",
+        "MSI_L1B_GR",
+        "MSI_L1C_TL",
+        "MSI_L2A_TL",
+    ]
+
+    # Tolerance when testing that a higher-level DS sensing is included in the
+    # L0 DS sensing.
+    DUPLICATED_DATASTRIP_SENSING_TOLERANCE = timedelta(seconds=1)
 
     MATCHING_DELTA_PRODUCTS = 15
 
@@ -115,6 +149,15 @@ class CdsDatatakeS2(CdsDatatake):
     def product_type_with_duplicated(self, product_type: str) -> bool:
         """Do we want check duplicated for this product type ?"""
         return product_type.endswith("DS")
+
+    def product_type_with_duplicated_items(self, product_type: str) -> bool:
+        """Only L0 DS duplications are listed in ``duplicateds.items``.
+
+        The duplicated indicator is still computed for every DS level (see
+        ``product_type_with_duplicated``), but the detailed pairs list is
+        restricted to the L0 datastrip.
+        """
+        return product_type == self.DUPLICATED_DATASTRIP_REFERENCE_TYPE
 
     def get_expected_from_product_level(self, product_level):
         """Get expected from the product level
@@ -523,11 +566,8 @@ class CdsDatatakeS2(CdsDatatake):
                             datastrip_id,
                             product_info["sensing_start_date"],
                         )
-
-                        if self._include_deleted_products:
-                            self.append_duplicated_pair(
-                                product_type, prev, product_info
-                            )
+                        # Only DS duplications are reported in duplicateds.items;
+                        # GR duplicates are only counted (_duplicated_gr).
 
                     else:
                         prev = product_info
@@ -547,30 +587,20 @@ class CdsDatatakeS2(CdsDatatake):
             brother_of_datatake_documents = set()
 
             duplicated_item = 0
-            tile_first_product = {}
             for product in products_scan:
                 if product.tile_number:
-                    to_be_deleted, deletion_issue = product.deletion_trace()
+                    to_be_deleted, _ = product.deletion_trace()
 
                     # Live pass ignores the products already deleted.
                     if to_be_deleted and not self._include_deleted_products:
                         continue
 
-                    product_info = self._duplicated_product_info(
-                        product, to_be_deleted, deletion_issue
-                    )
-
                     if product.tile_number in brother_of_datatake_documents:
                         duplicated_item += 1
-                        if self._include_deleted_products:
-                            self.append_duplicated_pair(
-                                product_type,
-                                tile_first_product[product.tile_number],
-                                product_info,
-                            )
+                        # Only DS duplications are reported in duplicateds.items;
+                        # TL/TC duplicates are only counted (_duplicated_tuile).
                     else:
                         brother_of_datatake_documents.add(product.tile_number)
-                        tile_first_product[product.tile_number] = product_info
 
                 else:
                     LOGGER.warning(
@@ -783,6 +813,320 @@ class CdsDatatakeS2(CdsDatatake):
         self.store_completeness_value(
             "final_completeness_status", evaluate_completeness_status(percentage)
         )
+
+        # Datastrip-centric duplication: detected on the include-deleted pass so
+        # that a datastrip stays reported even after its products are deleted.
+        # finalize_duplicateds (called just after this pass) reads the buffer.
+        if self._include_deleted_products:
+            self.compute_duplicated_datastrips()
+
+    @staticmethod
+    def _datastrip_key(name):
+        """Return the datastrip identifier held by a product ``datastrip_id``.
+
+        The L0 / L1x DS ``datastrip_id`` field is not populated, but the granules
+        and tiles carry the *name* of their level DS (without the archive
+        extension) in their ``datastrip_id``. This strips the known archive
+        suffixes from a DS product name so it matches those references.
+        """
+        if not name:
+            return name
+        for suffix in (".tar", ".SAFE", ".zip", ".SEN3"):
+            if name.endswith(suffix):
+                return name[: -len(suffix)]
+        return name
+
+    def _attached_products_by_datastrip(self):
+        """Index GR / TL products by the DS name held in their ``datastrip_id``.
+
+        The GR / TL products (all levels, see
+        ``DUPLICATED_DATASTRIP_PRODUCT_TYPES``) are fetched once (deleted included)
+        and indexed by ``datastrip_id`` (a DS product name), the only field that
+        links them to a specific datastrip.
+
+        Returns:
+            dict: ``datastrip_id`` (a DS name) -> list of attached products.
+        """
+        by_datastrip_id = {}
+
+        for product_type in self.DUPLICATED_DATASTRIP_PRODUCT_TYPES:
+            products_scan = self.find_brother_products_scan(
+                product_type,
+                self.get_product_partitionning(day_precision=1),
+                include_deleted=True,
+            )
+            for product in products_scan:
+                if product.datastrip_id:
+                    by_datastrip_id.setdefault(product.datastrip_id, []).append(product)
+
+        return by_datastrip_id
+
+    def _level_datastrips(self):
+        """Resolve the higher-level DS (L1A/L1B/L1C/L2A) with their sensing period.
+
+        L1x granules / tiles reference their own-level DS, so these DS are needed
+        to map, by sensing inclusion, the L0 datastrip to the products of the
+        higher levels.
+
+        Returns:
+            list(dict): one entry per higher-level DS product, with its
+                ``name_key`` (matching the ``datastrip_id`` of its products) and
+                its sensing ``start`` / ``end``.
+        """
+        level_datastrips = []
+        for product_type in self.DUPLICATED_DATASTRIP_LEVEL_TYPES:
+            products_scan = self.find_brother_products_scan(
+                product_type,
+                self.get_product_partitionning(day_precision=1),
+                include_deleted=True,
+            )
+            for product in products_scan:
+                if product.sensing_start_date and product.sensing_end_date:
+                    level_datastrips.append(
+                        {
+                            "name_key": self._datastrip_key(product.name),
+                            "start": product.sensing_start_date,
+                            "end": product.sensing_end_date,
+                        }
+                    )
+        return level_datastrips
+
+    def _dataflow_expected_interfaces(self):
+        """Map each product type to the interfaces (DD / LTA) the dataflow expects.
+
+        Reads the ``MaasConfigDataflow`` records for this mission / satellite: a
+        product type is expected on an interface when its ``services_config`` for
+        that interface holds a real service (an item starting with ``C`` or ``P``),
+        the same rule used by the splitted completeness.
+
+        Returns:
+            dict: ``product_type -> set(service_type)``; empty when the dataflow
+                config is not loaded (callers then fall back to the raw count).
+        """
+        expected = {}
+        config = MaasConfigManager().get_config("MaasConfigDataflow")
+        if not config:
+            return expected
+
+        for record in config["records"]:
+            if record.mission != self.mission:
+                continue
+            if self.satellite_unit not in getattr(record, "satellites", []):
+                continue
+            services_config = getattr(record, "services_config", None)
+            if not services_config:
+                continue
+            interfaces = set()
+            for service_type in ("DD", "LTA"):
+                if service_type in services_config and any(
+                    item.startswith(("C", "P"))
+                    for item in services_config[service_type]
+                ):
+                    interfaces.add(service_type)
+            expected[record.product_type] = interfaces
+
+        return expected
+
+    def _describe_datastrip(
+        self, datastrip, by_datastrip_id, level_datastrips, expected_interfaces
+    ):
+        """Build the reported entry for one L0 datastrip of a duplicated pair.
+
+        The L0 datastrip name attaches the L0 granules directly. For the higher
+        levels, the DS whose sensing is included in the L0 DS sensing are resolved
+        and their products attached through ``datastrip_id``. Each attached product
+        is listed with its per-interface deletion ticket, and a per-interface
+        (DD / LTA) deletion summary gives the count, the number of attached products
+        the dataflow expects on that interface, and the share of them deleted.
+
+        Args:
+            datastrip (dict): the L0 DS ``name_key`` and sensing ``start`` / ``end``.
+            by_datastrip_id (dict): index from ``_attached_products_by_datastrip``.
+            level_datastrips (list): higher-level DS from ``_level_datastrips``.
+            expected_interfaces (dict): ``product_type -> set(service_type)`` from
+                ``_dataflow_expected_interfaces``.
+
+        Returns:
+            generated.CdsDatatakeDuplicatedsDatastripPairsDatastrips
+        """
+        # DS names whose products belong to this datastrip: the L0 DS itself plus
+        # every higher-level DS whose sensing is included in the L0 sensing.
+        tolerance = self.DUPLICATED_DATASTRIP_SENSING_TOLERANCE
+        ds_names = {datastrip["name_key"]}
+        for level_datastrip in level_datastrips:
+            if (
+                level_datastrip["start"] >= datastrip["start"] - tolerance
+                and level_datastrip["end"] <= datastrip["end"] + tolerance
+            ):
+                ds_names.add(level_datastrip["name_key"])
+
+        # Dedupe by product name.
+        attached = {}
+        for ds_name in ds_names:
+            for product in by_datastrip_id.get(ds_name, []):
+                attached[product.name] = product
+
+        products = []
+        deleted_count = {"DD": 0, "LTA": 0}
+        deleted_tickets = {"DD": [], "LTA": []}
+        for product in attached.values():
+            by_interface = product.deletion_trace_by_interface()
+            # One deletion entry per interface the product is actually deleted from.
+            product_deletions = []
+            for interface in ("DD", "LTA"):
+                deleted, issue = by_interface[interface]
+                if deleted:
+                    deleted_count[interface] += 1
+                    if issue:
+                        deleted_tickets[interface].append(issue)
+                    product_deletions.append(
+                        generated.CdsDatatakeDuplicatedsDatastripPairsDatastripsProductsDeletions(
+                            service_type=interface,
+                            ticket=issue,
+                        )
+                    )
+
+            products.append(
+                generated.CdsDatatakeDuplicatedsDatastripPairsDatastripsProducts(
+                    product_name=product.name,
+                    product_type=product.product_type,
+                    deletions=product_deletions,
+                )
+            )
+
+        # Stable ordering so the stored document is reproducible.
+        products.sort(key=lambda item: item.product_name or "")
+
+        # Deletion-share denominator, per interface: only the attached products the
+        # dataflow expects on that interface. Without the dataflow config, fall
+        # back to the raw attached count.
+        expected_per_interface = {"DD": 0, "LTA": 0}
+        if expected_interfaces:
+            for product in attached.values():
+                for interface in expected_interfaces.get(product.product_type, ()):
+                    if interface in expected_per_interface:
+                        expected_per_interface[interface] += 1
+        else:
+            total = len(attached)
+            expected_per_interface = {"DD": total, "LTA": total}
+
+        deletions = []
+        for interface in ("DD", "LTA"):
+            if not deleted_count[interface]:
+                continue
+            tickets = deleted_tickets[interface]
+            ticket = Counter(tickets).most_common(1)[0][0] if tickets else None
+            expected = expected_per_interface[interface]
+            percentage = (
+                round(deleted_count[interface] / expected * 100, 2) if expected else 0.0
+            )
+            deletions.append(
+                generated.CdsDatatakeDuplicatedsDatastripPairsDatastripsDeletions(
+                    service_type=interface,
+                    ticket=ticket,
+                    deleted_products_count=deleted_count[interface],
+                    deleted_products_expected=expected,
+                    deleted_product_percentage=percentage,
+                )
+            )
+
+        return generated.CdsDatatakeDuplicatedsDatastripPairsDatastrips(
+            datastrip_id=datastrip["name_key"],
+            products=products,
+            deletions=deletions,
+        )
+
+    def compute_duplicated_datastrips(self):
+        """Detect duplicated L0 datastrips and buffer them for ``finalize_duplicateds``.
+
+        Two ``MSI_L0__DS`` products whose sensing overlaps by at least
+        ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent are a duplicated
+        datastrip pair. Each L0 datastrip is identified by its product name; the
+        attached GR / TL products (L0 directly, higher levels through the DS whose
+        sensing is included in the L0 DS) are listed and their deletion tickets
+        reported.
+        """
+        ds_products = self.find_brother_products_scan(
+            self.DUPLICATED_DATASTRIP_REFERENCE_TYPE,
+            self.get_product_partitionning(day_precision=1),
+            include_deleted=True,
+        )
+
+        datastrips = []
+        for product in ds_products:
+            # The L0 DS ``datastrip_id`` field is not populated: the product name
+            # is the datastrip identity.
+            if product.sensing_start_date and product.sensing_end_date:
+                datastrips.append(
+                    {
+                        "name_key": self._datastrip_key(product.name),
+                        "start": product.sensing_start_date,
+                        "end": product.sensing_end_date,
+                    }
+                )
+            else:
+                LOGGER.warning(
+                    "[%s][%s] - L0 DS ignored for datastrip duplication [ %s, %s ]",
+                    self.datatake_id,
+                    product.key,
+                    product.sensing_start_date,
+                    product.sensing_end_date,
+                )
+
+        if len(datastrips) < 2:
+            LOGGER.debug(
+                "[%s] - Solo L0 datastrip for this datatake, no duplication",
+                self.datatake_id,
+            )
+            return
+
+        # Same convention as the generic time-overlap detection: sort by sensing
+        # period and compare each datastrip with the next one.
+        datastrips.sort(key=lambda strip: (strip["start"], strip["end"]))
+
+        overlapping_pairs = []
+        for previous, brother in zip(datastrips[:-1], datastrips[1:]):
+            percentage = compute_overlap_percentage(
+                Period(previous["start"], previous["end"]),
+                Period(brother["start"], brother["end"]),
+            )
+            if percentage >= self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD:
+                overlapping_pairs.append((previous, brother, percentage))
+
+        if not overlapping_pairs:
+            LOGGER.debug(
+                "[%s] - No overlapping L0 datastrip for this datatake",
+                self.datatake_id,
+            )
+            return
+
+        by_datastrip_id = self._attached_products_by_datastrip()
+        level_datastrips = self._level_datastrips()
+        expected_interfaces = self._dataflow_expected_interfaces()
+
+        for previous, brother, percentage in overlapping_pairs:
+            LOGGER.warning(
+                "[%s] - Duplicated L0 datastrips %s / %s (overlap %.2f%%)",
+                self.datatake_id,
+                previous["name_key"],
+                brother["name_key"],
+                percentage,
+            )
+            self._dup_datastrip_pairs.append(
+                generated.CdsDatatakeDuplicatedsDatastripPairs(
+                    overlap_percentage=round(percentage, 2),
+                    datastrips=[
+                        self._describe_datastrip(
+                            previous, by_datastrip_id, level_datastrips,
+                            expected_interfaces,
+                        ),
+                        self._describe_datastrip(
+                            brother, by_datastrip_id, level_datastrips,
+                            expected_interfaces,
+                        ),
+                    ],
+                )
+            )
 
     def get_related_documents_query(self) -> Q:
         """override"""

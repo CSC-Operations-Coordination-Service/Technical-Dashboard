@@ -1,10 +1,12 @@
 """Tests for the duplicated items detection and the original completeness pass"""
 
 import datetime
+from collections import Counter
 from datetime import timedelta
 from unittest.mock import patch
 
 from maas_cds.model.datatake_s1 import CdsDatatakeS1
+from maas_cds.model.datatake_s2 import CdsDatatakeS2
 from maas_cds.model.product import CdsProduct
 
 BASE = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)
@@ -234,3 +236,239 @@ def test_compute_completeness_deletion_aggregate_dd_and_lta(mock_scan, *_mocks):
     assert deletion["LTA"].surviving_pairs_count == 1
     assert deletion["LTA"].expected_pairs_count == 2
     assert deletion["LTA"].deletion_completenness_percentange == 50.0
+
+
+def _s2_product(
+    name,
+    product_type,
+    datastrip_id=None,
+    product_group_id=None,
+    start_offset=0,
+    end_offset=0,
+    deleted=False,
+    interface="DD",
+    issue="OMCS-1",
+):
+    product = CdsProduct(
+        name=name,
+        product_type=product_type,
+        sensing_start_date=BASE + timedelta(seconds=start_offset),
+        sensing_end_date=BASE + timedelta(seconds=end_offset),
+    )
+    product.datastrip_id = datastrip_id
+    product.product_group_id = product_group_id
+    if deleted:
+        if interface == "DD":
+            product.nb_dd_deleted = 1
+            product.DD_DAS_is_deleted = True
+            product.DD_DAS_deletion_issue = issue
+        else:
+            product.nb_lta_deleted = 1
+            product.LTA_Werum_is_deleted = True
+            product.LTA_Werum_deletion_issue = issue
+    return product
+
+
+@patch.object(CdsDatatakeS2, "get_product_partitionning", return_value=None)
+@patch.object(CdsDatatakeS2, "find_brother_products_scan")
+def test_compute_duplicated_datastrips(mock_scan, _mock_part):
+    """Two overlapping L0 datastrips (reprocessing baselines) are reported.
+
+    Mirrors the real data: the L0 DS have no ``datastrip_id`` (the product name is
+    the identity), the granules / tiles reference their OWN-level DS name, and the
+    higher-level DS are resolved by sensing inclusion in the L0 DS.
+
+    - L0 DS A(0-100) and B(50-150) overlap by 50% -> one datastrip pair
+    - datastrip A: 4 L0 granules (direct) + 6 L1C tiles (via its L1C DS)
+    - datastrip B: 2 L0 granules + 4 L1C tiles, its L0 DS deleted from LTA
+    """
+
+    ds_products = [
+        # L0 DS carry no datastrip_id (as in prod); the .tar name is the identity.
+        _s2_product("L0DS_A.tar", "MSI_L0__DS", start_offset=0, end_offset=100),
+        _s2_product(
+            "L0DS_B.tar", "MSI_L0__DS", start_offset=50, end_offset=150,
+            deleted=True, interface="LTA", issue="OMCS-42",
+        ),
+    ]
+    # Higher-level DS, sensing included in their L0 DS.
+    level_ds = {
+        "MSI_L1C_DS": [
+            _s2_product("L1CDS_A.tar", "MSI_L1C_DS", start_offset=5, end_offset=95),
+            _s2_product("L1CDS_B.tar", "MSI_L1C_DS", start_offset=55, end_offset=145),
+        ],
+    }
+    # Granules / tiles reference their own-level DS name (without .tar).
+    attached = {
+        "MSI_L0__GR": (
+            [_s2_product(f"A_GR_{i}", "MSI_L0__GR", datastrip_id="L0DS_A") for i in range(4)]
+            + [_s2_product(f"B_GR_{i}", "MSI_L0__GR", datastrip_id="L0DS_B") for i in range(2)]
+        ),
+        "MSI_L1C_TL": (
+            [_s2_product(f"A_TL_{i}", "MSI_L1C_TL", datastrip_id="L1CDS_A") for i in range(6)]
+            + [_s2_product(f"B_TL_{i}", "MSI_L1C_TL", datastrip_id="L1CDS_B") for i in range(4)]
+        ),
+    }
+
+    def _scan(product_type, indices=None, include_deleted=False):
+        if product_type == CdsDatatakeS2.DUPLICATED_DATASTRIP_REFERENCE_TYPE:
+            return ds_products
+        if product_type in level_ds:
+            return level_ds[product_type]
+        return attached.get(product_type, [])
+
+    mock_scan.side_effect = _scan
+
+    datatake = CdsDatatakeS2(
+        datatake_id="DT",
+        satellite_unit="S2A",
+        mission="S2",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+    datatake._init_duplicateds_buffers()
+    datatake._include_deleted_products = True
+
+    datatake.compute_duplicated_datastrips()
+
+    (pair,) = datatake._dup_datastrip_pairs
+    assert pair.overlap_percentage == 50.0
+
+    strip_a, strip_b = pair.datastrips
+
+    # identity is the L0 DS name without the archive extension
+    assert strip_a.datastrip_id == "L0DS_A"
+    # datastrip A: 4 L0 granules (direct) + 6 L1C tiles (via L1C DS sensing match)
+    assert Counter(p.product_type for p in strip_a.products) == {
+        "MSI_L0__GR": 4,
+        "MSI_L1C_TL": 6,
+    }
+    assert list(strip_a.deletions) == []
+
+    # datastrip B: 2 L0 granules + 4 L1C tiles
+    assert strip_b.datastrip_id == "L0DS_B"
+    assert Counter(p.product_type for p in strip_b.products) == {
+        "MSI_L0__GR": 2,
+        "MSI_L1C_TL": 4,
+    }
+
+
+@patch.object(
+    CdsDatatakeS2,
+    "_dataflow_expected_interfaces",
+    return_value={"MSI_L0__GR": {"DD", "LTA"}, "MSI_L1B_GR": {"DD"}},
+)
+@patch.object(CdsDatatakeS2, "get_product_partitionning", return_value=None)
+@patch.object(CdsDatatakeS2, "find_brother_products_scan")
+def test_compute_duplicated_datastrips_deletion_expected_per_interface(
+    mock_scan, _mock_part, _mock_dataflow
+):
+    """deleted_products_expected is filtered per interface using the dataflow.
+
+    Datastrip B has 2 L0 granules (expected on DD + LTA) and 4 L1B granules
+    (expected on DD only); one L0 granule is deleted from LTA. The LTA deletion
+    share is therefore 1 / 2 (only L0 granules are LTA-expected), not 1 / 6.
+    """
+
+    ds_products = [
+        _s2_product("L0DS_A.tar", "MSI_L0__DS", start_offset=0, end_offset=100),
+        _s2_product("L0DS_B.tar", "MSI_L0__DS", start_offset=50, end_offset=150),
+    ]
+    # L1B DS with distinct sensing so each nests in a single L0 DS.
+    level_ds = {
+        "MSI_L1B_DS": [
+            _s2_product("L1BDS_A.tar", "MSI_L1B_DS", start_offset=5, end_offset=95),
+            _s2_product("L1BDS_B.tar", "MSI_L1B_DS", start_offset=55, end_offset=145),
+        ],
+    }
+    attached = {
+        "MSI_L0__GR": (
+            [_s2_product(f"A_L0GR_{i}", "MSI_L0__GR", datastrip_id="L0DS_A") for i in range(2)]
+            + [_s2_product("B_L0GR_0", "MSI_L0__GR", datastrip_id="L0DS_B")]
+            + [
+                _s2_product(
+                    "B_L0GR_del", "MSI_L0__GR", datastrip_id="L0DS_B",
+                    deleted=True, interface="LTA", issue="OMCS-42",
+                )
+            ]
+        ),
+        "MSI_L1B_GR": [
+            _s2_product(f"B_L1BGR_{i}", "MSI_L1B_GR", datastrip_id="L1BDS_B")
+            for i in range(4)
+        ],
+    }
+
+    def _scan(product_type, indices=None, include_deleted=False):
+        if product_type == CdsDatatakeS2.DUPLICATED_DATASTRIP_REFERENCE_TYPE:
+            return ds_products
+        if product_type in level_ds:
+            return level_ds[product_type]
+        return attached.get(product_type, [])
+
+    mock_scan.side_effect = _scan
+
+    datatake = CdsDatatakeS2(
+        datatake_id="DT",
+        satellite_unit="S2A",
+        mission="S2",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+    datatake._init_duplicateds_buffers()
+    datatake._include_deleted_products = True
+
+    datatake.compute_duplicated_datastrips()
+
+    (pair,) = datatake._dup_datastrip_pairs
+    strip_b = next(s for s in pair.datastrips if s.datastrip_id == "L0DS_B")
+
+    # 2 L0 granules + 4 L1B granules attached to B
+    assert Counter(p.product_type for p in strip_b.products) == {
+        "MSI_L0__GR": 2,
+        "MSI_L1B_GR": 4,
+    }
+
+    # the deleted granule carries a per-product deletions entry; others are empty
+    products_b = {p.product_name: p for p in strip_b.products}
+    assert [
+        (row.service_type, row.ticket) for row in products_b["B_L0GR_del"].deletions
+    ] == [("LTA", "OMCS-42")]
+    assert list(products_b["B_L0GR_0"].deletions) == []
+
+    deletions_b = {row.service_type: row for row in strip_b.deletions}
+    assert set(deletions_b) == {"LTA"}
+    # LTA-expected products are only the 2 L0 granules -> share is 1/2, not 1/6
+    assert deletions_b["LTA"].deleted_products_count == 1
+    assert deletions_b["LTA"].deleted_products_expected == 2
+    assert deletions_b["LTA"].deleted_product_percentage == 50.0
+
+
+@patch.object(CdsDatatakeS2, "get_product_partitionning", return_value=None)
+@patch.object(CdsDatatakeS2, "find_brother_products_scan")
+def test_compute_duplicated_datastrips_no_overlap(mock_scan, _mock_part):
+    """Non-overlapping L0 datastrips produce no datastrip pair."""
+
+    ds_products = [
+        _s2_product("L0DS_A.tar", "MSI_L0__DS", start_offset=0, end_offset=100),
+        _s2_product("L0DS_C.tar", "MSI_L0__DS", start_offset=200, end_offset=300),
+    ]
+
+    mock_scan.side_effect = lambda product_type, indices=None, include_deleted=False: (
+        ds_products
+        if product_type == CdsDatatakeS2.DUPLICATED_DATASTRIP_REFERENCE_TYPE
+        else []
+    )
+
+    datatake = CdsDatatakeS2(
+        datatake_id="DT",
+        satellite_unit="S2A",
+        mission="S2",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+    datatake._init_duplicateds_buffers()
+    datatake._include_deleted_products = True
+
+    datatake.compute_duplicated_datastrips()
+
+    assert datatake._dup_datastrip_pairs == []

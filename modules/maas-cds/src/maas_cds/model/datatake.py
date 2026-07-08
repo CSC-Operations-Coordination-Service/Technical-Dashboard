@@ -70,6 +70,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     _dup_paired_names = None
     _dup_deleted = None
     _dup_pairs_with_deletion = None
+    _dup_datastrip_pairs = None
 
     cams_tickets = Keyword(multi=True)
 
@@ -316,13 +317,24 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             # Detailed duplicated items (both members of each duplicated pair) are
             # only collected during the include-deleted pass so that a pair stays
             # visible even after one of its products has been deleted.
-            if self._include_deleted_products:
+            if (
+                self._include_deleted_products
+                and self.product_type_with_duplicated_items(product_type)
+            ):
                 candidates = [
                     product
                     for product in related_products
                     if isinstance(product, DuplicationCandidate)
                 ]
                 self.add_duplicated_items(product_type, candidates)
+
+    def product_type_with_duplicated_items(self, product_type: str) -> bool:
+        """Whether this product type contributes detailed pairs to ``duplicateds.items``.
+
+        Defaults to the same rule as the duplicated indicator; subclasses can
+        narrow it (e.g. S2 lists only L0 DS in ``items``).
+        """
+        return self.product_type_with_duplicated(product_type)
 
     @staticmethod
     def _duplicated_product_info(product, to_be_deleted, deletion_issue):
@@ -355,6 +367,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         self._dup_deleted = {"DD": {}, "LTA": {}}
         # number of duplicated pairs whose deleted product is set, per interface
         self._dup_pairs_with_deletion = {"DD": 0, "LTA": 0}
+        # datastrip-centric duplicated pairs (S2 only, see
+        # CdsDatatakeS2.compute_duplicated_datastrips)
+        self._dup_datastrip_pairs = []
 
     def _record_deleted_product(
         self, name, dd_deleted, dd_issue, lta_deleted, lta_issue
@@ -519,6 +534,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             items=self._dup_items,
             pairs_count=self._dup_pair_count,
             deletions=deletions,
+            datastrip_pairs=self._dup_datastrip_pairs,
         )
 
     def load_data_before_compute(self):
@@ -811,6 +827,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 self.compute_extra_completeness()
                 # Both members of every duplicated pair and all deleted products
                 # are now known: assemble the nested ``duplicateds`` object.
+
                 self.finalize_duplicateds()
             finally:
                 self._completeness_sink = None

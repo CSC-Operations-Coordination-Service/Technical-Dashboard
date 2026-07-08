@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-07-03T13:54:35.086613+00:00
+Generated date: 2026-07-06T14:53:12.402558+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -126,6 +126,11 @@ __all__ = [
     "CdsDataflow",
     "CdsDatatake",
     "CdsDatatakeDuplicateds",
+    "CdsDatatakeDuplicatedsDatastripPairs",
+    "CdsDatatakeDuplicatedsDatastripPairsDatastrips",
+    "CdsDatatakeDuplicatedsDatastripPairsDatastripsDeletions",
+    "CdsDatatakeDuplicatedsDatastripPairsDatastripsProducts",
+    "CdsDatatakeDuplicatedsDatastripPairsDatastripsProductsDeletions",
     "CdsDatatakeDuplicatedsDeletions",
     "CdsDatatakeDuplicatedsItems",
     "CdsDatatakeDuplicatedsItemsDeletedProduct",
@@ -1735,6 +1740,76 @@ class CdsDatatakeDuplicatedsDeletions(InnerDoc):
     deletion_completenness_percentange = Float()
 
 
+class CdsDatatakeDuplicatedsDatastripPairsDatastripsProductsDeletions(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDatastripPairsDatastripsProducts
+
+    Generated from property: deletions
+    """
+
+    service_type = Keyword()
+
+    ticket = Keyword()
+
+
+class CdsDatatakeDuplicatedsDatastripPairsDatastripsProducts(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDatastripPairsDatastrips
+
+    Generated from property: products
+    """
+
+    product_name = Keyword()
+
+    product_type = Keyword()
+
+    deletions = Object(CdsDatatakeDuplicatedsDatastripPairsDatastripsProductsDeletions)
+
+
+class CdsDatatakeDuplicatedsDatastripPairsDatastripsDeletions(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDatastripPairsDatastrips
+
+    Generated from property: deletions
+    """
+
+    service_type = Keyword()
+
+    ticket = Keyword()
+
+    deleted_products_count = Integer()
+
+    deleted_products_expected = Integer()
+
+    deleted_product_percentage = Float()
+
+
+class CdsDatatakeDuplicatedsDatastripPairsDatastrips(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicatedsDatastripPairs
+
+    Generated from property: datastrips
+    """
+
+    datastrip_id = Keyword()
+
+    products = Object(CdsDatatakeDuplicatedsDatastripPairsDatastripsProducts)
+
+    deletions = Object(CdsDatatakeDuplicatedsDatastripPairsDatastripsDeletions)
+
+
+class CdsDatatakeDuplicatedsDatastripPairs(InnerDoc):
+    """
+    Inner document class for parent class: CdsDatatakeDuplicateds
+
+    Generated from property: datastrip_pairs
+    """
+
+    overlap_percentage = Float()
+
+    datastrips = Object(CdsDatatakeDuplicatedsDatastripPairsDatastrips)
+
+
 class CdsDatatakeDuplicateds(InnerDoc):
     """
     Inner document class for parent class: CdsDatatake
@@ -1747,6 +1822,8 @@ class CdsDatatakeDuplicateds(InnerDoc):
     pairs_count = Integer()
 
     deletions = Object(CdsDatatakeDuplicatedsDeletions)
+
+    datastrip_pairs = Object(CdsDatatakeDuplicatedsDatastripPairs)
 
 
 class CdsDatatakeMissingPeriods(InnerDoc):
