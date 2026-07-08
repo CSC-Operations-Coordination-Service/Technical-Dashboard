@@ -204,6 +204,64 @@
                                 "type": "float"
                             }
                         }
+                    },
+                    "datastrip_pairs": {
+                        "type": "object",
+                        "properties": {
+                            "overlap_percentage": {
+                                "type": "float"
+                            },
+                            "datastrips": {
+                                "type": "object",
+                                "properties": {
+                                    "datastrip_id": {
+                                        "type": "keyword"
+                                    },
+                                    "products": {
+                                        "type": "object",
+                                        "properties": {
+                                            "product_name": {
+                                                "type": "keyword"
+                                            },
+                                            "product_type": {
+                                                "type": "keyword"
+                                            },
+                                            "deletions": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "service_type": {
+                                                        "type": "keyword"
+                                                    },
+                                                    "ticket": {
+                                                        "type": "keyword"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "deletions": {
+                                        "type": "object",
+                                        "properties": {
+                                            "service_type": {
+                                                "type": "keyword"
+                                            },
+                                            "ticket": {
+                                                "type": "keyword"
+                                            },
+                                            "deleted_products_count": {
+                                                "type": "integer"
+                                            },
+                                            "deleted_products_expected": {
+                                                "type": "integer"
+                                            },
+                                            "deleted_product_percentage": {
+                                                "type": "float"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
