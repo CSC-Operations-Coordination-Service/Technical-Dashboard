@@ -33,6 +33,28 @@ def extract_product_type_from_product_name_s1(product_name):
     return product_name[4:14]
 
 
+def extract_absolute_orbit_from_hktm_product_name_s1(product_name):
+    """Extract the absolute orbit number from a sentinel 1 HKTM product name.
+
+    HKTM (``HK_RAW``) products follow the standard S1 naming, so the absolute
+    orbit is the 6-digit field located at a fixed position, e.g.::
+
+        S1A_HK_RAW__0____20250728T113338_20250728T113339_060283________0B45.SAFE.zip
+                                                         ^^^^^^
+
+    Args:
+        product_name (str): name of a sentinel 1 HKTM product
+
+    Returns:
+        int | None: the absolute orbit as a number (e.g. ``60283``), or ``None``
+            when it could not be extracted.
+    """
+    try:
+        return int(product_name[49:55])
+    except ValueError:
+        return None
+
+
 def extract_data_from_product_name_s1(product_name):
     """Method to extract data from a sentinel 1 product name
 

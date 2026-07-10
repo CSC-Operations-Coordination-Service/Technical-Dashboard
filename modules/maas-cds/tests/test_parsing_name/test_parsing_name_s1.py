@@ -1,4 +1,9 @@
-from maas_cds.lib.parsing_name.parsing_name_s1 import extract_data_from_product_name_s1
+import pytest
+
+from maas_cds.lib.parsing_name.parsing_name_s1 import (
+    extract_absolute_orbit_from_hktm_product_name_s1,
+    extract_data_from_product_name_s1,
+)
 from maas_model import datestr_to_utc_datetime
 
 # Export this function
@@ -471,3 +476,27 @@ def test_s1d_oper_random():
         "product_type": "AUX_OBMEMC",
         "product_level": "L__",
     }
+
+
+@pytest.mark.parametrize(
+    "product_name, expected_orbit",
+    [
+        # HKTM (HK_RAW) products: orbit is the 6-digit field at offset 49:55,
+        # returned as a number (leading zeros dropped)
+        (
+            "S1A_HK_RAW__0____20250728T113338_20250728T113339_060283________0B45.SAFE.zip",
+            60283,
+        ),
+        (
+            "S1A_HK_RAW__0____20240814T210951_20240814T210952_055214________A016",
+            55214,
+        ),
+        # No orbit at that position (e.g. mission plan report)
+        ("S1A_MP_HKTM_MTL_20230905T174207_20230917T010101.csv", None),
+    ],
+)
+def test_extract_absolute_orbit_from_hktm_product_name_s1(product_name, expected_orbit):
+    assert (
+        extract_absolute_orbit_from_hktm_product_name_s1(product_name)
+        == expected_orbit
+    )

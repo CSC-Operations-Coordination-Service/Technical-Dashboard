@@ -6,7 +6,6 @@ from collections import Counter
 from datetime import timedelta
 import typing
 from maas_cds.lib.parsing_name import utils
-from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.model.product import CdsProduct
 from maas_cds.model import generated
 
@@ -18,6 +17,7 @@ from maas_cds.lib.status import evaluate_completeness_status
 from maas_cds.lib.periodutils import (
     compute_total_sensing_product,
     compute_overlap_percentage,
+    compute_overlap_duration,
     Period,
     DuplicationCandidate,
 )
@@ -69,6 +69,10 @@ class CdsDatatakeS2(CdsDatatake):
     # Tolerance when testing that a higher-level DS sensing is included in the
     # L0 DS sensing.
     DUPLICATED_DATASTRIP_SENSING_TOLERANCE = timedelta(seconds=1)
+
+    # S2 duplication is flagged only when two datastrips overlap by at least
+    # DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD percent AND at least 15 seconds.
+    DUPLICATED_ITEMS_MINIMAL_DURATION = 15.0
 
     MATCHING_DELTA_PRODUCTS = 15
 
@@ -891,42 +895,6 @@ class CdsDatatakeS2(CdsDatatake):
                     )
         return level_datastrips
 
-    def _dataflow_expected_interfaces(self):
-        """Map each product type to the interfaces (DD / LTA) the dataflow expects.
-
-        Reads the ``MaasConfigDataflow`` records for this mission / satellite: a
-        product type is expected on an interface when its ``services_config`` for
-        that interface holds a real service (an item starting with ``C`` or ``P``),
-        the same rule used by the splitted completeness.
-
-        Returns:
-            dict: ``product_type -> set(service_type)``; empty when the dataflow
-                config is not loaded (callers then fall back to the raw count).
-        """
-        expected = {}
-        config = MaasConfigManager().get_config("MaasConfigDataflow")
-        if not config:
-            return expected
-
-        for record in config["records"]:
-            if record.mission != self.mission:
-                continue
-            if self.satellite_unit not in getattr(record, "satellites", []):
-                continue
-            services_config = getattr(record, "services_config", None)
-            if not services_config:
-                continue
-            interfaces = set()
-            for service_type in ("DD", "LTA"):
-                if service_type in services_config and any(
-                    item.startswith(("C", "P"))
-                    for item in services_config[service_type]
-                ):
-                    interfaces.add(service_type)
-            expected[record.product_type] = interfaces
-
-        return expected
-
     def _describe_datastrip(
         self, datastrip, by_datastrip_id, level_datastrips, expected_interfaces
     ):
@@ -1040,11 +1008,11 @@ class CdsDatatakeS2(CdsDatatake):
         """Detect duplicated L0 datastrips and buffer them for ``finalize_duplicateds``.
 
         Two ``MSI_L0__DS`` products whose sensing overlaps by at least
-        ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent are a duplicated
-        datastrip pair. Each L0 datastrip is identified by its product name; the
-        attached GR / TL products (L0 directly, higher levels through the DS whose
-        sensing is included in the L0 DS) are listed and their deletion tickets
-        reported.
+        ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent and at least
+        ``DUPLICATED_ITEMS_MINIMAL_DURATION`` seconds are a duplicated datastrip
+        pair. Each L0 datastrip is identified by its product name; the attached
+        GR / TL products (L0 directly, higher levels through the DS whose sensing
+        is included in the L0 DS) are listed and their deletion tickets reported.
         """
         ds_products = self.find_brother_products_scan(
             self.DUPLICATED_DATASTRIP_REFERENCE_TYPE,
@@ -1086,11 +1054,14 @@ class CdsDatatakeS2(CdsDatatake):
 
         overlapping_pairs = []
         for previous, brother in zip(datastrips[:-1], datastrips[1:]):
-            percentage = compute_overlap_percentage(
-                Period(previous["start"], previous["end"]),
-                Period(brother["start"], brother["end"]),
-            )
-            if percentage >= self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD:
+            previous_period = Period(previous["start"], previous["end"])
+            brother_period = Period(brother["start"], brother["end"])
+            percentage = compute_overlap_percentage(previous_period, brother_period)
+            duration = compute_overlap_duration(previous_period, brother_period)
+            if (
+                percentage >= self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD
+                and duration >= self.DUPLICATED_ITEMS_MINIMAL_DURATION
+            ):
                 overlapping_pairs.append((previous, brother, percentage))
 
         if not overlapping_pairs:

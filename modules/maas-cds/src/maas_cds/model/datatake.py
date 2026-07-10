@@ -6,6 +6,7 @@ import logging
 from typing import List
 
 from maas_cds.lib.config import get_good_threshold_config_from_value
+from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.lib.partitionning import get_partionning
 from maas_model.date_utils import datetime_to_zulu
 from opensearchpy import Keyword, Q
@@ -46,6 +47,12 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     # products to consider them as duplicated of each other.
     DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD = 30.0
 
+    # Duplication detection: minimal overlap duration (in seconds) between two
+    # consecutive products to consider them as duplicated. 0 disables the
+    # constraint (only the percentage threshold applies); subclasses can raise it
+    # (e.g. S2 also requires at least 15s of overlap).
+    DUPLICATED_ITEMS_MINIMAL_DURATION = 0.0
+
     # Transient compute flags (never persisted on the document).
 
     # When True, the current completeness pass keeps the products already flagged
@@ -69,7 +76,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     _dup_pair_count = 0
     _dup_paired_names = None
     _dup_deleted = None
-    _dup_pairs_with_deletion = None
+    _dup_pairs = None
     _dup_datastrip_pairs = None
 
     cams_tickets = Keyword(multi=True)
@@ -365,8 +372,10 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         self._dup_paired_names = set()
         # name -> deletion issue, per interface, for every deleted product seen
         self._dup_deleted = {"DD": {}, "LTA": {}}
-        # number of duplicated pairs whose deleted product is set, per interface
-        self._dup_pairs_with_deletion = {"DD": 0, "LTA": 0}
+        # one record per duplicated pair: its product type and, per interface,
+        # whether the pair carries a product deleted from it. Feeds the
+        # per-interface expected / surviving pair counts in finalize_duplicateds.
+        self._dup_pairs = []
         # datastrip-centric duplicated pairs (S2 only, see
         # CdsDatatakeS2.compute_duplicated_datastrips)
         self._dup_datastrip_pairs = []
@@ -385,16 +394,22 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
 
         ``item`` is a dict with keys ``product_type``, ``name``, ``paired_with``,
         ``deleted_product`` and the sensing period. Both members are recorded as
-        paired, and the pair is counted (globally and, per interface, whenever it
-        carries a deleted product).
+        paired, and the pair is buffered with its product type and per-interface
+        deletion flags (consumed by ``finalize_duplicateds``).
         """
         self._dup_paired_names.add(item["name"])
         self._dup_paired_names.add(item["paired_with"])
 
         deleted_product = item["deleted_product"]
-        for interface in ("DD", "LTA"):
-            if deleted_product.get(interface):
-                self._dup_pairs_with_deletion[interface] += 1
+        self._dup_pairs.append(
+            {
+                "product_type": item["product_type"],
+                "deleted": {
+                    interface: bool(deleted_product.get(interface))
+                    for interface in ("DD", "LTA")
+                },
+            }
+        )
 
         self._dup_items.append(generated.CdsDatatakeDuplicatedsItems(**item))
         self._dup_pair_count += 1
@@ -444,8 +459,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     ):
         """Register duplicated products of a product type.
 
-        Two consecutive products overlapping by more than
-        ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent are considered as
+        Two consecutive products overlapping by at least
+        ``DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD`` percent and at least
+        ``DUPLICATED_ITEMS_MINIMAL_DURATION`` seconds are considered as
         duplicated of each other; the pair is added once to the buffer.
 
         Args:
@@ -455,7 +471,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         """
 
         items = compute_duplicated_items(
-            candidates, self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD
+            candidates,
+            self.DUPLICATED_ITEMS_PERCENTAGE_THRESHOLD,
+            self.DUPLICATED_ITEMS_MINIMAL_DURATION,
         )
 
         # ``compute_duplicated_items`` returns one entry per detected pair.
@@ -473,13 +491,60 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 candidate.lta_issue,
             )
 
+    def _dataflow_expected_interfaces(self):
+        """Map each product type to the interfaces (DD / LTA) the dataflow expects.
+
+        Reads the ``MaasConfigDataflow`` records for this mission / satellite: a
+        product type is expected on an interface when its ``services_config`` for
+        that interface holds a real service (an item starting with ``C`` or ``P``),
+        the same rule used by the splitted completeness.
+
+        Returns:
+            dict: ``product_type -> set(service_type)``; empty when the dataflow
+                config is not loaded (callers then fall back to the raw count).
+        """
+        expected = {}
+        config = MaasConfigManager().get_config("MaasConfigDataflow")
+        if not config:
+            return expected
+
+        for record in config["records"]:
+            if record.mission != self.mission:
+                continue
+            if self.satellite_unit not in getattr(record, "satellites", []):
+                continue
+            services_config = getattr(record, "services_config", None)
+            if not services_config:
+                continue
+            interfaces = set()
+            for service_type in ("DD", "LTA"):
+                if service_type in services_config and any(
+                    item.startswith(("C", "P"))
+                    for item in services_config[service_type]
+                ):
+                    interfaces.add(service_type)
+            expected[record.product_type] = interfaces
+
+        return expected
+
     def finalize_duplicateds(self):
         """Assemble the nested ``duplicateds`` object from the buffers.
 
         Called once at the end of the include-deleted completeness pass, when both
         members of every duplicated pair and all deleted products are known.
         """
-        expected_pairs = self._dup_pair_count
+        # Each product type is distributed only on the interfaces the dataflow
+        # declares for it. A duplicated pair is "expected to be removed" from an
+        # interface only when that interface actually distributes its product type
+        # (e.g. an S1 SLC pair is never expected to be deleted from DD since SLC is
+        # LTA-only). When the dataflow config is not loaded the map is empty and
+        # every pair is counted, preserving the previous behaviour.
+        expected_interfaces = self._dataflow_expected_interfaces()
+
+        def pair_expected_on(pair, interface):
+            if not expected_interfaces:
+                return True
+            return interface in expected_interfaces.get(pair["product_type"], ())
 
         # One row per service_type (DD / LTA): a flat, Grafana-friendly shape.
         deletions = []
@@ -503,13 +568,24 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
             not_duplicated = sorted(
                 name for name in targeted if name not in self._dup_paired_names
             )
-            # Duplicated pairs that survived: present without a product deleted
-            # from this interface (we cannot tell which single product "should"
-            # survive, so this is counted at the pair level).
-            surviving_pairs = expected_pairs - self._dup_pairs_with_deletion[interface]
 
-            # Share of duplicated pairs whose duplicate was actually deleted from
-            # this interface. 100% when there is no pair to delete.
+            # Only pairs whose product type the dataflow distributes on this
+            # interface are expected to have their duplicate removed from it.
+            expected_pairs = sum(
+                1 for pair in self._dup_pairs if pair_expected_on(pair, interface)
+            )
+            pairs_with_deletion = sum(
+                1
+                for pair in self._dup_pairs
+                if pair_expected_on(pair, interface) and pair["deleted"][interface]
+            )
+            # Duplicated pairs that survived: expected on this interface but without
+            # a product deleted from it (we cannot tell which single product
+            # "should" survive, so this is counted at the pair level).
+            surviving_pairs = expected_pairs - pairs_with_deletion
+
+            # Share of expected duplicated pairs whose duplicate was actually
+            # deleted from this interface. 100% when there is no pair to delete.
             if expected_pairs:
                 completeness = round(
                     (expected_pairs - surviving_pairs) / expected_pairs * 100, 2
