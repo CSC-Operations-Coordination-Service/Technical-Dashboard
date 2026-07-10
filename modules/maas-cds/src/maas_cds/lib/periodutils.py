@@ -250,6 +250,18 @@ def compute_duplicated_indicator(
     return duplicated_indicator
 
 
+def compute_overlap_duration(previous: Period, brother: Period) -> float:
+    """Compute the overlap duration of two periods, in seconds.
+
+    Returns 0.0 when the periods do not overlap.
+    """
+
+    if brother.start >= previous.end:
+        return 0.0
+
+    return (min(previous.end, brother.end) - brother.start).total_seconds()
+
+
 def compute_overlap_percentage(previous: Period, brother: Period) -> float:
     """Compute the overlap percentage of two periods.
 
@@ -260,10 +272,7 @@ def compute_overlap_percentage(previous: Period, brother: Period) -> float:
     duration.
     """
 
-    if brother.start >= previous.end:
-        return 0.0
-
-    common_time = (min(previous.end, brother.end) - brother.start).total_seconds()
+    common_time = compute_overlap_duration(previous, brother)
     total_period = (previous.end - previous.start).total_seconds()
 
     if total_period <= 0:
@@ -275,18 +284,22 @@ def compute_overlap_percentage(previous: Period, brother: Period) -> float:
 def compute_duplicated_items(
     candidates: List[DuplicationCandidate],
     threshold: float = 30.0,
+    minimal_duration: float = 0.0,
 ) -> List[dict]:
     """Identify duplicated products among a list of candidates.
 
     Two *consecutive* products (sorted by sensing start date) whose overlap
-    percentage is greater than or equal to ``threshold`` are considered as
-    duplicated of each other. Every such consecutive pair is returned (each
-    element is compared only with the next one).
+    percentage is greater than or equal to ``threshold`` **and** whose overlap
+    duration is greater than or equal to ``minimal_duration`` seconds are
+    considered as duplicated of each other. Every such consecutive pair is
+    returned (each element is compared only with the next one).
 
     Args:
         candidates (List[DuplicationCandidate]): the products to evaluate, each
             carrying its ``name`` and sensing period. Must be sorted by start.
         threshold (float): minimal overlap percentage to flag a pair.
+        minimal_duration (float): minimal overlap duration, in seconds, to flag a
+            pair (0.0 disables the duration constraint).
 
     Returns:
         List[dict]: one entry per duplicated *pair* (not per member), with keys
@@ -324,12 +337,13 @@ def compute_duplicated_items(
 
     for previous, brother in zip(candidates[:-1], candidates[1:]):
 
-        percentage = compute_overlap_percentage(
-            Period(previous.start, previous.end),
-            Period(brother.start, brother.end),
-        )
+        previous_period = Period(previous.start, previous.end)
+        brother_period = Period(brother.start, brother.end)
 
-        if percentage >= threshold:
+        percentage = compute_overlap_percentage(previous_period, brother_period)
+        duration = compute_overlap_duration(previous_period, brother_period)
+
+        if percentage >= threshold and duration >= minimal_duration:
             deleted_product = _deleted_product(previous, brother)
             duplicated_items.append(
                 _item(previous, brother, percentage, deleted_product)

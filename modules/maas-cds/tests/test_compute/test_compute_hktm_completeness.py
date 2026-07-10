@@ -1,8 +1,15 @@
+import datetime
+
 import pytest
 
 from maas_cds.engines.compute.compute_hktm_related import ComputeHktmRelatedEngine
 
 from maas_cds import model
+
+
+def _collect_filters(search):
+    """Return the list of filter clauses of an opensearch DSL search."""
+    return search.to_dict()["query"]["bool"]["filter"]
 
 
 @pytest.fixture
@@ -155,3 +162,70 @@ def test_search_hktm_factory(target_model, search_method_str):
     search_method = engine.search_hktm_factory()
 
     assert search_method.__name__ == search_method_str
+
+
+def test_search_hktm_production_s1_matches_orbit_from_name():
+    """For S1, the expected downlink is retrieved by orbit parsed from the name."""
+    engine = ComputeHktmRelatedEngine(target_model="CdsHktmProductionCompleteness")
+
+    product = model.CdsProduct(
+        mission="S1",
+        satellite_unit="S1A",
+        name="S1A_HK_RAW__0____20250728T113338_20250728T113339_060283________0B45.SAFE.zip",
+    )
+
+    msearch, valid_input_documents = engine.search_hktm_production([product])
+
+    assert valid_input_documents == [product]
+
+    filters = _collect_filters(msearch._searches[0])
+
+    assert {"term": {"satellite_unit": "S1A"}} in filters
+    # orbit normalized to unpadded to match the stored keyword value
+    assert {"term": {"downlink_absolute_orbit": "60283"}} in filters
+    # the time window is no longer used for S1
+    assert not any("range" in clause for clause in filters)
+
+
+def test_search_hktm_production_s1_skips_when_no_orbit():
+    """A S1 product whose name has no orbit is skipped, not queried."""
+    engine = ComputeHktmRelatedEngine(target_model="CdsHktmProductionCompleteness")
+
+    product = model.CdsProduct(
+        mission="S1",
+        satellite_unit="S1A",
+        name="S1A_MP_HKTM_MTL_20230905T174207_20230917T010101.csv",
+    )
+
+    msearch, valid_input_documents = engine.search_hktm_production([product])
+
+    assert valid_input_documents == []
+    assert msearch._searches == []
+
+
+def test_search_hktm_production_s2_uses_time_window():
+    """For S2 (no orbit in name) the effective downlink time window is used."""
+    engine = ComputeHktmRelatedEngine(
+        target_model="CdsHktmProductionCompleteness", tolerance_value=30
+    )
+
+    product = model.CdsProduct(
+        mission="S2",
+        satellite_unit="S2B",
+        name="S2B_OPER_PRD_HKTM___20211208T181105_20211208T181147_0001.tar",
+        sensing_start_date=datetime.datetime(
+            2021, 12, 8, 18, 11, 5, tzinfo=datetime.timezone.utc
+        ),
+    )
+
+    msearch, valid_input_documents = engine.search_hktm_production([product])
+
+    assert valid_input_documents == [product]
+
+    filters = _collect_filters(msearch._searches[0])
+
+    assert {"term": {"satellite_unit": "S2B"}} in filters
+    assert any("range" in clause for clause in filters)
+    assert not any(
+        "downlink_absolute_orbit" in clause.get("term", {}) for clause in filters
+    )

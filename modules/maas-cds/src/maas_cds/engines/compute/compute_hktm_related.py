@@ -13,6 +13,9 @@ from maas_cds.model import (
     CdsProduct,
 )
 from maas_cds import model
+from maas_cds.lib.parsing_name.parsing_name_s1 import (
+    extract_absolute_orbit_from_hktm_product_name_s1,
+)
 
 
 class ComputeHktmRelatedEngine(DataEngine):
@@ -126,10 +129,12 @@ class ComputeHktmRelatedEngine(DataEngine):
         self, documents: CdsProduct
     ) -> Tuple[MultiSearch, List[Dict]]:
         """
-        Search for HKTM information within a tolerance window.
+        Search for the expected HKTM production completeness of each product.
 
-        This method performs an HKTM search based on a list of input documents and applies
-        a tolerance window to match effective downlink start dates.
+        For S1 the expected downlink is retrieved by its absolute orbit, which
+        is extracted from the product name. For the other missions (e.g. S2),
+        whose name does not carry the orbit, the effective downlink start date
+        is matched within a tolerance window instead.
 
         Args:
         - documents: A list of raw documents for HKTM search.
@@ -144,29 +149,39 @@ class ComputeHktmRelatedEngine(DataEngine):
 
         valid_input_documents = []
         for cds_product in documents:
-            sensing_start_date = getattr(cds_product, "sensing_start_date")
-
-            # ? Use of orbit but only for S1 usage of CdsProductSX can be usefull
-            search = (
-                CdsHktmProductionCompleteness.search()
-                .filter("term", satellite_unit=cds_product.satellite_unit)
-                .filter(
-                    "range",
-                    effective_downlink_start={
-                        "lte": sensing_start_date + tolerance_value
-                    },
-                )
-                .filter(
-                    "range",
-                    effective_downlink_start={
-                        "gte": sensing_start_date - tolerance_value
-                    },
-                )
+            search = CdsHktmProductionCompleteness.search().filter(
+                "term", satellite_unit=cds_product.satellite_unit
             )
 
             if cds_product.mission == "S1":
+                # The expected downlink is uniquely identified by its absolute
+                # orbit, extracted from the HKTM product name. Retrieving by
+                # orbit is more reliable than a time window.
+                absolute_orbit = extract_absolute_orbit_from_hktm_product_name_s1(
+                    cds_product.name
+                )
+
+                if absolute_orbit is None:
+                    self.logger.warning(
+                        "Could not extract absolute orbit from name %s, skipping",
+                        cds_product.name,
+                    )
+                    continue
+
                 search = search.filter(
-                    "term", downlink_absolute_orbit=cds_product.absolute_orbit
+                    "term", downlink_absolute_orbit=str(absolute_orbit)
+                )
+            else:
+                # Other missions (e.g. S2) do not carry the orbit in the name,
+                # fall back to matching the effective downlink within tolerance.
+                sensing_start_date = cds_product.sensing_start_date
+
+                search = search.filter(
+                    "range",
+                    effective_downlink_start={
+                        "gte": sensing_start_date - tolerance_value,
+                        "lte": sensing_start_date + tolerance_value,
+                    },
                 )
 
             msearch = msearch.add(search)

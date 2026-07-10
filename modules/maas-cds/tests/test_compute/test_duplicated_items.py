@@ -3,8 +3,10 @@
 import datetime
 from collections import Counter
 from datetime import timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
+from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.model.datatake_s1 import CdsDatatakeS1
 from maas_cds.model.datatake_s2 import CdsDatatakeS2
 from maas_cds.model.product import CdsProduct
@@ -238,6 +240,142 @@ def test_compute_completeness_deletion_aggregate_dd_and_lta(mock_scan, *_mocks):
     assert deletion["LTA"].deletion_completenness_percentange == 50.0
 
 
+@patch.object(
+    CdsDatatakeS1,
+    "_dataflow_expected_interfaces",
+    return_value={"IW_RAW__0S": {"DD", "LTA"}, "IW_SLC__1S": {"LTA"}},
+)
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(
+    CdsDatatakeS1,
+    "get_all_product_types",
+    return_value=["IW_RAW__0S", "IW_SLC__1S"],
+)
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_expected_pairs_filtered_by_dataflow(
+    mock_scan, *_mocks
+):
+    """Expected pairs to be removed are filtered per interface using the dataflow.
+
+    Two duplicated pairs of different product types:
+    - IW_RAW__0S: A-B overlap, B deleted from DD (RAW is expected on DD + LTA)
+    - IW_SLC__1S: E-F overlap, F deleted from LTA (SLC is expected on LTA only)
+
+    On DD only the RAW pair is expected (SLC is LTA-only), so DD expects 1 pair
+    (deleted -> 100%). On LTA both pairs are expected, only the SLC one is deleted
+    -> 1 of 2 survives (50%).
+    """
+
+    products_by_type = {
+        "IW_RAW__0S": [
+            _product("A", 0, 100),
+            _product("B", 50, 150, deleted=True, interface="DD", issue="SOA-DD"),
+        ],
+        "IW_SLC__1S": [
+            _product("E", 0, 100),
+            _product("F", 50, 150, deleted=True, interface="LTA", issue="SOA-LTA"),
+        ],
+    }
+
+    def _scan(product_type, indices=None, include_deleted=False):
+        return products_by_type.get(product_type, [])
+
+    mock_scan.side_effect = _scan
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    # both pairs are still detected and listed
+    assert datatake.duplicateds.pairs_count == 2
+
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+
+    # DD: SLC is LTA-only, so only the RAW pair is expected on DD and it is deleted
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["DD"].surviving_pairs_count == 0
+    assert deletion["DD"].deletion_completenness_percentange == 100.0
+
+    # LTA: both pairs expected; only the SLC pair carries an LTA deletion
+    assert deletion["LTA"].expected_pairs_count == 2
+    assert deletion["LTA"].surviving_pairs_count == 1
+    assert deletion["LTA"].deletion_completenness_percentange == 50.0
+
+
+def _dataflow_record(mission, satellites, product_type, services_config):
+    return SimpleNamespace(
+        mission=mission,
+        satellites=satellites,
+        product_type=product_type,
+        services_config=services_config,
+    )
+
+
+@patch.object(MaasConfigManager, "get_config")
+def test_dataflow_expected_interfaces_maps_product_type_to_interfaces(mock_get_config):
+    """The dataflow config is parsed into product_type -> {DD, LTA}.
+
+    - a real service (item starting with C or P) marks the interface as expected
+    - records of another mission / satellite are ignored
+    - a product type with no real DD/LTA service maps to an empty set (never
+      counted as an expected pair on either interface)
+    """
+
+    mock_get_config.return_value = {
+        "records": [
+            # RAW: distributed on both DD and LTA
+            _dataflow_record(
+                "S1", ["S1A", "S1B"], "IW_RAW__0S",
+                {"DD": ["C-PRIP", "P"], "LTA": ["C-PRIP", "P"]},
+            ),
+            # SLC: LTA only (DD holds no real service)
+            _dataflow_record(
+                "S1", ["S1A"], "IW_SLC__1S",
+                {"DD": ["N"], "LTA": ["C-PRIP", "P"]},
+            ),
+            # OCN annotation: no real DD/LTA service at all
+            _dataflow_record("S1", ["S1A"], "IW_OCN__2A", {"DA": ["P"]}),
+            # different satellite -> ignored
+            _dataflow_record("S1", ["S1B"], "IW_GRDH_1S", {"LTA": ["P"]}),
+            # different mission -> ignored
+            _dataflow_record("S2", ["S2A"], "MSI_L0__DS", {"LTA": ["P"]}),
+        ]
+    }
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+    )
+
+    assert datatake._dataflow_expected_interfaces() == {
+        "IW_RAW__0S": {"DD", "LTA"},
+        "IW_SLC__1S": {"LTA"},
+        "IW_OCN__2A": set(),
+    }
+
+
+@patch.object(MaasConfigManager, "get_config", return_value=None)
+def test_dataflow_expected_interfaces_empty_when_config_not_loaded(_mock_get_config):
+    """When the dataflow config is not loaded the map is empty (raw-count fallback)."""
+
+    datatake = CdsDatatakeS2(
+        datatake_id="DT",
+        satellite_unit="S2A",
+        mission="S2",
+    )
+
+    assert datatake._dataflow_expected_interfaces() == {}
+
+
 def _s2_product(
     name,
     product_type,
@@ -441,6 +579,41 @@ def test_compute_duplicated_datastrips_deletion_expected_per_interface(
     assert deletions_b["LTA"].deleted_products_count == 1
     assert deletions_b["LTA"].deleted_products_expected == 2
     assert deletions_b["LTA"].deleted_product_percentage == 50.0
+
+
+@patch.object(CdsDatatakeS2, "get_product_partitionning", return_value=None)
+@patch.object(CdsDatatakeS2, "find_brother_products_scan")
+def test_compute_duplicated_datastrips_below_minimal_duration(mock_scan, _mock_part):
+    """L0 datastrips overlapping >=30% but <15s are not a datastrip pair.
+
+    A(0-20) and B(10-30) overlap for 10s (50% of A) : above the 30% threshold
+    but below the 15s minimal overlap duration, so no pair is reported.
+    """
+
+    ds_products = [
+        _s2_product("L0DS_A.tar", "MSI_L0__DS", start_offset=0, end_offset=20),
+        _s2_product("L0DS_B.tar", "MSI_L0__DS", start_offset=10, end_offset=30),
+    ]
+
+    mock_scan.side_effect = lambda product_type, indices=None, include_deleted=False: (
+        ds_products
+        if product_type == CdsDatatakeS2.DUPLICATED_DATASTRIP_REFERENCE_TYPE
+        else []
+    )
+
+    datatake = CdsDatatakeS2(
+        datatake_id="DT",
+        satellite_unit="S2A",
+        mission="S2",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+    datatake._init_duplicateds_buffers()
+    datatake._include_deleted_products = True
+
+    datatake.compute_duplicated_datastrips()
+
+    assert datatake._dup_datastrip_pairs == []
 
 
 @patch.object(CdsDatatakeS2, "get_product_partitionning", return_value=None)

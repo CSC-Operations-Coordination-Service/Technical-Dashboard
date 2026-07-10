@@ -8,6 +8,7 @@ from maas_cds.lib.periodutils import (
     compute_duplicated_indicator,
     compute_duplicated_items,
     compute_overlap_percentage,
+    compute_overlap_duration,
     reduce_periods,
 )
 from maas_cds.model.product import CdsProduct
@@ -115,6 +116,40 @@ def test_compute_duplicated_items_needs_at_least_two():
         )
         == []
     )
+
+
+def test_compute_overlap_duration():
+    # B starts 5s into A (which ends at +10s) -> 5s overlap
+    a = Period(
+        datestr_to_utc_datetime("20240205T100000"),
+        datestr_to_utc_datetime("20240205T100010"),
+    )
+    b = Period(
+        datestr_to_utc_datetime("20240205T100005"),
+        datestr_to_utc_datetime("20240205T100020"),
+    )
+    assert compute_overlap_duration(a, b) == 5.0
+
+    # no overlap
+    c = Period(
+        datestr_to_utc_datetime("20240205T100020"),
+        datestr_to_utc_datetime("20240205T100030"),
+    )
+    assert compute_overlap_duration(a, c) == 0.0
+
+
+def test_compute_duplicated_items_respects_minimal_duration():
+    # A(20s) and B overlap for 10s -> 50% of A but only 10s of overlap.
+    candidates = [
+        _candidate("A", "20240205T100000", "20240205T100020"),
+        _candidate("B", "20240205T100010", "20240205T100030"),
+    ]
+
+    # 50% >= 30% and no duration constraint -> flagged
+    assert len(compute_duplicated_items(candidates, 30.0)) == 1
+
+    # 10s overlap is below the 15s minimal duration -> not flagged
+    assert compute_duplicated_items(candidates, 30.0, minimal_duration=15.0) == []
 
 
 def test_reduce_periods_same():
