@@ -1,0 +1,84 @@
+{
+    "models": [
+        {
+            "index": "raw-data-quality-disclaimer",
+            "name": "QualityDisclaimer",
+            "fields": [
+                {
+                    "name": "disclaimer_id",
+                    "type": "Integer"
+                },
+                {
+                    "name": "last_modified",
+                    "type": "Date"
+                },
+                {
+                    "name": "mission",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "description",
+                    "type": "Text"
+                },
+                {
+                    "name": "product_quality_status",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "degradation_percentage",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "validity_start",
+                    "type": "Date"
+                },
+                {
+                    "name": "validity_stop",
+                    "type": "Date"
+                },
+                {
+                    "name": "product_types",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "pdf_filename",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "pdf_url",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "title",
+                    "type": "Text"
+                },
+                {
+                    "name": "cause",
+                    "type": "Text"
+                },
+                {
+                    "name": "status",
+                    "type": "Text"
+                },
+                {
+                    "name": "degradation_types_selected",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "impacted_products_count",
+                    "type": "Integer"
+                },
+                {
+                    "name": "impacted_product_names",
+                    "type": "Keyword"
+                },
+                {
+                    "name": "interface_name",
+                    "type": "Keyword"
+                }
+            ],
+            "partition_field": "ingestionTime",
+            "partition_format": "%Y-%m"
+        }
+    ]
+}

@@ -896,6 +896,40 @@ def replay_parser() -> ArgumentParser:
     return parser
 
 
+def disclaimer_parser():
+    """SAR-MPC Quality Disclaimer CLI argument parser factory
+
+    Returns:
+        ArgumentParser: Disclaimer argument parser
+
+    """
+    parser = ArgumentParser(add_help=False)
+
+    parser.add_argument(
+        "--disclaimer-timeout",
+        dest="disclaimer_timeout",
+        help="Default timeout (default: %(default)s)",
+        action=EnvDefault,
+        envvar="DISCLAIMER_TIMEOUT",
+        required=False,
+        type=int,
+        default=120,
+    )
+
+    parser.add_argument(
+        "--disclaimer-keep-files",
+        dest="disclaimer_keep_files",
+        help="Keep downloaded api pages (default: %(default)s)",
+        action=EnvDefault,
+        envvar="DISCLAIMER_KEEP_FILES",
+        required=False,
+        type=bool,
+        default=False,
+    )
+
+    return parser
+
+
 def common_parser() -> ArgumentParser:
     """common cli parser factory
 

@@ -53,3 +53,7 @@ from maas_cds.engines.reports.grafana_usage import GrafanaUsageConsolidatorEngin
 from maas_cds.engines.reports.consolidate_databudget import ConsolidateDatabudget
 
 from maas_cds.engines.reports.s3p_session import S3pSessionConsolidatorEngine
+
+from maas_cds.engines.reports.quality_disclaimer import (
+    QualityDisclaimerConsolidatorEngine,
+)

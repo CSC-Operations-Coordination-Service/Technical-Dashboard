@@ -1,0 +1,50 @@
+{
+    "collectors": [
+        {
+            "class": "DisclaimerCollectorConfiguration",
+            "id_field": "disclaimer_id",
+            "force_update": true,
+            "routing_key": "new.raw.data.quality-disclaimer",
+            "interface_name": "SAR_MPC_Quality_Disclaimers",
+            "file_pattern": "Disclaimer_*.json",
+            "product_url": "https://sar-mpc.eu",
+            "listing_path": "/disclaimers/",
+            "protocol_version": "v1",
+            "refresh_interval": 10080,
+            "end_date_time_offset": 0,
+            "page_limit": 0,
+            "stop_on_seen": true,
+            "keep_pdf": false,
+            "expected_collect_interval": 10080,
+            "model": "QualityDisclaimer",
+            "extractor": {
+                "class": "JSONExtractor",
+                "args": {
+                    "allow_partial": true,
+                    "attr_map": {
+                        "disclaimer_id": "$.disclaimer_id",
+                        "last_modified": "$.last_modified",
+                        "mission": "$.mission",
+                        "description": "$.description",
+                        "product_quality_status": "$.product_quality_status",
+                        "degradation_percentage": "$.degradation_percentage",
+                        "validity_start": "$.validity_start",
+                        "validity_stop": "$.validity_stop",
+                        "product_types": "$.product_types",
+                        "pdf_filename": "$.pdf_filename",
+                        "pdf_url": "$.pdf_url",
+                        "title": "$.pdf.title",
+                        "cause": "$.pdf.cause",
+                        "status": "$.pdf.status",
+                        "degradation_types_selected": "$.pdf.degradation_types_selected",
+                        "impacted_products_count": "$.pdf.impacted_products_count",
+                        "impacted_product_names": "$.pdf.impacted_product_names",
+                        "interface_name": {
+                            "python": "lambda c: 'SAR_MPC_Quality_Disclaimers'"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

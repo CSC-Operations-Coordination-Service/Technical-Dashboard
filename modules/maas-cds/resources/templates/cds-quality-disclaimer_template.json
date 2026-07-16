@@ -1,0 +1,82 @@
+{
+    "aliases": {
+        "cds-quality-disclaimer": {}
+    },
+    "index_patterns": [
+        "cds-quality-disclaimer-*"
+    ],
+    "settings": {
+        "index": {
+            "number_of_shards": 3,
+            "number_of_replicas": 1
+        }
+    },
+    "mappings": {
+        "properties": {
+            "disclaimer_id": {
+                "type": "long"
+            },
+            "last_modified": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "mission": {
+                "type": "keyword"
+            },
+            "description": {
+                "type": "text"
+            },
+            "product_quality_status": {
+                "type": "keyword"
+            },
+            "degradation_percentage": {
+                "type": "keyword"
+            },
+            "validity_start": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "validity_stop": {
+                "type": "date",
+                "format": "date_time",
+                "locale": "utc"
+            },
+            "product_types": {
+                "type": "keyword"
+            },
+            "pdf_filename": {
+                "type": "keyword"
+            },
+            "pdf_url": {
+                "type": "keyword"
+            },
+            "title": {
+                "type": "text"
+            },
+            "cause": {
+                "type": "text"
+            },
+            "status": {
+                "type": "text"
+            },
+            "degradation_types_selected": {
+                "type": "keyword"
+            },
+            "impacted_products_count": {
+                "type": "long"
+            },
+            "impacted_product_names": {
+                "type": "keyword"
+            },
+            "interface_name": {
+                "type": "keyword"
+            }
+        },
+        "_meta": {
+            "partition_field": "last_modified",
+            "partition_format": "%Y-%m"
+        }
+    }
+}

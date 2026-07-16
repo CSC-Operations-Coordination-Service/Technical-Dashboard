@@ -28,6 +28,8 @@ from maas_collector.rawdata.collector.jiraxcollector import JIRAExtendedCollecto
 
 from maas_collector.rawdata.collector.lokicollector import LokiCollector
 
+from maas_collector.rawdata.collector.disclaimercollector import DisclaimerCollector
+
 from maas_collector.rawdata.collector.mpipcollector import MpipCollector
 
 from maas_collector.rawdata.collector.s3collector import S3Collector

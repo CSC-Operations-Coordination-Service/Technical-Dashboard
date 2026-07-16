@@ -63,3 +63,6 @@ from maas_cds.model.cds_completeness import *
 from maas_cds.model.configuration import *
 
 from maas_cds.model.s3p_session import *
+
+# SAR-MPC Quality Disclaimers (raw + consolidated)
+from maas_cds.model.quality_disclaimer import *

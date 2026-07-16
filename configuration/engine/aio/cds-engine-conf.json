@@ -4,6 +4,17 @@
             "name": "collect-exchange",
             "queues": [
                 {
+                    "name": "collect-new.raw.data.quality-disclaimer",
+                    "routing_key": "new.raw.data.quality-disclaimer",
+                    "events": [
+                        {
+                            "id": "CONSOLIDATE_QUALITY_DISCLAIMER",
+                            "target_model": "CdsQualityDisclaimer",
+                            "send_reports": true
+                        }
+                    ]
+                },
+                {
                     "name": "collect-new.raw.data.ddp-data-available",
                     "routing_key": "new.raw.data.ddp-data-available",
                     "events": [
