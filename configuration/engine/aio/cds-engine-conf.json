@@ -301,6 +301,26 @@
             "name": "etl-exchange",
             "queues": [
                 {
+                    "name": "etl-new.cds-quality-disclaimer",
+                    "routing_key": "new.cds-quality-disclaimer",
+                    "events": [
+                        {
+                            "id": "COMPUTE_QUALITY_DISCLAIMER_KNOWN_ISSUE",
+                            "send_reports": false
+                        }
+                    ]
+                },
+                {
+                    "name": "etl-update.cds-quality-disclaimer",
+                    "routing_key": "update.cds-quality-disclaimer",
+                    "events": [
+                        {
+                            "id": "COMPUTE_QUALITY_DISCLAIMER_KNOWN_ISSUE",
+                            "send_reports": false
+                        }
+                    ]
+                },
+                {
                     "name": "etl-compute.cds-datatake",
                     "routing_key": "compute.cds-datatake",
                     "events": [

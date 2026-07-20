@@ -49,3 +49,7 @@ from maas_cds.engines.compute.anomaly_correlation_ticket import (
 from maas_cds.engines.compute.track_deletion import (
     TrackDeletionEngine,
 )
+
+from maas_cds.engines.compute.known_issue import (
+    QualityDisclaimerKnownIssueEngine,
+)

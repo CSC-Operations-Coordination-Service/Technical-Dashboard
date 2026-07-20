@@ -214,6 +214,9 @@
             "datatake_cams_ticket": {
                 "type": "keyword"
             },
+            "known_issue": {
+                "type": "keyword"
+            },
             "last_attached_ticket": {
                 "type": "keyword"
             },

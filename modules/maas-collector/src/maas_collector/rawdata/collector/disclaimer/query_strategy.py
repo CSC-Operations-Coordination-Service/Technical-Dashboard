@@ -42,7 +42,6 @@ class AbstractDisclaimerQueryStrategy(AbstractHttpQueryStrategy):
 
         self.listing_path = config.listing_path
         self.page_limit = config.page_limit
-        self.stop_on_seen = config.stop_on_seen
         self.disclaimer_ids = config.disclaimer_ids
         self.keep_pdf = config.keep_pdf
 

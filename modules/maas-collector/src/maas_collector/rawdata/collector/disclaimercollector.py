@@ -39,12 +39,10 @@ class DisclaimerCollectorConfiguration(HttpCollectorConfiguration):
     # path (relative to product_url) of the disclaimers listing page
     listing_path: str = "/disclaimers/"
 
-    # maximum number of listing pages to walk per run (0 = no limit)
+    # maximum number of listing pages to walk per run (0 = no limit).
+    # The full listing is always scanned; new/modified disclaimers are detected
+    # by comparing each row's last_modified against the stored document.
     page_limit: int = 0
-
-    # when True, stop paginating as soon as a listing page contains only
-    # disclaimers already collected (last_modified <= journal date)
-    stop_on_seen: bool = True
 
     # optional explicit list of disclaimer ids to collect (overrides the
     # listing walk); handy for targeted (re)collection and testing

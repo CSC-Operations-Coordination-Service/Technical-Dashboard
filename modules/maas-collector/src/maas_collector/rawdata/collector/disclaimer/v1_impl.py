@@ -10,6 +10,7 @@ import tempfile
 import typing
 
 from bs4 import BeautifulSoup
+from opensearchpy.exceptions import NotFoundError
 from requests import RequestException
 
 from maas_collector.rawdata.collector.disclaimer.query_strategy import (
@@ -52,15 +53,27 @@ class DisclaimerQueryV1Implementation(AbstractDisclaimerQueryStrategy):
                 yield document
 
     def _iter_listing(self):
-        """Walk the paginated listing, newest first, honouring incremental limits."""
-        start_naive = self._to_naive_utc(self.start_date)
+        """Walk the whole listing and collect disclaimers that are new or modified.
+
+        For every disclaimer on the site, the listing's ``last modified`` value is
+        compared against the one already stored in OpenSearch:
+          - not stored yet (e.g. first run)  -> collect
+          - stored value older than the site  -> collect (re-modified, overwrites)
+          - stored value equal/newer          -> skip (no detail/PDF fetch)
+
+        The full listing is scanned every run (the site is ordered by id, not by
+        last-modified, so a re-modified old disclaimer can sit on any page).
+        """
+        stored = self._load_stored_last_modified()
         self.logger.info(
-            "[%s] Collecting disclaimers modified after %s",
+            "[%s] %d disclaimer(s) already stored; scanning the full listing",
             self.interface_name,
-            start_naive,
+            len(stored),
         )
 
+        seen_ids: set = set()
         page = 1
+        scanned = 0
         collected = 0
         while True:
             if self.collector.should_stop_loop:
@@ -71,43 +84,92 @@ class DisclaimerQueryV1Implementation(AbstractDisclaimerQueryStrategy):
 
             rows = self._fetch_listing_rows(page)
             if not rows:
-                self.logger.info("No more disclaimers on page %s: stopping", page)
+                self.logger.info("No more disclaimers after page %s", page - 1)
                 break
 
-            new_in_page = 0
+            page_new_ids = 0
             for row in rows:
                 if self.collector.should_stop_loop:
                     break
 
-                last_modified = row.get("last_modified_dt")
+                disclaimer_id = row["disclaimer_id"]
+                # the site clamps out-of-range ?page=N to the last page instead of
+                # returning an empty list, so stop once a page brings no new id
+                # (otherwise the walk would never terminate)
+                if disclaimer_id in seen_ids:
+                    continue
+                seen_ids.add(disclaimer_id)
+                page_new_ids += 1
+                scanned += 1
+
+                current = row.get("last_modified_dt")
+                previous = stored.get(disclaimer_id)
+
+                # skip only when we already have it and it has not been modified
                 if (
-                    start_naive is not None
-                    and last_modified is not None
-                    and last_modified <= start_naive
+                    previous is not None
+                    and current is not None
+                    and current <= previous
                 ):
-                    # already collected on a previous run
                     continue
 
-                document = self._collect_disclaimer(
-                    row["disclaimer_id"], listing_row=row
-                )
+                document = self._collect_disclaimer(disclaimer_id, listing_row=row)
                 if document:
-                    self._current_id = row["disclaimer_id"]
-                    new_in_page += 1
+                    self._current_id = disclaimer_id
                     collected += 1
                     yield document
 
-            if self.stop_on_seen and new_in_page == 0:
+            if page_new_ids == 0:
                 self.logger.info(
-                    "No new disclaimers on page %s: stopping pagination", page
+                    "Page %s returned only already-seen ids "
+                    "(end of listing / pagination clamp): stopping",
+                    page,
                 )
                 break
 
             page += 1
 
         self.logger.info(
-            "[%s] Collected %d disclaimer(s)", self.interface_name, collected
+            "[%s] Scanned %d disclaimer(s), collected %d new/modified",
+            self.interface_name,
+            scanned,
+            collected,
         )
+
+    def _load_stored_last_modified(self) -> dict:
+        """Map already-stored disclaimer id -> last_modified (naive UTC).
+
+        Returns an empty map when the raw index does not exist yet (first run),
+        so every disclaimer is collected.
+        """
+        stored: dict = {}
+        model = self.config.model
+        if model is None:
+            return stored
+
+        try:
+            search = (
+                model.search()
+                .source(["disclaimer_id", "last_modified"])
+                .params(size=1000)
+            )
+            for doc in search.scan():
+                disclaimer_id = getattr(doc, "disclaimer_id", None)
+                if disclaimer_id is None:
+                    continue
+                stored[int(disclaimer_id)] = self._to_naive_utc(
+                    getattr(doc, "last_modified", None)
+                )
+        except NotFoundError:
+            self.logger.info(
+                "Raw index absent: first run, all disclaimers will be collected"
+            )
+        except Exception as error:  # pylint: disable=broad-except
+            self.logger.warning(
+                "Could not load stored disclaimers (collecting all): %s", error
+            )
+
+        return stored
 
     # ------------------------------------------------------------------ #
     # HTTP helpers

@@ -29,6 +29,11 @@ class CdsProduct(
     # Kept distinct from ``cams_tickets`` which holds direct product-level correlations.
     datatake_cams_ticket = Keyword()
 
+    # Id of the SAR-MPC Quality Disclaimer that flags this product as degraded.
+    # Stamped by the QualityDisclaimerKnownIssueEngine (single value, overwritten by
+    # the most recent disclaimer that lists the product).
+    known_issue = Keyword()
+
     _PARTITION_FIELDS = [
         "PRIP_.*_publication_date",  # Format to keep
         "prip_publication_date",  # current -
