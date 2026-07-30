@@ -16,41 +16,53 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date and time when this consolidated metric document was last updated by the consolidation engine"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Raw metric name from the source, parsed to derive the metric, product type, mission and satellite unit (e.g. Archived.<productType>.<mission>.<unit>.<metricType>)"
             },
             "timestamp": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the metric measurement"
             },
             "metric_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Metric action derived from the raw name, such as archived or download"
             },
             "metric_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the metric as provided by the source"
             },
             "counter": {
-                "type": "long"
+                "type": "long",
+                "description": "Value of the metric counter"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Short mission name derived from the metric name (e.g. S1, S2)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit derived from the metric name (e.g. S1A)"
             },
             "product_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type derived from the metric name"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the interface the metric originates from"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service associated with the metric"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the production service associated with the metric"
             }
         },
         "_meta": {

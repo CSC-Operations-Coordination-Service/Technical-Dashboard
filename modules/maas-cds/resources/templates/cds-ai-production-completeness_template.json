@@ -14,36 +14,46 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last consolidation update of this AI production completeness document (UTC)"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission of the AI product (Sentinel-1)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit of the AI product (e.g. S1A, S1B)"
             },
             "sensing_start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start of the sensing window of the AI product, part of the completeness identity (UTC)"
             },
             "sensing_end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "End of the sensing window of the AI product, part of the completeness identity (UTC)"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datatake identifier taken from the input AI_RAW__0_ product"
             },
             "input_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the input AI_RAW__0_ product"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness of the input AI_RAW__0_ product"
             },
             "file_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the produced AISAUX product"
             },
             "completeness": {
-                "type": "long"
+                "type": "long",
+                "description": "AI production completeness indicator: 1 when the AISAUX product is produced, 0 otherwise"
             }
         },
         "_meta": {}

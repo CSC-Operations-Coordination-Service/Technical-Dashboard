@@ -16,51 +16,66 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the source report was ingested into the system"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source folder or path where the report file was collected"
             },
             "session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "CADIP acquisition session identifier the file belongs to (from SessionId)"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "File name as published by the CADIP service (from Name)"
             },
             "channel": {
-                "type": "long"
+                "type": "long",
+                "description": "Channel number the file was acquired on (from Channel)"
             },
             "block_number": {
-                "type": "long"
+                "type": "long",
+                "description": "Sequence block number of the file within the session (from BlockNumber)"
             },
             "final_block": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Whether this file is the final block of the transfer (from FinalBlock)"
             },
             "publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the file was published by the CADIP service (from PublicationDate)"
             },
             "eviction_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the file is scheduled to be evicted from the CADIP store (from EvictionDate)"
             },
             "size": {
-                "type": "long"
+                "type": "long",
+                "description": "Size of the file in bytes (from Size)"
             },
             "retransfer": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Whether the file was delivered as a retransfer (from Retransfer)"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the collector interface that produced this record (e.g. CADIP_<station>_Files)"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service that provided the file, set to CADIP"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the CADIP ground station service that provided the file"
             }
         },
         "_meta": {

@@ -11,16 +11,20 @@
     "mappings": {
         "properties": {
             "display_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Human-readable display name of the satellite"
             },
             "short_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Short name of the satellite"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission the satellite belongs to (e.g. S1, S2, S3)"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique key of the satellite configuration entry"
             }
         },
         "_meta": {}

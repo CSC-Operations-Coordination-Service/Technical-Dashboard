@@ -16,67 +16,87 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the CAMS ticket was ingested into the raw-data store"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source folder of the ingested report"
             },
             "title": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ticket title taken from the Jira issue summary"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Jira issue key uniquely identifying the CAMS ticket"
             },
             "affected_systems": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground segment systems affected by the anomaly (Jira affected-systems field)"
             },
             "criticality": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Criticality level of the anomaly (Jira criticality field)"
             },
             "urgency": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Urgency level of the anomaly (Jira urgency field)"
             },
             "originating_entity": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Entity that originated the ticket (Jira originating-entity field)"
             },
             "entity": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Primary entity responsible for the ticket (Jira entity field)"
             },
             "assigned_element": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Element(s) the ticket is assigned to (Jira assigned-element field)"
             },
             "review_board_dispositions": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Review board dispositions recorded on the ticket (Jira field)"
             },
             "reporter": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Display name of the Jira user who reported the ticket"
             },
             "involved_entities": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Entities involved in the ticket (Jira involved-entities field)"
             },
             "created": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the CAMS ticket was created in Jira"
             },
             "updated": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the CAMS ticket was last updated in Jira"
             },
             "occurence_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the anomaly occurred (Jira occurrence-date field)"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Current workflow status of the Jira ticket"
             },
             "environment": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Environment description of the ticket (Jira environment field)"
             },
             "linked_issues": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Keys of Jira issues linked to this ticket"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the collector interface that produced the record"
             }
         },
         "_meta": {

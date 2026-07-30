@@ -16,79 +16,101 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the raw report was ingested into the dashboard by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file from which this record was extracted"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or path of the source report file from which this record was extracted"
             },
             "product_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier from the PRIP interface (OData Id)"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product file name from the PRIP interface (OData Name)"
             },
             "packet_store_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Packet store identifier used to derive S1 raw product timeliness (NRT-PT/NTC)"
             },
             "content_length": {
-                "type": "long"
+                "type": "long",
+                "description": "Product file size in bytes (OData ContentLength)"
             },
             "publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the PRIP interface (OData PublicationDate)"
             },
             "fos_pushing_date_backup": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was pushed by the FOS backup chain, used for HKTM completeness"
             },
             "fos_pushing_date_nominal": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was pushed by the FOS nominal chain, used for HKTM completeness"
             },
             "start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing start date (OData ContentDate.Start)"
             },
             "end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing end date (OData ContentDate.End)"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the PRIP interface instance the product was collected from"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service providing the product (PRIP)"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the PRIP production service instance providing the product"
             },
             "eviction_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product is scheduled to be evicted from the PRIP interface (OData EvictionDate)"
             },
             "origin_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product origin date at the source (OData OriginDate)"
             },
             "footprint": {
                 "type": "geo_shape",
                 "coerce": true,
-                "ignore_malformed": true
+                "ignore_malformed": true,
+                "description": "Geographic footprint of the product (OData GeoFootprint), populated for selected product types"
             },
             "product_group_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product group identifier grouping related S2 products (OData Attribute productGroupId)"
             },
             "datastrip_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datastrip identifier of the product for S2 (OData Attribute datastripId)"
             },
             "quality_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Quality status of the product (OData Attribute qualityStatus)"
             },
             "cloud_cover": {
-                "type": "float"
+                "type": "float",
+                "description": "Cloud cover percentage of the product (OData Attribute cloudCover)"
             }
         },
         "_meta": {

@@ -16,93 +16,121 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the mission planning report was ingested by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or interface path from which the source report was collected"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite identifier extracted from the SatelliteID column"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier set by the collector (S1 or S2 depending on the source report)"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datatake identifier from DatatakeId(dec) (S1) or ID/AcquisitionID (S2)"
             },
             "effective_downlink_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Effective downlink start time from the EffectiveDownlinkStart column"
             },
             "effective_downlink_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Effective downlink stop time from the EffectiveDownlinkStop column"
             },
             "downlink_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Downlink duration in milliseconds from the DownlinkDuration [msec] column"
             },
             "latency": {
-                "type": "long"
+                "type": "long",
+                "description": "Latency in minutes from the Latency [min] column"
             },
             "station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station acquiring the downlink, from the CGS (S1) or Station (S2) column"
             },
             "downlink_polarization": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink polarization from the DownlinkPolarization column"
             },
             "downlink_absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit of the downlink from the DownlinkAbsoluteOrbit (S1) or DownlinkOrbit (S2) column"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number from the RelativeOrbit column"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number from the AbsoluteOrbit column"
             },
             "channel": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink channel from the Channel column"
             },
             "partial": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Partial acquisition indicator from the Partial column"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collector interface name set to S1MissionPlanningALL or S2MissionPlanningALL"
             },
             "acquisition_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Acquisition start time from the SensingTimeStart (S1) or AcquisitionStart (S2) column"
             },
             "acquisition_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Acquisition stop time from the AcquisitionStop column"
             },
             "acquisition_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Acquisition duration in milliseconds from the SensingDuration [msec] (S1) or AcquisitionDuration [msec] (S2) column"
             },
             "number_of_scenes": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of scenes from the Scenes column"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness category from the Timeliness column"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Acquisition or downlink status from the Status column"
             },
             "polarization": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Acquisition polarization from the Polarization column"
             },
             "instrument_mode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument acquisition mode from the InstrumentMode column"
             },
             "session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink session identifier from the DLSession column, split on hyphen or whitespace"
             },
             "downlink_execution_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Downlink execution time from the DownlinkExecutionTime column"
             }
         },
         "_meta": {

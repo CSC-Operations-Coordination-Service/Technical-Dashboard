@@ -129,6 +129,62 @@ def test_generate_python_samples():
     assert Sample1complex.Index.name == "sample1-complex"
 
 
+def test_field_description_meta():
+    """the "description" field metadata is parsed into FieldMeta"""
+    meta = ModelClassMeta(TPL1)
+
+    meta.load()
+
+    kw_field, int_field, *_ = meta.fields
+
+    assert kw_field.name == "kw_field"
+    assert kw_field.description == "A keyword field with a description"
+
+    # a field without description keeps the default None
+    assert int_field.name == "int_field"
+    assert int_field.description is None
+
+
+def test_field_description_nested_meta():
+    """the "description" metadata is parsed on object and nested fields"""
+    meta = ModelClassMeta(TPL4)
+
+    meta.load()
+
+    properties_field = next(f for f in meta.fields if f.name == "properties")
+
+    assert properties_field.type_name == "Object"
+    assert properties_field.description == "A nested object with a description"
+
+    datatake_id = next(
+        f for f in properties_field.properties if f.name == "datatake_id"
+    )
+    assert datatake_id.description == "Identifier of the datatake"
+
+
+def test_generate_python_description_docstring():
+    """the field description is injected as an attribute docstring in the code"""
+    generated_code = generate_python(TPL1, TPL4)
+
+    # scalar field docstring
+    assert (
+        'kw_field = Keyword()\n\n    """A keyword field with a description"""'
+        in generated_code
+    )
+
+    # object field docstring on the parent attribute
+    assert '"""A nested object with a description"""' in generated_code
+
+    # nested field docstring inside the inner document class
+    assert '"""Identifier of the datatake"""' in generated_code
+
+    # a field without description gets no docstring
+    assert '"""None"""' not in generated_code
+
+    # the generated code is still valid Python
+    exec(generated_code, globals())
+
+
 def test_duplicated():
     with pytest.raises(ValueError):
         generate_python(TPL1, TPL1)

@@ -16,233 +16,297 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last update of this consolidated document"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique consolidated product identifier (MD5 hash of the product name without extension)"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product name as delivered by the source interface"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier the product belongs to (e.g. S1, S2, S3, S5)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit that produced the product (e.g. S1A, S2B)"
             },
             "sensing_start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Sensing start date of the product observation window"
             },
             "fos_pushing_date_backup": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was pushed by the FOS through the backup channel"
             },
             "fos_pushing_date_nominal": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was pushed by the FOS through the nominal channel"
             },
             "sensing_end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Sensing end date of the product observation window"
             },
             "sensing_duration": {
                 "type": "long",
                 "meta": {
                     "unit": "s"
-                }
+                },
+                "description": "Length of the sensing window, in microseconds (sensing_end_date minus sensing_start_date)"
             },
             "expected_tiles": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "List of S2 grid tiles the product footprint is expected to cover"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datatake (acquisition segment) the product belongs to"
             },
             "hex_datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datatake identifier in hexadecimal form"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number during which the product was acquired"
             },
             "instrument_mode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument acquisition mode of the product"
             },
             "product_level": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Processing level of the product, resolved from the dataflow configuration"
             },
             "product_class": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S1"
-                }
+                },
+                "description": "Product class parsed from the product name (S1-specific)"
             },
             "product_granularity": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S2"
-                }
+                },
+                "description": "Product granularity parsed from the product name (S2-specific)"
             },
             "product_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type as parsed from the product name"
             },
             "polarization": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S1"
-                }
+                },
+                "description": "Radar polarization of the product (S1-specific)"
             },
             "instrument_swath": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S1"
-                }
+                },
+                "description": "Instrument swath of the product (S1-specific)"
             },
             "quality_control": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Quality control status of the product"
             },
             "dataflow_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Dataflow processing status of the product"
             },
             "site_center": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Processing/production centre that generated the product"
             },
             "prip_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier on the PRIP (Production Interface Delivery Point)"
             },
             "prip_service": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the PRIP interface that published the product"
             },
             "prip_publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the PRIP interface"
             },
             "ddip_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier on the DD DHUS (data dissemination) interface"
             },
             "ddip_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product name on the DD DHUS (data dissemination) interface"
             },
             "ddip_publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the DD DHUS interface"
             },
             "from_prip_ddip_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Time elapsed between PRIP publication and DD DHUS publication, in microseconds"
             },
             "dddas_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier on the DAS (Data Access Service) dissemination interface"
             },
             "dddas_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product name on the DAS (Data Access Service) dissemination interface"
             },
             "dddas_publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the DAS dissemination interface"
             },
             "from_prip_dddas_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Time elapsed between PRIP publication and DAS publication, in microseconds"
             },
             "ddcreodias_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier on the CreoDIAS dissemination interface"
             },
             "ddcreodias_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product name on the CreoDIAS dissemination interface"
             },
             "ddcreodias_publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the CreoDIAS dissemination interface"
             },
             "from_prip_ddcreodias_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Time elapsed between PRIP publication and CreoDIAS publication, in microseconds"
             },
             "expected_lta_number": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of LTA (Long Term Archive) services expected to serve this product"
             },
             "nb_lta_served": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of LTA (Long Term Archive) services that have served this product"
             },
             "auxip_publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the AUXIP (auxiliary data) interface"
             },
             "auxip_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier on the AUXIP (auxiliary data) interface"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness category of the product (e.g. NRT, NTC), inherited from its datatake for S1/S2"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number during which the product was acquired"
             },
             "detector_id": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S2"
-                }
+                },
+                "description": "Detector identifier parsed from the product name (S2-specific)"
             },
             "tile_number": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S2"
-                }
+                },
+                "description": "S2 tile (granule) number parsed from the product name (S2-specific)"
             },
             "centre": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S3"
-                }
+                },
+                "description": "Processing centre parsed from the product name (S3-specific)"
             },
             "platform": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S3"
-                }
+                },
+                "description": "Platform identifier parsed from the product name (S3-specific)"
             },
             "collection_number": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collection number of the product"
             },
             "processor_version": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Version of the processor that generated the product"
             },
             "product_discriminator_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product discriminator (creation) date used to distinguish reprocessed products"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifiers of the CAMS anomaly tickets correlated to this product"
             },
             "datatake_cams_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "CAMS anomaly ticket propagated from the product's datatake"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the most recently attached CAMS anomaly ticket"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the most recently attached CAMS anomaly ticket"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin (root cause category) reported by the attached CAMS anomaly ticket"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description of the attached CAMS anomaly ticket"
             },
             "content_length": {
-                "type": "long"
+                "type": "long",
+                "description": "Size of the product content, in bytes"
             },
             "product_group_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product group identifier used to link related products (e.g. S2 datastrip/granule grouping)"
             },
             "datastrip_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datastrip the product is associated with"
             },
             "quality_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Quality status of the product as reported by the source interface"
             },
             "cloud_cover": {
-                "type": "float"
+                "type": "float",
+                "description": "Cloud cover percentage of the product"
             },
             "EU_coverage_percentage": {
-                "type": "float"
+                "type": "float",
+                "description": "Percentage of the product footprint intersecting the European coverage mask (S1)"
             }
         },
         "_meta": {

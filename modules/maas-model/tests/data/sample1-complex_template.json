@@ -36,9 +36,11 @@
             },
             "properties": {
                 "type": "object",
+                "description": "A nested object with a description",
                 "properties": {
                     "datatake_id": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Identifier of the datatake"
                     },
                     "metadata": {
                         "type": "object",

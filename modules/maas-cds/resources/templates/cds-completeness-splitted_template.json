@@ -16,85 +16,110 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last consolidation update of this splitted completeness document (UTC)"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique identifier of the splitted completeness entry, built from datatake_id, timeliness and product_type"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission the datatake belongs to (e.g. S1, S3, S5)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit of the datatake (e.g. S1A, S3B)"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datatake whose production completeness is measured"
             },
             "observation_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start of the observation period covered by the produced products (UTC)"
             },
             "observation_time_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "End of the observation period covered by the produced products (UTC)"
             },
             "observation_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Duration of the observation period in microseconds"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness of the products tracked by this completeness entry"
             },
             "product_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type tracked by this completeness entry"
             },
             "product_level": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product level tracked by this completeness entry"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number of the datatake"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number of the datatake"
             },
             "expected": {
-                "type": "long"
+                "type": "long",
+                "description": "Expected sensing value for this product type and timeliness, in microseconds, derived from the completeness configuration"
             },
             "value": {
-                "type": "long"
+                "type": "long",
+                "description": "Measured produced sensing value for this product type and timeliness, in microseconds"
             },
             "value_adjusted": {
-                "type": "long"
+                "type": "long",
+                "description": "Produced value capped at the expected value, in microseconds"
             },
             "percentage": {
                 "type": "long",
                 "meta": {
                     "metric_type": "gauge",
                     "unit": "percent"
-                }
+                },
+                "description": "Completeness percentage, computed as the adjusted value divided by the expected value"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Completeness status evaluated from the percentage"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "CAMS anomaly ticket identifiers attached to this completeness entry"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the most recently attached CAMS anomaly ticket"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the most recently attached CAMS anomaly ticket"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin reported by the attached CAMS anomaly ticket(s)"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description reported by the attached CAMS anomaly ticket(s)"
             },
             "service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service providing the products (partition field)"
             },
             "service_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the production service instance providing the products (partition field)"
             }
         },
         "_meta": {

@@ -16,51 +16,65 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the raw report was ingested into the dashboard by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file from which this record was extracted"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or path of the source report file from which this record was extracted"
             },
             "product_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier from the AUXIP interface (OData Id)"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product file name from the AUXIP interface (OData Name)"
             },
             "content_length": {
-                "type": "long"
+                "type": "long",
+                "description": "Product file size in bytes (OData ContentLength)"
             },
             "publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the AUXIP interface (OData PublicationDate)"
             },
             "origin_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product origin date at the source (OData OriginDate)"
             },
             "eviction_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product is scheduled to be evicted from the AUXIP interface (OData EvictionDate)"
             },
             "start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing start date (OData ContentDate.Start)"
             },
             "end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing end date (OData ContentDate.End)"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the AUXIP interface instance the product was collected from"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service providing the product (AUXIP)"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the AUXIP production service instance providing the product"
             }
         },
         "_meta": {

@@ -21,6 +21,8 @@ class FieldMeta:
 
     properties: List["FieldMeta"]
 
+    description: str = None
+
 
 # pylint: disable=R0902
 # meta has necessarly lot of attributes
@@ -82,7 +84,7 @@ class ModelClassMeta:
             for inner_name, inner_prop in prop["properties"].items():
                 self.add_field(properties, inner_name, inner_prop)
 
-        parent.append(FieldMeta(name, type_name, properties))
+        parent.append(FieldMeta(name, type_name, properties, prop.get("description")))
 
         self.field_types.add(type_name)
 

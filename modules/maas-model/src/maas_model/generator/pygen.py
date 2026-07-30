@@ -78,6 +78,10 @@ class {class_name}(InnerDoc):
 """
     )
 
+    # attribute docstring, recognized by Sphinx autodoc, injected from the
+    # template field "description" metadata
+    DOC_TPL = INDENT + '"""{description}"""\n\n'
+
 
 # pylint: enable=R0903
 
@@ -202,6 +206,17 @@ class ModelGenerator:
         ordered_lines.extend(class_lines)
         return "".join(ordered_lines)
 
+    def attribute_doc(self, field: FieldMeta) -> str:
+        """generate the attribute docstring from the field description metadata
+
+        Returns an empty string when the field has no description.
+        """
+        if not field.description:
+            return ""
+        # avoid breaking the triple-quoted docstring
+        description = field.description.replace('"""', "'''")
+        return self.template.DOC_TPL.format(description=description)
+
     def generate_attributes(self, class_name: str, field: FieldMeta):
         """
         generate lines for attributes of class_name
@@ -218,6 +233,7 @@ class ModelGenerator:
             attributes_lines.extend(
                 self.template.ATTR_TPL.format(name=field.name, type_name=type_name)
             )
+            attributes_lines.extend(self.attribute_doc(field))
         elif field.type_name == "Object":
             inner_class_name = "".join(word.title() for word in field.name.split("_"))
 
@@ -231,6 +247,7 @@ class ModelGenerator:
                     name=field.name, type_name=type_name
                 )
             )
+            attributes_lines.extend(self.attribute_doc(field))
 
             # sub class header for this object
             sub_class_lines.extend(
@@ -253,6 +270,7 @@ class ModelGenerator:
                     name=field.name, type_name=field.type_name
                 )
             )
+            attributes_lines.extend(self.attribute_doc(field))
 
         # insert current sub class atfer recurcive sub classes to respect dependency order
         ordered_lines.extend(sub_class_lines)

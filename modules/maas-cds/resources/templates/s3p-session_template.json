@@ -13,117 +13,149 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last update of this consolidated document"
             },
             "cadu_files": {
                 "type": "object",
                 "properties": {
                     "cadu_name": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Name of the CADU file"
                     },
                     "cadu_delivery_in": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Time the CADU file was delivered in"
                     },
                     "cadu_delivery_out": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Time the CADU file was delivered out"
                     }
-                }
+                },
+                "description": "CADU files received for the downlink session"
             },
             "downlink_session": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the downlink session"
             },
             "timeliness_key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness key of the downlink session"
             },
             "delivery_to_eum_completeness": {
-                "type": "float"
+                "type": "float",
+                "description": "Completeness ratio of L0PP granules delivered to EUMETSAT"
             },
             "delivery_to_eum_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Timeliness of delivery to EUMETSAT from acquisition stop, in seconds"
             },
             "generation_timeliness_from_acq_start": {
-                "type": "long"
+                "type": "long",
+                "description": "Timeliness of granule generation from acquisition start, in seconds"
             },
             "delivery_to_eum_timeliness_from_acq_start": {
-                "type": "long"
+                "type": "long",
+                "description": "Timeliness of delivery to EUMETSAT from acquisition start, in seconds"
             },
             "acquisition_start_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the acquisition"
             },
             "acquisition_stop_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the acquisition"
             },
             "delivery_start_to_eum": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the delivery to EUMETSAT"
             },
             "delivery_stop_to_eum": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the delivery to EUMETSAT"
             },
             "downlink_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink orbit number of the session"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the satellite (e.g. S3A, S3B)"
             },
             "hkraw_delivery_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Delivery time of the HKRAW file"
             },
             "hkraw_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the HKRAW file"
             },
             "hkraw_size": {
-                "type": "long"
+                "type": "long",
+                "description": "Size of the HKRAW file in bytes"
             },
             "l0pp_granules": {
                 "type": "object",
                 "properties": {
                     "product_name": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Name of the L0PP granule product"
                     },
                     "product_type": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Type of the L0PP granule product"
                     },
                     "delivery_date_to_eum": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Delivery date of the granule to EUMETSAT"
                     },
                     "delivery_start_date_to_eum": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Start date of the granule delivery to EUMETSAT"
                     },
                     "thin_layer_log_date": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Date of the thin-layer log entry for the granule"
                     },
                     "raw_data_generation_time": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Generation time of the raw data granule"
                     },
                     "validitystart": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Validity start time of the granule"
                     },
                     "validitystop": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Validity stop time of the granule"
                     },
                     "filesize": {
-                        "type": "long"
+                        "type": "long",
+                        "description": "Size of the granule file in bytes"
                     },
                     "transfer_bandwith_to_eum": {
-                        "type": "float"
+                        "type": "float",
+                        "description": "Transfer bandwidth of the granule to EUMETSAT"
                     },
                     "transfer_duration_to_eum": {
-                        "type": "long"
+                        "type": "long",
+                        "description": "Transfer duration of the granule to EUMETSAT in seconds"
                     }
-                }
+                },
+                "description": "L0PP granules produced for the downlink session"
             }
         },
         "_meta": {}

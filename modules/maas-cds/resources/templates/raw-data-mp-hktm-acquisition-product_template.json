@@ -16,42 +16,54 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the HKTM acquisition report was ingested by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or interface path from which the source report was collected"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite identifier from the SatelliteID column"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number from the AbsoluteOrbit column"
             },
             "channel": {
-                "type": "long"
+                "type": "long",
+                "description": "Acquisition channel from the channel column"
             },
             "session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "HKTM acquisition session identifier from the SessionID column"
             },
             "ground_station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station performing the acquisition from the CGS column"
             },
             "execution_time": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Acquisition execution time from the ExecutionTime column"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collector interface name set to S1MissionPlanning"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service type set by the collector to AUXIP"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service name set by the collector to CGS"
             }
         },
         "_meta": {

@@ -14,78 +14,101 @@
     "mappings": {
         "properties": {
             "check": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Result of the timeliness check reported in the ThinLayer M&C log line (e.g. OK)"
             },
             "day": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Day of the month parsed from the log timestamp"
             },
             "env": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Processing environment flag from the ThinLayer log (e.g. N for nominal)"
             },
             "eventname": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the logged event (e.g. LOPP)"
             },
             "eventtime": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the event as reported in the ThinLayer log line"
             },
             "filename": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the L0PP granule product referenced by the log line"
             },
             "generationtime": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Generation time of the product reported in the log line"
             },
             "hostname": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Host name of the S3P station server that emitted the log line"
             },
             "level": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product processing level from the log line (e.g. 0)"
             },
             "ptype": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type code from the log line"
             },
             "message": {
-                "type": "text"
+                "type": "text",
+                "description": "Free-text message field of the log line"
             },
             "month": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Month parsed from the log timestamp"
             },
             "pid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Process identifier of the ThinLayer agent from the log line"
             },
             "pmode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Processing mode from the log line (e.g. N for nominal)"
             },
             "process": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the process or agent that emitted the log line"
             },
             "reftime": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Reference time source of the product (e.g. ground)"
             },
             "log_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the log line was emitted, used as the monthly partition field"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the source report or log file the record was extracted from"
             },
             "sat": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit the log line refers to (e.g. S3A)"
             },
             "time": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Time component parsed from the log timestamp"
             },
             "timelinessKey": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink session timeliness key that identifies the S3P session"
             },
             "validitystart": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start of the product validity period from the log line"
             },
             "validitystop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop of the product validity period from the log line"
             }
         },
         "_meta": {

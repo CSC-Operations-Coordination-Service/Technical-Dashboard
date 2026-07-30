@@ -11,27 +11,34 @@
     "mappings": {
         "properties": {
             "service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Service or interface type the expected value applies to"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier the expected value applies to (e.g. S1, S2)"
             },
             "satellite": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite the expected value applies to"
             },
             "product_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type the expected value applies to"
             },
             "provider": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Provider or production service the expected value applies to"
             },
             "date": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the daily expected value applies to"
             },
             "daily_expected": {
-                "type": "float"
+                "type": "float",
+                "description": "Expected number of products for the given day"
             }
         },
         "_meta": {}

@@ -16,34 +16,43 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the raw report was ingested into the dashboard by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source catalogue CSV file from which this record was extracted"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or path of the source catalogue CSV file from which this record was extracted"
             },
             "product_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier from the DHUS archive catalogue (CSV Id)"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product file name from the DHUS archive catalogue (CSV Name)"
             },
             "content_length": {
-                "type": "long"
+                "type": "long",
+                "description": "Product file size in bytes (CSV ContentLength)"
             },
             "ingestion_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was ingested into the DHUS archive (CSV IngestionDate)"
             },
             "start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing start date (CSV ContentDate:Start)"
             },
             "end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing end date (CSV ContentDate:End)"
             }
         },
         "_meta": {

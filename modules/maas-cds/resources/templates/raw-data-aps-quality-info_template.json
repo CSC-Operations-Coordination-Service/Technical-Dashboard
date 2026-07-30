@@ -16,66 +16,86 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the source report was ingested into the system"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source folder or path where the report file was collected"
             },
             "session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "CADIP acquisition session identifier the quality info belongs to (from SessionId)"
             },
             "channel": {
-                "type": "long"
+                "type": "long",
+                "description": "Channel number the quality metrics apply to (from Channel)"
             },
             "acquired_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Total number of transfer frames acquired on the channel (from AcquiredTFs)"
             },
             "error_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of transfer frames received with errors (from ErrorTFs)"
             },
             "corrected_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of transfer frames corrected by error correction (from CorrectedTFs)"
             },
             "uncorrectable_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of transfer frames that could not be corrected (from UncorrectableTFs)"
             },
             "data_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of data transfer frames acquired on the channel (from DataTFs)"
             },
             "error_data_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of data transfer frames received with errors (from ErrorDataTFs)"
             },
             "corrected_data_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of data transfer frames corrected by error correction (from CorrectedDataTFs)"
             },
             "uncorrectable_data_tfs": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of data transfer frames that could not be corrected (from UncorrectableDataTFs)"
             },
             "delivery_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the delivery of the channel data (from DeliveryStart)"
             },
             "delivery_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the delivery of the channel data (from DeliveryStop)"
             },
             "total_chunks": {
-                "type": "long"
+                "type": "long",
+                "description": "Total number of data chunks delivered for the channel (from TotalChunks)"
             },
             "total_volume": {
-                "type": "long"
+                "type": "long",
+                "description": "Total data volume delivered for the channel in bytes (from TotalVolume)"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the collector interface that produced this record"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service that provided the quality info, set to CADIP"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the CADIP ground station service that provided the quality info"
             }
         },
         "_meta": {

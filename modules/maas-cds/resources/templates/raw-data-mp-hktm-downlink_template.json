@@ -16,91 +16,117 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the HKTM downlink report was ingested by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or interface path from which the source report was collected"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite identifier from the Satellite ID column"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier set by the collector to S2"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datatake identifier from the AcquisitionID column"
             },
             "x_on": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "X-band transmitter switch-on time for the HKTM downlink"
             },
             "x_off": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "X-band transmitter switch-off time for the HKTM downlink"
             },
             "effective_downlink_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Effective downlink start time from the EffectiveDownlinkStart column"
             },
             "effective_downlink_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Effective downlink stop time from the EffectiveDownlinkStop column"
             },
             "downlink_mode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink mode from the DwlMode column"
             },
             "downlink_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Downlink start time from the DownlinkStart column"
             },
             "downlink_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Downlink stop time from the DownlinkStop column"
             },
             "downlink_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Downlink duration in milliseconds from the DownlinkDuration [msec] column"
             },
             "latency": {
-                "type": "long"
+                "type": "long",
+                "description": "Latency in minutes from the Latency [min] column"
             },
             "station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station acquiring the downlink from the Station column"
             },
             "downlink_absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit of the downlink pass (not populated by this collector)"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number (not populated by this collector)"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number from the AbsoluteOrbit column"
             },
             "partial": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Partial acquisition indicator from the Partial column"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collector interface name set to S2MissionPlanning"
             },
             "acquisition_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Acquisition start time from the AcquisitionStart column"
             },
             "acquisition_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Acquisition stop time from the AcquisitionStop column"
             },
             "acquisition_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Acquisition duration in milliseconds from the AcquisitionDuration [msec] column"
             },
             "number_of_scenes": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of scenes from the Scenes column"
             },
             "downlink_execution_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Downlink execution time (not populated by this collector)"
             }
         },
         "_meta": {

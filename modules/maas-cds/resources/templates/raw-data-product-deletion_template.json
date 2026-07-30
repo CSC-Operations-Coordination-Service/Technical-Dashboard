@@ -16,19 +16,24 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the collector ingested this record into MAAS"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder path of the source deletion list report file"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source deletion list report the record was extracted from"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the product to delete from the deletion list report"
             },
             "interface_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of interface targeted by the deletion ('DD' for datahub, 'LTA' for long term archive)"
             }
         },
         "_meta": {

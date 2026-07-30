@@ -16,74 +16,97 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when this HKTM acquisition completeness document was ingested (UTC), used as partition field"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report from which the HKTM acquisition was consolidated"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder of the source report"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit of the HKTM acquisition (e.g. S1A, S2B)"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission the HKTM acquisition belongs to (e.g. S1, S2)"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number of the HKTM acquisition"
             },
             "channel": {
-                "type": "long"
+                "type": "long",
+                "description": "Acquisition channel number"
             },
             "session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the acquisition session (CADIP or EDRS)"
             },
             "session_id_full": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Full acquisition session identifier"
             },
             "ground_station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station that performed the HKTM acquisition"
             },
             "cadip_completeness": {
-                "type": "long"
+                "type": "long",
+                "description": "CADIP acquisition completeness indicator: 1 if a matching OK CADIP pass status is found, 0 otherwise"
             },
             "edrs_completeness": {
-                "type": "long"
+                "type": "long",
+                "description": "EDRS acquisition completeness indicator: 1 if a matching non-NOK EDRS pass status is found, 0 otherwise"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the most recently attached CAMS anomaly ticket"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the most recently attached CAMS anomaly ticket"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "CAMS anomaly ticket identifiers attached to this acquisition completeness"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin reported by the attached CAMS anomaly ticket(s)"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description reported by the attached CAMS anomaly ticket(s)"
             },
             "execution_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Execution time of the acquisition, used to discard outdated raw documents (UTC)"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the interface that provided the source report"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service that generated the source report"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the production service that generated the source report"
             },
             "related_document_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the document correlated to this HKTM acquisition"
             },
             "related_document_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the document correlated to this HKTM acquisition"
             }
         },
         "_meta": {

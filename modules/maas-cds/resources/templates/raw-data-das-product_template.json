@@ -16,52 +16,66 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the raw report was ingested into the dashboard by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file from which this record was extracted"
             },
             "product_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier from the DD/DAS interface (OData Id)"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product file name from the DD/DAS interface (OData Name)"
             },
             "content_length": {
-                "type": "long"
+                "type": "long",
+                "description": "Product file size in bytes (OData ContentLength)"
             },
             "publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the DD/DAS interface (OData PublicationDate)"
             },
             "start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing start date (OData ContentDate.Start)"
             },
             "end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product sensing end date (OData ContentDate.End)"
             },
             "origin_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product origin date at the source (OData OriginDate)"
             },
             "modification_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Last modification date of the product on the DD/DAS interface (OData ModificationDate)"
             },
             "eviction_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product is scheduled to be evicted from the DD/DAS interface (OData EvictionDate)"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the DD/DAS interface instance the product was collected from (DD_DAS)"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service providing the product (DD)"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the production service instance providing the product (DAS)"
             }
         },
         "_meta": {

@@ -16,95 +16,124 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the source report was ingested into the system"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source EDRS report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source folder or path where the report file was collected"
             },
             "link_session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "EDRS link session identifier from the LINK SESSIONS DETAILS column"
             },
             "geo_satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the geostationary EDRS relay satellite used for the link"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the LEO satellite that performed the acquisition"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission code derived from the first two characters of the satellite identifier"
             },
             "doy": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Day of year of the link session as reported in the EDRS report"
             },
             "planned_link_session_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Planned start time of the EDRS link session, computed from the report base date and day of year"
             },
             "planned_link_session_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Planned stop time of the EDRS link session, computed from the report base date and day of year"
             },
             "moc_accept_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "MOC acceptance status of the link session"
             },
             "uplink_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Uplink status of the link session"
             },
             "spacecraft_execution": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Spacecraft execution status of the link session"
             },
             "edte_acquisition_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "EDTE acquisition status of the link session"
             },
             "dcsu_archive_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "DCSU archive status of the link session"
             },
             "sfdap_dissem_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "SFDAP dissemination status of the link session"
             },
             "total_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Overall status of the link session"
             },
             "ground_station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station that disseminated the acquired data"
             },
             "dissemination_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of data dissemination from the ground station"
             },
             "dissemination_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of data dissemination from the ground station"
             },
             "cadus": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of CADUs disseminated for the link session"
             },
             "fer": {
-                "type": "float"
+                "type": "float",
+                "description": "Frame Error Rate reported for the link session"
             },
             "archived_data_size": {
-                "type": "float"
+                "type": "float",
+                "description": "Size of the archived data for the link session"
             },
             "disseminated_data": {
-                "type": "float"
+                "type": "float",
+                "description": "Volume of data disseminated for the link session"
             },
             "notes": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Free-text notes from the EDRS report"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the collector interface that produced this record, set to Jira_EDRS"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service that provided the report, set to EDRS"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the production service that provided the report, set to EDRS-Operations"
             },
             "report_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Reporting period derived from the report file name (daily for DOR, weekly for WOR, monthly for MOR)"
             }
         },
         "_meta": {

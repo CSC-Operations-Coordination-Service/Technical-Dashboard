@@ -14,7 +14,8 @@
     "mappings": {
         "properties": {
             "kw_field": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "A keyword field with a description"
             },
             "int_field": {
                 "type": "integer"

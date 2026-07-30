@@ -16,89 +16,115 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date and time when this downlink datatake document was last updated"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source mission planning report this downlink datatake was consolidated from"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit that performed the downlink (e.g. S1A, S2B)"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier derived from the satellite unit (e.g. S1, S2)"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datatake being downlinked"
             },
             "expected_tiles": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "List of tiles expected from the datatake downlink (Sentinel-2)"
             },
             "effective_downlink_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Effective start time of the downlink"
             },
             "effective_downlink_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Effective stop time of the downlink"
             },
             "acquisition_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the acquisition being downlinked"
             },
             "acquisition_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the acquisition being downlinked"
             },
             "downlink_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Duration of the downlink"
             },
             "latency": {
-                "type": "long"
+                "type": "long",
+                "description": "Latency of the downlink"
             },
             "station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground or geostationary station that received the downlink"
             },
             "downlink_polarization": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Polarization used for the downlink"
             },
             "downlink_absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number during the downlink"
             },
             "acquisition_absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number of the acquisition"
             },
             "acquisition_relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number of the acquisition"
             },
             "channel": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink channel"
             },
             "partial": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Flag indicating whether the downlink is partial"
             },
             "session_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink session identifier"
             },
             "observation_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Observation start time of the associated datatake"
             },
             "delivery_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Time at which delivery of the downlinked data completed, derived from correlated acquisitions"
             },
             "from_sensing_to_delivery_stop_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Elapsed time from sensing to delivery stop in microseconds"
             },
             "ds_sensing_start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Sensing start date of the datastrip associated with the downlink"
             },
             "from_ds_sensing_to_downlink_stop_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Elapsed time from datastrip sensing to downlink delivery stop in microseconds"
             },
             "ds_product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the datastrip product associated with the downlink"
             }
         },
         "_meta": {

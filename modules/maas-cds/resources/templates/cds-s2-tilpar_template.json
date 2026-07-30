@@ -14,15 +14,18 @@
     "mappings": {
         "properties": {
             "geometry": {
-                "type": "geo_shape"
+                "type": "geo_shape",
+                "description": "Geographic shape (footprint) of the Sentinel-2 tile"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the Sentinel-2 tile"
             },
             "timestamp": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the tile document"
             }
         },
         "_meta": {

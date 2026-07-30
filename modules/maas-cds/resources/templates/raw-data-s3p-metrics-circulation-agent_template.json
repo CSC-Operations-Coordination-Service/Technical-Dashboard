@@ -14,41 +14,53 @@
     "mappings": {
         "properties": {
             "action": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Action field of the M&C log line (e.g. OUT, IN)"
             },
             "code": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "M&C message code from the log line (e.g. DC for Data Circulation)"
             },
             "domain": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "M&C domain of the log line (e.g. Data Circulation)"
             },
             "filename": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the circulated file referenced by the log line"
             },
             "filesize": {
-                "type": "long"
+                "type": "long",
+                "description": "Size in bytes of the circulated file"
             },
             "hostname": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Host name of the S3P station server that emitted the log line"
             },
             "log_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the log line was emitted, used as the monthly partition field"
             },
             "pid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Process identifier of the circulation agent from the log line"
             },
             "queueid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the circulation queue entry"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the source report or log file the record was extracted from"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Status reported for the circulation of the file"
             },
             "tourl": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Destination URL the file was circulated to"
             }
         },
         "_meta": {

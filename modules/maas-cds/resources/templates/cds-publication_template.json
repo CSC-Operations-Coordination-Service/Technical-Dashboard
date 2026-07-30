@@ -16,235 +16,294 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last update of this consolidated document"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique consolidated publication identifier (MD5 hash of the source interface name and product name)"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product name as delivered by the publishing interface"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier the product belongs to (e.g. S1, S2, S3, S5)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit that produced the product (e.g. S1A, S2B)"
             },
             "sensing_start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Sensing start date of the product observation window"
             },
             "sensing_end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Sensing end date of the product observation window"
             },
             "sensing_duration": {
                 "type": "long",
                 "meta": {
                     "unit": "s"
-                }
+                },
+                "description": "Length of the sensing window, in microseconds (sensing_end_date minus sensing_start_date)"
             },
             "fos_pushing_date_backup": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was pushed by the FOS through the backup channel"
             },
             "fos_pushing_date_nominal": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was pushed by the FOS through the nominal channel"
             },
             "service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production/dissemination service that published the product"
             },
             "service_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier/name of the production/dissemination service that published the product"
             },
             "product_uuid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "UUID of the product on the publishing service"
             },
             "centre": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S3"
-                }
+                },
+                "description": "Processing centre parsed from the product name (S3-specific)"
             },
             "platform": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S3"
-                }
+                },
+                "description": "Platform identifier parsed from the product name (S3-specific)"
             },
             "content_length": {
                 "type": "long",
                 "meta": {
                     "unit": "b"
-                }
+                },
+                "description": "Size of the published product content, in bytes"
             },
             "origin_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product became available at the producer (origin) before publication"
             },
             "publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was published on the service"
             },
             "modification_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product was last modified on the publishing service"
             },
             "eviction_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the product is scheduled to be evicted from the publishing service"
             },
             "expected": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Whether this publication was expected"
             },
             "publication_count": {
                 "type": "long",
                 "meta": {
                     "metric_type": "counter"
-                }
+                },
+                "description": "Number of publications recorded for the product"
             },
             "from_sensing_time": {
                 "type": "long",
                 "meta": {
                     "unit": "s"
-                }
+                },
+                "description": "Time between sensing end and publication, in seconds"
             },
             "transfer_time": {
                 "type": "long",
                 "meta": {
                     "unit": "s"
-                }
+                },
+                "description": "Transfer time of the product, in seconds"
             },
             "within_from_sensing_timeliness": {
                 "type": "long",
                 "meta": {
                     "metric_type": "gauge",
                     "unit": "percent"
-                }
+                },
+                "description": "Whether the publication met the from-sensing timeliness target, as a percentage"
             },
             "within_transfer_timeliness": {
                 "type": "long",
                 "meta": {
                     "metric_type": "gauge",
                     "unit": "percent"
-                }
+                },
+                "description": "Whether the publication met the transfer timeliness target, as a percentage"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datatake (acquisition segment) the product belongs to"
             },
             "hex_datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datatake identifier in hexadecimal form"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number during which the product was acquired"
             },
             "instrument_mode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument acquisition mode of the product"
             },
             "product_level": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Processing level of the product, resolved from the dataflow configuration"
             },
             "product_class": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S1"
-                }
+                },
+                "description": "Product class parsed from the product name (S1-specific)"
             },
             "product_granularity": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S2"
-                }
+                },
+                "description": "Product granularity parsed from the product name (S2-specific)"
             },
             "product_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type as parsed from the product name"
             },
             "polarization": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S1"
-                }
+                },
+                "description": "Radar polarization of the product (S1-specific)"
             },
             "instrument_swath": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S1"
-                }
+                },
+                "description": "Instrument swath of the product (S1-specific)"
             },
             "quality_control": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Quality control status of the product"
             },
             "transfer_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Time elapsed between origin date and publication date, in microseconds"
             },
             "from_sensing_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Time elapsed between sensing end date and publication date, in microseconds"
             },
             "site_center": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Processing/production centre that generated the product"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness category of the product (e.g. NRT, NTC), inherited from its datatake for S1/S2"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number during which the product was acquired"
             },
             "collection_number": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collection number of the product"
             },
             "processor_version": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Version of the processor that generated the product"
             },
             "product_discriminator_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product discriminator (creation) date used to distinguish reprocessed products"
             },
             "tile_number": {
                 "type": "keyword",
                 "meta": {
                     "_specific": "S2"
-                }
+                },
+                "description": "S2 tile (granule) number parsed from the product name (S2-specific)"
             },
             "deletion_issue": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Jira/CAMS issue key that triggered the deletion of this publication"
             },
             "deletion_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the publication was deleted from the service"
             },
             "deletion_cause": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Cause of the publication deletion, as reported by the deletion issue"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifiers of the CAMS anomaly tickets correlated to this publication"
             },
             "datatake_cams_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "CAMS anomaly ticket propagated from the publication's datatake"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the most recently attached CAMS anomaly ticket"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the most recently attached CAMS anomaly ticket"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin (root cause category) reported by the attached CAMS anomaly ticket"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description of the attached CAMS anomaly ticket"
             },
             "product_group_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product group identifier used to link related products (e.g. S2 datastrip/granule grouping)"
             },
             "datastrip_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datastrip the product is associated with"
             },
             "quality_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Quality status of the product as reported by the source interface"
             },
             "cloud_cover": {
-                "type": "float"
+                "type": "float",
+                "description": "Cloud cover percentage of the product"
             }
         },
         "_meta": {

@@ -16,37 +16,47 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the MPIP product record was ingested by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or interface path from which the source report was collected"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product file name from the filename field of the source JSON node"
             },
             "ingestion_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product ingestion date from the ingestionDate field of the source JSON node"
             },
             "validity_start_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product validity start time from the validityStartTime field of the source JSON node"
             },
             "validity_stop_time": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product validity stop time from the validityStopTime field of the source JSON node"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collector interface name set to MPIP_GMV"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service type set by the collector to MPIP"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service name set by the collector to GMV"
             }
         },
         "_meta": {

@@ -16,63 +16,82 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the anomaly correlation record was ingested into the raw-data store"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the collector interface that produced the record (Jira_CAMS_Cloud_Anomaly_Correlation)"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Jira REST self URL of the source issue"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source folder of the ingested report"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Jira issue key uniquely identifying the anomaly correlation record"
             },
             "title": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Title taken from the Jira issue summary"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Current workflow status of the Jira issue"
             },
             "created": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the anomaly correlation issue was created in Jira"
             },
             "updated": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the anomaly correlation issue was last updated in Jira"
             },
             "issue": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Key of the CAMS anomaly issue this correlation is linked to (derived from Jira issue links)"
             },
             "summary": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Summary text of the Jira anomaly correlation issue"
             },
             "description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Free-text description of the anomaly (Jira description field)"
             },
             "station_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of ground station involved (Jira station custom field, parent value)"
             },
             "station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station involved (Jira station custom field, child value)"
             },
             "impacted_passes": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Acquisition passes impacted by the anomaly (Jira impacted-passes custom field)"
             },
             "impacted_observations": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Observations impacted by the anomaly (Jira impacted-observations custom field)"
             },
             "origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin of the anomaly (Jira origin custom field)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit(s) impacted by the anomaly (Jira satellite-unit custom field)"
             },
             "products": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Names of the products impacted by the anomaly (Jira products custom field)"
             }
         },
         "_meta": {

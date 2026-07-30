@@ -16,76 +16,99 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the CAMS Cloud ticket was ingested into the raw-data store"
             },
             "affected_systems": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground segment systems affected by the anomaly (Jira affected-systems custom field)"
             },
             "addressed_entities": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Entities addressed by the ticket (Jira addressed-entities custom field)"
             },
             "assigned_element": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Element(s) the ticket is assigned to (Jira assigned-element custom field)"
             },
             "created": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the CAMS ticket was created in Jira"
             },
             "criticality": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Criticality level of the anomaly (Jira criticality custom field)"
             },
             "entity": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Primary entity responsible for the ticket (Jira entity custom field)"
             },
             "environment": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Environment description of the ticket (Jira environment field)"
             },
             "esa_group": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "ESA group associated with the ticket (Jira ESA-group custom field)"
             },
             "involved_entities": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Entities involved in the ticket (Jira involved-entities custom field)"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Jira issue key uniquely identifying the CAMS ticket"
             },
             "linked_issues": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Keys of Jira issues linked to this ticket (inward issue links)"
             },
             "occurence_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the anomaly occurred (Jira occurrence-date custom field)"
             },
             "originating_entity": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Entity that originated the ticket (Jira originating-entity custom field)"
             },
             "reporter": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Display name of the Jira user who reported the ticket"
             },
             "review_board_dispositions": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Review board dispositions recorded on the ticket (Jira custom field)"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Current workflow status of the Jira ticket"
             },
             "title": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ticket title taken from the Jira issue summary"
             },
             "updated": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the CAMS ticket was last updated in Jira"
             },
             "urgency": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Urgency level of the anomaly (Jira urgency custom field)"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Jira REST self URL of the source issue"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source folder of the ingested report"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the collector interface that produced the record (Jira_CAMS_Cloud_Tickets)"
             }
         },
         "_meta": {

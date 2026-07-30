@@ -126,6 +126,22 @@ class MaasMigrator:
             else:
                 self.logger.debug(info)
 
+    @classmethod
+    def strip_field_descriptions(cls, properties: dict) -> None:
+        """recursively remove the "description" metadata from mapping properties
+
+        The "description" key is a maas-only documentation metadata injected in
+        generated Python classes but not a valid OpenSearch mapping parameter, so
+        it must be stripped before any put_template / put_mapping call.
+
+        Args:
+            properties (dict): the "properties" dict of a mapping (or sub-object)
+        """
+        for prop in properties.values():
+            prop.pop("description", None)
+            if "properties" in prop:
+                cls.strip_field_descriptions(prop["properties"])
+
     def load_template(self, index_name: str) -> dict:
         """load a template
 
@@ -143,6 +159,10 @@ class MaasMigrator:
 
         with open(template_path, encoding="utf-8") as template_fd:
             template_data = json.load(template_fd)
+
+        # drop maas-only "description" metadata: not a valid OpenSearch mapping param
+        if "properties" in template_data.get("mappings", {}):
+            self.strip_field_descriptions(template_data["mappings"]["properties"])
 
         return template_data
 

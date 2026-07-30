@@ -14,65 +14,84 @@
     "mappings": {
         "properties": {
             "action": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Action field of the M&C log line (e.g. IN, REF)"
             },
             "code": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "M&C message code from the log line (e.g. IMP for Data Import, TL for Timeliness)"
             },
             "creationtime": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Creation time of the imported CADU session, used as the S3P session acquisition start time"
             },
             "domain": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "M&C domain of the log line (e.g. Data Import, Timeliness)"
             },
             "eventtime": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Event time from the log line, used as the S3P session acquisition stop time"
             },
             "filename": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the file or session referenced by the log line"
             },
             "filesize": {
-                "type": "long"
+                "type": "long",
+                "description": "Size in bytes of the transferred file"
             },
             "fromurl": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Source URL the file was polled or transferred from"
             },
             "host": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Host referenced by the log line"
             },
             "hostname": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Host name of the S3P station server that emitted the log line"
             },
             "jobid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the CADU polling job from the log line"
             },
             "log_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the log line was emitted, used as the monthly partition field"
             },
             "pid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Process identifier of the CADU polling agent from the log line"
             },
             "queueid": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the processing queue entry"
             },
             "reftime": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Reference time reported in the log line"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the source report or log file the record was extracted from"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Status reported for the file transfer or polling job"
             },
             "timelinessKey": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink session timeliness key that identifies the S3P session"
             },
             "tourl": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Destination URL the file was transferred to"
             }
         },
         "_meta": {

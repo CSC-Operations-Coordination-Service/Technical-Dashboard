@@ -16,39 +16,50 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the collector ingested this record into MAAS"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source metrics report the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder path of the source metrics report file"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Metric name from the OData 'Name' property"
             },
             "timestamp": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Metric timestamp from the OData 'Timestamp' property"
             },
             "metric_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Metric type from the OData 'MetricType' property"
             },
             "counter": {
-                "type": "long"
+                "type": "long",
+                "description": "Metric counter value from the OData 'Counter' property"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source LTA metrics interface (e.g. metrics_LTA_Werum)"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the production service (LTA)"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the production service providing the metrics (e.g. Werum)"
             },
             "modification_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date the metric record was last modified"
             }
         },
         "_meta": {

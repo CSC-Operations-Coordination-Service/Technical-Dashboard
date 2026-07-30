@@ -13,57 +13,74 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date and time when this consolidated anomaly correlation document was last updated by the consolidation engine"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Key uniquely identifying the anomaly correlation file"
             },
             "title": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Title of the anomaly correlation file, parsed to extract the associated GSANOM issue"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Current status of the anomaly correlation file"
             },
             "created": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Creation date of the anomaly correlation file"
             },
             "updated": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Last update date of the anomaly correlation file"
             },
             "issue": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Linked issue identifiers associated with the anomaly, searched for the related GSANOM issue"
             },
             "summary": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Summary of the anomaly"
             },
             "description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description of the anomaly"
             },
             "station_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the ground station impacted by the anomaly, used to build acquisition pass keys"
             },
             "station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station(s) impacted by the anomaly, used to build acquisition pass keys"
             },
             "ticket_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the associated GSANOM issue extracted from the title or the linked issues"
             },
             "impacted_passes": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Impacted acquisition passes declared in the anomaly, used to derive acquisition pass keys"
             },
             "impacted_observations": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Impacted observations declared in the anomaly, used to derive corrected datatake identifiers"
             },
             "origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin of the anomaly"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit(s) impacted by the anomaly"
             },
             "products": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Normalized names of products impacted by the anomaly"
             }
         },
         "_meta": {}

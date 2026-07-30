@@ -11,24 +11,30 @@
     "mappings": {
         "properties": {
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique key of the Sentinel-3 completeness configuration entry"
             },
             "latest": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Whether this is the latest version of the completeness configuration"
             },
             "records": {
                 "type": "object",
                 "properties": {
                     "product_type": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Product type described by this completeness record"
                     },
                     "sensing_in_minutes": {
-                        "type": "long"
+                        "type": "long",
+                        "description": "Expected sensing duration of the product type in minutes"
                     },
                     "timeliness": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Timeliness category of the product type"
                     }
-                }
+                },
+                "description": "Completeness configuration records, one per product type"
             }
         },
         "_meta": {}

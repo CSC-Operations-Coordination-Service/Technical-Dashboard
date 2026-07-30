@@ -16,67 +16,87 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the mission planning report was ingested by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or interface path from which the source report was collected"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite identifier from the SatelliteID column"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Datatake identifier from DatatakeId (S1) or ID/AcquisitionID (S2)"
             },
             "observation_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Observation start time from the ObservationTimeStart column"
             },
             "observation_time_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Observation stop time from the ObservationTimeStop column (S2)"
             },
             "observation_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Observation duration in milliseconds from the ObservationDuration [msec] column"
             },
             "l0_sensing_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Level-0 sensing start time from the L0SensingTimeStart column (S1)"
             },
             "l0_sensing_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Level-0 sensing duration in milliseconds from the L0SensingDuration [msec] column (S1)"
             },
             "number_of_scenes": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of scenes from the NumberOfScenes column (S2)"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number from the AbsoluteOrbit column"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number from the RelativeOrbit column"
             },
             "polarization": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Acquisition polarization from the Polarization column (S1)"
             },
             "instrument_mode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument acquisition mode from the InstrumentMode column"
             },
             "instrument_swath": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument swath from the InstrumentSwath column (S1)"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness category from the Timeliness column"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collector interface name set to S1MissionPlanning or S2MissionPlanning"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service type set by the collector to AUXIP"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service name set by the collector to CGS"
             }
         },
         "_meta": {

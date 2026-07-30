@@ -21,82 +21,106 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date and time when this Sentinel-5P completeness document was last updated"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique document key built from the datatake identifier and product type"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number this completeness applies to"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier derived from the satellite unit (S5)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit this completeness applies to (e.g. S5P)"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datatake this completeness is computed for"
             },
             "observation_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start of the observation period covered by this completeness"
             },
             "observation_time_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop of the observation period covered by this completeness"
             },
             "observation_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Duration of the observation period in microseconds"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness of the products this completeness applies to (e.g. NRTI, OFFL, OPER)"
             },
             "product_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product type this completeness applies to"
             },
             "product_level": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product level of the product type (e.g. L0_, L1B, L2_)"
             },
             "value": {
-                "type": "long"
+                "type": "long",
+                "description": "Measured sensing completeness value, total sensing of the produced products in microseconds"
             },
             "expected": {
-                "type": "long"
+                "type": "long",
+                "description": "Expected sensing value for the product type, in microseconds, including tolerance"
             },
             "value_adjusted": {
-                "type": "long"
+                "type": "long",
+                "description": "Sensing completeness value capped at the expected value to avoid percentages above 100%"
             },
             "percentage": {
                 "type": "long",
                 "meta": {
                     "metric_type": "gauge",
                     "unit": "percent"
-                }
+                },
+                "description": "Completeness percentage of adjusted sensing value over expected value"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Completeness status label derived from the percentage"
             },
             "slice_value": {
-                "type": "long"
+                "type": "long",
+                "description": "Number of product slices produced for this completeness"
             },
             "slice_expected": {
-                "type": "long"
+                "type": "long",
+                "description": "Expected number of product slices for this product type"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "List of CAMS ticket identifiers linked to this completeness"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the most recently attached CAMS ticket"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the most recently attached CAMS ticket"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin of the last attached CAMS ticket"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description of the last attached CAMS ticket"
             }
         },
         "_meta": {

@@ -21,219 +21,285 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Date and time when this datatake document was last updated"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique document key built from the satellite unit and the datatake identifier"
             },
             "name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source mission planning report this datatake was consolidated from"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission identifier derived from the satellite unit (e.g. S1, S2)"
             },
             "satellite_unit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Satellite unit that acquired this datatake (e.g. S1A, S2B)"
             },
             "datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the datatake, the scheduled acquisition segment"
             },
             "hex_datatake_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Hexadecimal representation of the datatake identifier, set for Sentinel-1"
             },
             "application_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Application date extracted from the source mission planning report name"
             },
             "observation_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the datatake observation"
             },
             "observation_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Duration of the datatake observation in microseconds"
             },
             "observation_time_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the datatake observation"
             },
             "l0_sensing_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the L0 sensing window"
             },
             "l0_sensing_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Duration of the L0 sensing window in microseconds"
             },
             "l0_sensing_time_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the L0 sensing window"
             },
             "number_of_scenes": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of scenes in the datatake, used to derive Sentinel-2 expected completeness"
             },
             "number_of_expected_tiles": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of tiles expected for this datatake (Sentinel-2)"
             },
             "absolute_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Absolute orbit number of the datatake"
             },
             "relative_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Relative orbit number of the datatake"
             },
             "polarization": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Polarization of the acquisition"
             },
             "instrument_mode": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument mode of the acquisition"
             },
             "instrument_swath": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Instrument swath of the acquisition"
             },
             "timeliness": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Timeliness category of the datatake"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "List of CAMS ticket identifiers linked to this datatake"
             },
             "datastrip_ids": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "List of datastrip identifiers associated with this datatake"
             },
             "product_group_ids": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "List of product group identifiers associated with this datatake"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the most recently attached CAMS ticket"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the most recently attached CAMS ticket"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin of the last attached CAMS ticket"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description of the last attached CAMS ticket"
             },
             "missing_periods": {
                 "type": "object",
+                "description": "Sensing periods missing from the expected datatake coverage",
                 "properties": {
                     "name": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Label of the missing period (e.g. Missing Product)"
                     },
                     "product_type": {
-                        "type": "keyword"
+                        "type": "keyword",
+                        "description": "Product type for which the sensing period is missing"
                     },
                     "sensing_start_date": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "Start of the missing sensing period"
                     },
                     "sensing_end_date": {
                         "type": "date",
-                        "locale": "utc"
+                        "locale": "utc",
+                        "description": "End of the missing sensing period"
                     },
                     "duration": {
-                        "type": "long"
+                        "type": "long",
+                        "description": "Duration of the missing sensing period in microseconds"
                     }
                 }
             },
             "duplicateds": {
                 "type": "object",
+                "description": "Detected duplicated products and their deletion status for this datatake",
                 "properties": {
                     "items": {
                         "type": "object",
+                        "description": "Individual duplicated product pairs detected on this datatake",
                         "properties": {
                             "name": {
-                                "type": "keyword"
+                                "type": "keyword",
+                                "description": "Name of the first product of the duplicated pair"
                             },
                             "product_type": {
-                                "type": "keyword"
+                                "type": "keyword",
+                                "description": "Product type of the duplicated pair"
                             },
                             "sensing_start_date": {
                                 "type": "date",
-                                "locale": "utc"
+                                "locale": "utc",
+                                "description": "Sensing start date of the product"
                             },
                             "sensing_end_date": {
                                 "type": "date",
-                                "locale": "utc"
+                                "locale": "utc",
+                                "description": "Sensing end date of the product"
                             },
                             "duplicated_percentage": {
-                                "type": "float"
+                                "type": "float",
+                                "description": "Overlap percentage between the two products of the pair"
                             },
                             "paired_with": {
-                                "type": "keyword"
+                                "type": "keyword",
+                                "description": "Name of the other product forming the duplicated pair"
                             },
                             "deleted_product": {
                                 "type": "object",
+                                "description": "Name of the pair product deleted from each interface",
                                 "properties": {
                                     "DD": {
-                                        "type": "keyword"
+                                        "type": "keyword",
+                                        "description": "Name of the pair product deleted from the DD interface"
                                     },
                                     "LTA": {
-                                        "type": "keyword"
+                                        "type": "keyword",
+                                        "description": "Name of the pair product deleted from the LTA interface"
                                     }
                                 }
                             }
                         }
                     },
                     "pairs_count": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Total number of duplicated pairs detected on this datatake"
                     },
                     "deletions": {
                         "type": "object",
+                        "description": "Per-interface summary of duplicated product deletions",
                         "properties": {
                             "service_type": {
-                                "type": "keyword"
+                                "type": "keyword",
+                                "description": "Interface the deletion figures apply to (DD or LTA)"
                             },
                             "ticket": {
-                                "type": "keyword"
+                                "type": "keyword",
+                                "description": "Most frequent deletion ticket for this interface"
                             },
                             "targeted_products_count": {
-                                "type": "integer"
+                                "type": "integer",
+                                "description": "Number of products deleted from this interface"
                             },
                             "surviving_pairs_count": {
-                                "type": "integer"
+                                "type": "integer",
+                                "description": "Number of duplicated pairs still present on this interface"
                             },
                             "deleted_not_duplicated_products": {
-                                "type": "keyword"
+                                "type": "keyword",
+                                "description": "Products deleted from this interface that are not part of any duplicated pair"
                             },
                             "deleted_not_duplicated_products_count": {
-                                "type": "integer"
+                                "type": "integer",
+                                "description": "Count of deleted products not part of any duplicated pair"
                             },
                             "expected_pairs_count": {
-                                "type": "integer"
+                                "type": "integer",
+                                "description": "Number of duplicated pairs expected to be removed from this interface"
                             },
                             "deletion_completenness_percentange": {
-                                "type": "float"
+                                "type": "float",
+                                "description": "Percentage of expected duplicated pairs actually removed from this interface"
                             }
                         }
                     },
                     "datastrip_pairs": {
                         "type": "object",
+                        "description": "Datastrip-centric duplicated pairs (Sentinel-2)",
                         "properties": {
                             "overlap_percentage": {
-                                "type": "float"
+                                "type": "float",
+                                "description": "Overlap percentage between the paired datastrips"
                             },
                             "datastrips": {
                                 "type": "object",
+                                "description": "Datastrips composing the duplicated pair",
                                 "properties": {
                                     "datastrip_id": {
-                                        "type": "keyword"
+                                        "type": "keyword",
+                                        "description": "Identifier of the datastrip"
                                     },
                                     "products": {
                                         "type": "object",
+                                        "description": "Products belonging to the datastrip",
                                         "properties": {
                                             "product_name": {
-                                                "type": "keyword"
+                                                "type": "keyword",
+                                                "description": "Name of the product"
                                             },
                                             "product_type": {
-                                                "type": "keyword"
+                                                "type": "keyword",
+                                                "description": "Type of the product"
                                             },
                                             "deletions": {
                                                 "type": "object",
+                                                "description": "Deletion trace for this product",
                                                 "properties": {
                                                     "service_type": {
-                                                        "type": "keyword"
+                                                        "type": "keyword",
+                                                        "description": "Interface the product was deleted from (DD or LTA)"
                                                     },
                                                     "ticket": {
-                                                        "type": "keyword"
+                                                        "type": "keyword",
+                                                        "description": "Deletion ticket associated with this product"
                                                     }
                                                 }
                                             }
@@ -241,21 +307,27 @@
                                     },
                                     "deletions": {
                                         "type": "object",
+                                        "description": "Per-interface deletion summary for the datastrip",
                                         "properties": {
                                             "service_type": {
-                                                "type": "keyword"
+                                                "type": "keyword",
+                                                "description": "Interface the deletion figures apply to (DD or LTA)"
                                             },
                                             "ticket": {
-                                                "type": "keyword"
+                                                "type": "keyword",
+                                                "description": "Deletion ticket associated with the datastrip"
                                             },
                                             "deleted_products_count": {
-                                                "type": "integer"
+                                                "type": "integer",
+                                                "description": "Number of datastrip products deleted from this interface"
                                             },
                                             "deleted_products_expected": {
-                                                "type": "integer"
+                                                "type": "integer",
+                                                "description": "Number of datastrip products expected to be deleted from this interface"
                                             },
                                             "deleted_product_percentage": {
-                                                "type": "float"
+                                                "type": "float",
+                                                "description": "Percentage of expected datastrip products actually deleted from this interface"
                                             }
                                         }
                                     }

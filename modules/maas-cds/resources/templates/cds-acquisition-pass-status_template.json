@@ -16,124 +16,162 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last update of this document"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report the document was ingested from"
             },
             "satellite_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the acquiring satellite"
             },
             "mission": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Mission the satellite belongs to (e.g. S1, S2, S3, S5)"
             },
             "delivery_bitrate": {
-                "type": "float"
+                "type": "float",
+                "description": "Computed delivery bitrate of the acquisition pass"
             },
             "doy": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Day of year of the acquisition pass"
             },
             "downlink_orbit": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Downlink orbit number of the acquisition pass"
             },
             "antenna_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the antenna used for the acquisition"
             },
             "antenna_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Status of the antenna during the acquisition pass"
             },
             "front_end_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the front-end used for the acquisition"
             },
             "front_end_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Status of the front-end during the acquisition pass"
             },
             "planned_data_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Planned start time of the data acquisition"
             },
             "planned_data_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Planned stop time of the data acquisition"
             },
             "first_frame_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the first acquired frame"
             },
             "last_frame_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the last acquired frame"
             },
             "delivery_push_status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Status of the delivery push step of the acquisition pass"
             },
             "start_delivery": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the data delivery"
             },
             "stop_delivery": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the data delivery"
             },
             "number_of_chunks": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Number of chunks in the acquisition pass"
             },
             "overall_data_volume": {
-                "type": "long"
+                "type": "long",
+                "description": "Overall acquired data volume of the acquisition pass"
             },
             "overall_number_of_downlinked_frames": {
-                "type": "long"
+                "type": "long",
+                "description": "Overall number of downlinked frames"
             },
             "overall_number_of_bad_downlinked_frames": {
-                "type": "long"
+                "type": "long",
+                "description": "Overall number of bad downlinked frames"
             },
             "fer_downlink": {
-                "type": "float"
+                "type": "float",
+                "description": "Frame error rate of the downlink"
             },
             "overall_number_of_data_acquired_frames": {
-                "type": "long"
+                "type": "long",
+                "description": "Overall number of acquired data frames"
             },
             "overall_number_of_bad_data_acquired_frames": {
-                "type": "long"
+                "type": "long",
+                "description": "Overall number of bad acquired data frames"
             },
             "fer_data": {
-                "type": "float"
+                "type": "float",
+                "description": "Frame error rate of the data"
             },
             "notes": {
-                "type": "text"
+                "type": "text",
+                "description": "Free-text notes about the acquisition pass"
             },
             "cams_tickets": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifiers of the CAMS tickets linked to this acquisition pass"
             },
             "last_attached_ticket": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Identifier of the last CAMS ticket attached to this acquisition pass"
             },
             "last_attached_ticket_url": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "URL of the last CAMS ticket attached to this acquisition pass"
             },
             "cams_origin": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Origin of the linked CAMS ticket(s)"
             },
             "cams_description": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Description of the linked CAMS ticket(s)"
             },
             "ground_station": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Ground station where the acquisition pass was performed"
             },
             "from_acq_delivery_timeliness": {
-                "type": "long"
+                "type": "long",
+                "description": "Timeliness between acquisition and delivery, computed from first_frame_start to stop_delivery"
             },
             "report_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Type of the source report (daily, weekly or monthly)"
             },
             "report_name_daily": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the daily source report the document was ingested from"
             },
             "report_name_weekly": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the weekly source report the document was ingested from"
             },
             "report_name_monthly": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the monthly source report the document was ingested from"
             }
         },
         "_meta": {

@@ -16,54 +16,69 @@
             "ingestionTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp when the MPCIP product record was ingested by the collector"
             },
             "reportName": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the source report file the record was extracted from"
             },
             "reportFolder": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Folder or interface path from which the source report was collected"
             },
             "product_id": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product identifier from the Id field of the source OData node"
             },
             "product_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Product name from the Name field of the source OData node"
             },
             "content_length": {
-                "type": "long"
+                "type": "long",
+                "description": "Product content size in bytes from the ContentLength field of the source OData node"
             },
             "publication_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product publication date from the PublicationDate field of the source OData node"
             },
             "start_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product content start date from the ContentDate.Start field of the source OData node"
             },
             "end_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product content end date from the ContentDate.End field of the source OData node"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Collector interface name set to MPCIP_Acri"
             },
             "production_service_type": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service type set by the collector to MPCIP"
             },
             "production_service_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Production service name set by the collector to Acri"
             },
             "eviction_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product eviction date from the EvictionDate field of the source OData node"
             },
             "origin_date": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Product origin date from the OriginDate field of the source OData node"
             },
             "footprint": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Geographic footprint of the product as a WKT/GeoJSON geometry string"
             }
         },
         "_meta": {

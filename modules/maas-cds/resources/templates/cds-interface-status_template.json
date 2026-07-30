@@ -16,24 +16,30 @@
             "updateTime": {
                 "type": "date",
                 "format": "date_time",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Timestamp of the last update of this consolidated document"
             },
             "interface_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Name of the monitored interface"
             },
             "status": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Availability status of the interface"
             },
             "status_time_start": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Start time of the interface status period"
             },
             "status_time_stop": {
                 "type": "date",
-                "locale": "utc"
+                "locale": "utc",
+                "description": "Stop time of the interface status period"
             },
             "status_duration": {
-                "type": "long"
+                "type": "long",
+                "description": "Duration of the status period in seconds"
             }
         },
         "_meta": {

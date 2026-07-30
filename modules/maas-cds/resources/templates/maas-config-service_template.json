@@ -11,13 +11,16 @@
     "mappings": {
         "properties": {
             "display_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Human-readable display name of the service"
             },
             "short_name": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Short name of the service"
             },
             "key": {
-                "type": "keyword"
+                "type": "keyword",
+                "description": "Unique key of the service configuration entry"
             }
         },
         "_meta": {}
