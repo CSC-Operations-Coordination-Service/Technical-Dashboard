@@ -136,6 +136,17 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
         if self.service_type != "DD":
             return super().get_expected_from_product_level(product_level)
 
+        if product_level in self.get_stopped_product_levels():
+            LOGGER.info(
+                "[%s] - Product level %s is not produced anymore for %s %s:"
+                " no expected",
+                self.datatake_id,
+                product_level,
+                self.satellite_unit,
+                self.instrument_mode,
+            )
+            return {}
+
         if (
             self.instrument_mode
             not in self.S2_NUMBER_OF_GR_PER_SCENE_PER_INSTRUMENT_DICT
@@ -206,10 +217,11 @@ class CdsCompletenessS2(CdsCompleteness, CdsDatatakeS2):
             self.instrument_mode
         )
 
-        # Remove L0_ product levels if they exist
+        # Remove L0_ and the levels which are not produced anymore if they exist
         if product_level_to_get:
+            excluded_levels = ["L0_"] + self.get_stopped_product_levels()
             product_level_to_get = [
-                level for level in product_level_to_get if level != "L0_"
+                level for level in product_level_to_get if level not in excluded_levels
             ]
 
         # We need to get at least 3 scenes to compute level L1 and L2

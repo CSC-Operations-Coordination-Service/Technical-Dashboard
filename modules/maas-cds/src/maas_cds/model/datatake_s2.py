@@ -9,8 +9,10 @@ from maas_cds.lib.parsing_name import utils
 from maas_cds.model.product import CdsProduct
 from maas_cds.model import generated
 
+from maas_model.date_utils import datetime_to_zulu
 from opensearchpy import Q
 
+from maas_cds.lib.config import get_good_threshold_config_from_value
 from maas_cds.model.datatake import CdsDatatake
 from maas_cds.lib.status import evaluate_completeness_status
 
@@ -131,6 +133,20 @@ class CdsDatatakeS2(CdsDatatake):
         "MSMOON": ["L0_"],
     }
 
+    # Product levels of S2_PRODUCT_LEVEL_FROM_INSTRUMENT_DICT whose production is
+    # stopped, per satellite unit and instrument mode. Keys are the first
+    # observation date (Zulu) they are not expected anymore, "0" being the
+    # beginning of times, see get_good_threshold_config_from_value.
+    S2_STOPPED_PRODUCT_LEVEL_DICT = {
+        "S2A": {
+            # L2A is not produced anymore for RAW observations since 2026-07-24
+            "RAW": {
+                "0": [],
+                "2026-07-24T00:00:00.000Z": ["L2A"],
+            },
+        },
+    }
+
     STATIC_COMPLETENESS_VALUE = {"MSI_L.*_DS": 3608000 + 1000000}
 
     def __init__(self, meta=None, **kwargs):
@@ -163,6 +179,30 @@ class CdsDatatakeS2(CdsDatatake):
         """
         return product_type == self.DUPLICATED_DATASTRIP_REFERENCE_TYPE
 
+    def get_stopped_product_levels(self):
+        """Product levels that are not expected anymore for this datatake
+
+        The production of a product level can be stopped at a given date for a
+        satellite unit and an instrument mode (see
+        S2_STOPPED_PRODUCT_LEVEL_DICT): from that observation date it shall not be
+        part of the expected anymore.
+
+        Returns:
+            list(str): the product levels to exclude from the expected
+        """
+        stopped_config = self.S2_STOPPED_PRODUCT_LEVEL_DICT.get(
+            self.satellite_unit, {}
+        ).get(self.instrument_mode)
+
+        if not stopped_config or self.observation_time_start is None:
+            return []
+
+        _, stopped_product_levels = get_good_threshold_config_from_value(
+            stopped_config, datetime_to_zulu(self.observation_time_start)
+        )
+
+        return stopped_product_levels or []
+
     def get_expected_from_product_level(self, product_level):
         """Get expected from the product level
 
@@ -172,6 +212,17 @@ class CdsDatatakeS2(CdsDatatake):
         Returns:
             dict: expect dict for the given product level
         """
+
+        if product_level in self.get_stopped_product_levels():
+            LOGGER.info(
+                "[%s] - Product level %s is not produced anymore for %s %s:"
+                " no expected",
+                self.datatake_id,
+                product_level,
+                self.satellite_unit,
+                self.instrument_mode,
+            )
+            return {}
 
         if (
             self.instrument_mode
@@ -260,6 +311,14 @@ class CdsDatatakeS2(CdsDatatake):
         product_level_to_get = self.S2_PRODUCT_LEVEL_FROM_INSTRUMENT_DICT.get(
             self.instrument_mode, ["L0_"]
         )
+
+        stopped_product_levels = self.get_stopped_product_levels()
+        if stopped_product_levels:
+            product_level_to_get = [
+                product_level
+                for product_level in product_level_to_get
+                if product_level not in stopped_product_levels
+            ]
 
         # We need to get at least 3 scenes to compute level L1 and L2
         if self.number_of_scenes < 3:

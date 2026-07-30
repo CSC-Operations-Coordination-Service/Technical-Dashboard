@@ -11,6 +11,7 @@ from maas_cds.lib.periodutils import (
 from maas_model.date_utils import datestr_to_utc_datetime
 import pytest
 
+from maas_cds.model.cds_completeness.cds_completeness_s2 import CdsCompletenessS2
 from maas_cds.model.datatake_s2 import CdsDatatakeS2
 from maas_cds.model.product import CdsProduct
 from maas_cds.model.product_s2 import CdsProductS2
@@ -164,6 +165,99 @@ def test_expected_product_level_number_scene_under_3(datatake_s2_dict):
 
     level_expected = datatake.get_expected_product_level()
     assert level_expected == ["L0_"]
+
+
+@pytest.fixture
+def datatake_s2a_raw_dict(datatake_s2_dict):
+    """A S2A RAW datatake dict, observed before the L2A production stop"""
+    return datatake_s2_dict | {
+        "satellite_unit": "S2A",
+        "instrument_mode": "RAW",
+        "observation_time_start": datetime.datetime(
+            2026, 7, 23, 23, 59, 59, 999000, tzinfo=datetime.timezone.utc
+        ),
+    }
+
+
+def test_expected_product_level_raw_before_l2a_stop(datatake_s2a_raw_dict):
+    """S2A RAW observed before 2026-07-24 still expects L2A"""
+
+    datatake = CdsDatatakeS2(**datatake_s2a_raw_dict)
+
+    assert datatake.get_stopped_product_levels() == []
+
+    assert datatake.get_expected_product_level() == [
+        "L0_",
+        "L1A",
+        "L1B",
+        "L1C",
+        "L2A",
+    ]
+
+    assert datatake.get_expected_from_product_level("L2A") == {
+        "DS": 100000000 - (2 * 3608000),
+        "TL": 0,
+        "TC": 0,
+    }
+
+
+def test_expected_product_level_raw_after_l2a_stop(datatake_s2a_raw_dict):
+    """S2A RAW observed from 2026-07-24 does not expect L2A anymore"""
+
+    datatake_s2a_raw_dict["observation_time_start"] = datetime.datetime(
+        2026, 7, 24, 0, 0, 0, tzinfo=datetime.timezone.utc
+    )
+    datatake = CdsDatatakeS2(**datatake_s2a_raw_dict)
+
+    assert datatake.get_stopped_product_levels() == ["L2A"]
+
+    assert datatake.get_expected_product_level() == ["L0_", "L1A", "L1B", "L1C"]
+
+    # no expected for the stopped level, and no L2A product type to compute
+    assert datatake.get_expected_from_product_level("L2A") == {}
+
+    assert not [
+        product_type
+        for product_type in datatake.get_all_product_types()
+        if "L2A" in product_type
+    ]
+
+
+def test_expected_product_level_raw_l2a_stop_scoped(datatake_s2a_raw_dict):
+    """The L2A production stop only applies to the S2A RAW observations"""
+
+    datatake_s2a_raw_dict["observation_time_start"] = datetime.datetime(
+        2026, 7, 29, 12, 0, 0, tzinfo=datetime.timezone.utc
+    )
+
+    # another satellite unit, same instrument mode
+    datatake = CdsDatatakeS2(**(datatake_s2a_raw_dict | {"satellite_unit": "S2B"}))
+    assert datatake.get_stopped_product_levels() == []
+    assert "L2A" in datatake.get_expected_product_level()
+
+    # same satellite unit, another instrument mode
+    datatake = CdsDatatakeS2(**(datatake_s2a_raw_dict | {"instrument_mode": "NOBS"}))
+    assert datatake.get_stopped_product_levels() == []
+    assert "L2A" in datatake.get_expected_product_level()
+
+
+def test_expected_product_level_dd_raw_after_l2a_stop(datatake_s2a_raw_dict):
+    """The L2A production stop also applies to the DD completeness"""
+
+    datatake_s2a_raw_dict["observation_time_start"] = datetime.datetime(
+        2026, 7, 24, 0, 0, 0, tzinfo=datetime.timezone.utc
+    )
+    completeness = CdsCompletenessS2(**datatake_s2a_raw_dict, service_type="DD")
+
+    assert completeness.get_expected_product_level() == ["L1A", "L1B", "L1C"]
+
+    assert completeness.get_expected_from_product_level("L2A") == {}
+
+    assert not [
+        product_type
+        for product_type in completeness.get_all_product_types()
+        if "L2A" in product_type
+    ]
 
 
 @patch("maas_cds.model.datatake_s2.CdsDatatakeS2.compute_local_value", return_value=0)
