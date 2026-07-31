@@ -174,13 +174,13 @@ def datatake_s2a_raw_dict(datatake_s2_dict):
         "satellite_unit": "S2A",
         "instrument_mode": "RAW",
         "observation_time_start": datetime.datetime(
-            2026, 7, 23, 23, 59, 59, 999000, tzinfo=datetime.timezone.utc
+            2026, 7, 22, 23, 59, 59, 999000, tzinfo=datetime.timezone.utc
         ),
     }
 
 
 def test_expected_product_level_raw_before_l2a_stop(datatake_s2a_raw_dict):
-    """S2A RAW observed before 2026-07-24 still expects L2A"""
+    """S2A RAW observed before 2026-07-23 still expects L2A"""
 
     datatake = CdsDatatakeS2(**datatake_s2a_raw_dict)
 
@@ -202,10 +202,10 @@ def test_expected_product_level_raw_before_l2a_stop(datatake_s2a_raw_dict):
 
 
 def test_expected_product_level_raw_after_l2a_stop(datatake_s2a_raw_dict):
-    """S2A RAW observed from 2026-07-24 does not expect L2A anymore"""
+    """S2A RAW observed from 2026-07-23 does not expect L2A anymore"""
 
     datatake_s2a_raw_dict["observation_time_start"] = datetime.datetime(
-        2026, 7, 24, 0, 0, 0, tzinfo=datetime.timezone.utc
+        2026, 7, 23, 0, 0, 0, tzinfo=datetime.timezone.utc
     )
     datatake = CdsDatatakeS2(**datatake_s2a_raw_dict)
 
@@ -245,7 +245,7 @@ def test_expected_product_level_dd_raw_after_l2a_stop(datatake_s2a_raw_dict):
     """The L2A production stop also applies to the DD completeness"""
 
     datatake_s2a_raw_dict["observation_time_start"] = datetime.datetime(
-        2026, 7, 24, 0, 0, 0, tzinfo=datetime.timezone.utc
+        2026, 7, 23, 0, 0, 0, tzinfo=datetime.timezone.utc
     )
     completeness = CdsCompletenessS2(**datatake_s2a_raw_dict, service_type="DD")
 
