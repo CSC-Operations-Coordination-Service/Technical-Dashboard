@@ -139,10 +139,10 @@ class CdsDatatakeS2(CdsDatatake):
     # beginning of times, see get_good_threshold_config_from_value.
     S2_STOPPED_PRODUCT_LEVEL_DICT = {
         "S2A": {
-            # L2A is not produced anymore for RAW observations since 2026-07-24
+            # L2A is not produced anymore for RAW observations since 2026-07-23
             "RAW": {
                 "0": [],
-                "2026-07-24T00:00:00.000Z": ["L2A"],
+                "2026-07-23T00:00:00.000Z": ["L2A"],
             },
         },
     }
@@ -1147,11 +1147,15 @@ class CdsDatatakeS2(CdsDatatake):
                     overlap_percentage=round(percentage, 2),
                     datastrips=[
                         self._describe_datastrip(
-                            previous, by_datastrip_id, level_datastrips,
+                            previous,
+                            by_datastrip_id,
+                            level_datastrips,
                             expected_interfaces,
                         ),
                         self._describe_datastrip(
-                            brother, by_datastrip_id, level_datastrips,
+                            brother,
+                            by_datastrip_id,
+                            level_datastrips,
                             expected_interfaces,
                         ),
                     ],

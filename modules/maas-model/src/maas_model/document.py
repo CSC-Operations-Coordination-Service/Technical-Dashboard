@@ -168,7 +168,6 @@ class MAASDocument(Document):
             [MAASRawDocument]: the concrete MAASRawDocument found, or None if not found
         """
         try:
-
             response: Iterator[MAASDocument | None] = cls.mget_by_ids(
                 [document_id], document_index if document_index else None
             )
