@@ -19,7 +19,39 @@ __all__ = [
 LOGGER = logging.getLogger("S3pSession")
 
 
+# The flux of a GR is given by the first location of its circulation tourl
+# ex: ftp://user:password@s3-refidcs01/data/to_MRN/to_IDC_NEW/from_ACQ/High/S3A_SR_0_SRA__G_[...].ISIP
+NRT_FLUX = "NRT"
+
+QRT_FLUX = "QRT"
+
+FLUX_BY_LOCATION = {
+    "s3-opeidcs01": NRT_FLUX,
+    "s3-refidcs01": QRT_FLUX,
+}
+
+
 class S3pMetricsCirculationAgent(generated.S3pMetricsCirculationAgent):
+    @property
+    def flux(self) -> str:
+        """Flux (NRT / QRT) deduced from the first location of the tourl
+
+        Returns:
+            str: the flux name, None if the tourl does not hold a known location
+        """
+        if not self.tourl:
+            return None
+
+        # drop the scheme and the credentials to get the first location
+        location = self.tourl.split("://")[-1].split("@")[-1].split("/")[0]
+
+        flux = FLUX_BY_LOCATION.get(location)
+
+        if flux is None:
+            LOGGER.warning("Unknown flux location %r in tourl %r", location, self.tourl)
+
+        return flux
+
     @property
     def s3p_session_name(self) -> str:
         # HK CASE
@@ -141,10 +173,36 @@ class S3pSession(generated.S3pSession):
                 self.acquisition_stop_time
             )
 
+        if self.acquisition_start_time and isinstance(self.acquisition_start_time, str):
+            self.acquisition_start_time = datestr_to_utc_datetime(
+                self.acquisition_start_time
+            )
+
+        granules = self.l0pp_granules or []
+
+        # KPI over all the granules of the session
+        self.compute_granules_kpi(granules)
+
+        # Same KPI but restricted to the QRT granules, stored with the "_qrt" suffix
+        qrt_granules = [g for g in granules if getattr(g, "flux", None) == QRT_FLUX]
+
+        if qrt_granules:
+            self.compute_granules_kpi(qrt_granules, suffix="_qrt")
+        else:
+            LOGGER.debug("No QRT granule: the QRT kpi are left unset")
+
+    def compute_granules_kpi(self, granules: list, suffix: str = ""):
+        """Compute the granule related KPI of the session
+
+        Args:
+            granules (list): the granules to take into account
+            suffix (str): suffix appended to the name of the computed attributes
+        """
+
         latest_gr_published_to_eum = max(
             (
                 f.delivery_date_to_eum
-                for f in self.l0pp_granules
+                for f in granules
                 if hasattr(f, "delivery_date_to_eum") and f.delivery_date_to_eum
             ),
             default=None,
@@ -157,7 +215,7 @@ class S3pSession(generated.S3pSession):
         latest_gr_generated = max(
             (
                 f.raw_data_generation_time
-                for f in self.l0pp_granules
+                for f in granules
                 if hasattr(f, "raw_data_generation_time") and f.raw_data_generation_time
             ),
             default=None,
@@ -166,32 +224,33 @@ class S3pSession(generated.S3pSession):
         if latest_gr_generated and isinstance(latest_gr_generated, str):
             latest_gr_generated = datestr_to_utc_datetime(latest_gr_generated)
 
-        if self.acquisition_start_time and isinstance(self.acquisition_start_time, str):
-            self.acquisition_start_time = datestr_to_utc_datetime(
-                self.acquisition_start_time
-            )
-
-        if self.l0pp_granules:
+        if granules:
 
             # GR Completeness
             gr_delivered = [
                 f.delivery_date_to_eum
-                for f in self.l0pp_granules
+                for f in granules
                 if hasattr(f, "delivery_date_to_eum") and f.delivery_date_to_eum
             ]
 
-            self.delivery_to_eum_completeness = len(gr_delivered) / len(
-                self.l0pp_granules
+            setattr(
+                self,
+                f"delivery_to_eum_completeness{suffix}",
+                len(gr_delivered) / len(granules),
             )
 
         else:
             LOGGER.debug("No gr set the completeness to 0")
-            self.delivery_to_eum_completeness = 0
+            setattr(self, f"delivery_to_eum_completeness{suffix}", 0)
 
         if latest_gr_published_to_eum and self.acquisition_stop_time:
-            self.delivery_to_eum_timeliness = (
-                latest_gr_published_to_eum - self.acquisition_stop_time
-            ).total_seconds()
+            setattr(
+                self,
+                f"delivery_to_eum_timeliness{suffix}",
+                (
+                    latest_gr_published_to_eum - self.acquisition_stop_time
+                ).total_seconds(),
+            )
         else:
             LOGGER.debug(
                 "Missing information can't set timeliness: stop  %s  latest %s",
@@ -200,9 +259,13 @@ class S3pSession(generated.S3pSession):
             )
 
         if latest_gr_published_to_eum and self.acquisition_start_time:
-            self.delivery_to_eum_timeliness_from_acq_start = (
-                latest_gr_published_to_eum - self.acquisition_start_time
-            ).total_seconds()
+            setattr(
+                self,
+                f"delivery_to_eum_timeliness_from_acq_start{suffix}",
+                (
+                    latest_gr_published_to_eum - self.acquisition_start_time
+                ).total_seconds(),
+            )
         else:
             LOGGER.debug(
                 "Missing information can't set timeliness: start  %s  latest %s",
@@ -211,9 +274,11 @@ class S3pSession(generated.S3pSession):
             )
 
         if latest_gr_generated and self.acquisition_start_time:
-            self.generation_timeliness_from_acq_start = (
-                latest_gr_generated - self.acquisition_start_time
-            ).total_seconds()
+            setattr(
+                self,
+                f"generation_timeliness_from_acq_start{suffix}",
+                (latest_gr_generated - self.acquisition_start_time).total_seconds(),
+            )
         else:
             LOGGER.debug(
                 "Missing information can't set timeliness: stop  %s  latest %s",
@@ -222,9 +287,11 @@ class S3pSession(generated.S3pSession):
             )
 
         if latest_gr_generated and self.acquisition_stop_time:
-            self.generation_timeliness_from_acq_stop = (
-                latest_gr_generated - self.acquisition_stop_time
-            ).total_seconds()
+            setattr(
+                self,
+                f"generation_timeliness_from_acq_stop{suffix}",
+                (latest_gr_generated - self.acquisition_stop_time).total_seconds(),
+            )
         else:
             LOGGER.debug(
                 "Missing information can't set timeliness: stop  %s  latest %s",

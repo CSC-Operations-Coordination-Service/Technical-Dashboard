@@ -108,6 +108,20 @@ class S3pSessionConsolidatorEngine(DataEngine):
                         raw_document.log_date
                     )
                     granule.filesize = raw_document.filesize
+
+                    flux = raw_document.flux
+                    granule_flux = getattr(granule, "flux", None)
+                    if flux:
+                        if granule_flux and granule_flux != flux:
+                            self.logger.warning(
+                                "The flux of the granule %s changed from %s to %s, keeping the first one",
+                                granule.product_name,
+                                granule_flux,
+                                flux,
+                            )
+                        elif not granule_flux:
+                            granule.flux = flux
+
                     thinlayer_transfer_start = (
                         S3pMetricsCirculationAgent.search()
                         .filter("term", queueid=raw_document.queueid)

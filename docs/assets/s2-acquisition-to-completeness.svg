@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 992" width="1060" height="992" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A3AD"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4C8C4A"/>
+    </marker>
+    <style>
+      .mono { font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+      .hdr  { font-size: 13.5px; font-weight: 700; }
+      .fld  { font-size: 11.5px; fill: #3A4750; }
+      .cap  { font-size: 11px; font-style: italic; }
+      .tag  { font-size: 10.5px; letter-spacing: 0.7px; font-weight: 600; }
+      .jkey { font-size: 12px; font-weight: 700; fill: #33424E; }
+      .jsub { font-size: 11.5px; fill: #5A6672; }
+    </style>
+  </defs>
+
+  <rect x="8" y="8" width="1044" height="976" rx="14" fill="#FFFFFF" stroke="#E3E7EB"/>
+
+  <text x="60" y="44" font-size="21" font-weight="700" fill="#16212B">S2 · from station pass to completeness</text>
+  <text x="60" y="66" font-size="12.5" fill="#6B7683">Same spine as S1, but the product name does not carry the datatake id.</text>
+
+  <rect x="690" y="40" width="11" height="11" rx="2" fill="#FDF1E8" stroke="#C4772F"/>
+  <text x="707" y="50" font-size="11.5" fill="#5A6672">reported</text>
+  <rect x="790" y="40" width="11" height="11" rx="2" fill="#EEF3FB" stroke="#3B6EA5"/>
+  <text x="807" y="50" font-size="11.5" fill="#5A6672">planned</text>
+  <rect x="884" y="40" width="11" height="11" rx="2" fill="#EDF7EE" stroke="#4C8C4A"/>
+  <text x="901" y="50" font-size="11.5" fill="#5A6672">computed</text>
+  <rect x="60" y="88" width="560" height="120" rx="9" fill="#FDF1E8" stroke="#C4772F" stroke-width="1.4"/>
+  <text x="78" y="112" class="mono hdr" fill="#8A4B12">1 · cds-cadip-acquisition-pass-status</text>
+  <text x="602" y="112" class="tag" fill="#C4772F" text-anchor="end">REPORTED</text>
+  <text x="78" y="136" class="mono fld">session_id · satellite_id · downlink_orbit · ground_station</text>
+  <text x="78" y="155" class="mono fld">downlink_start → downlink_stop → delivery_stop</text>
+  <text x="78" y="174" class="mono fld">global_status · quality_infos summed over channels</text>
+  <text x="78" y="196" class="cap" fill="#8A6B52">S2 is received at the same CADIP stations as S1</text>
+  <line x1="340" y1="208" x2="340" y2="284" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="358" y="228" class="mono jkey">CORRELATE_ACQUISITIONS</text>
+  <text x="358" y="246" class="mono jsub">satellite_id = satellite_unit · downlink_orbit = downlink_absolute_orbit</text>
+  <text x="358" y="264" class="mono jsub">ground_station found inside station → writes delivery_stop</text>
+  <rect x="60" y="286" width="560" height="120" rx="9" fill="#EEF3FB" stroke="#3B6EA5" stroke-width="1.4"/>
+  <text x="78" y="310" class="mono hdr" fill="#1F4E79">2 · cds-downlink-datatake</text>
+  <text x="602" y="310" class="tag" fill="#3B6EA5" text-anchor="end">PLANNED</text>
+  <text x="78" y="334" class="mono fld">datatake_id · satellite_unit · station · channel · session_id</text>
+  <text x="78" y="353" class="mono fld">effective_downlink_start / stop · downlink_duration · partial</text>
+  <text x="78" y="372" class="mono fld">+ delivery_stop (from 1) · + observation_time_start (from 3)</text>
+  <text x="78" y="394" class="cap" fill="#4E6B8A">counted back by the datatake → number_of_expected_ds</text>
+  <line x1="340" y1="406" x2="340" y2="464" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="358" y="426" class="mono jkey">satellite_unit + datatake_id</text>
+  <text x="358" y="444" class="mono jsub">get_downlinks() counts them → number_of_expected_ds (S2 only)</text>
+  <rect x="60" y="466" width="560" height="120" rx="9" fill="#EEF3FB" stroke="#3B6EA5" stroke-width="1.4"/>
+  <text x="78" y="490" class="mono hdr" fill="#1F4E79">3 · cds-datatake</text>
+  <text x="232" y="490" class="mono" font-size="12" fill="#3B6EA5">_id = S2A-45064-1</text>
+  <text x="602" y="490" class="tag" fill="#3B6EA5" text-anchor="end">PLANNED</text>
+  <text x="78" y="514" class="mono fld">observation_time_start / stop · observation_duration</text>
+  <text x="78" y="533" class="mono fld">number_of_scenes · instrument_mode · absolute_orbit</text>
+  <text x="78" y="552" class="mono fld">number_of_expected_tiles ← comes from the products</text>
+  <text x="78" y="574" class="cap" fill="#4E6B8A">the observation as planned — the EXPECTED reference</text>
+  <line x1="622" y1="522" x2="656" y2="522" stroke="#4C8C4A" stroke-width="1.6" marker-end="url(#arrowGreen)"/>
+  <rect x="660" y="466" width="340" height="106" rx="9" fill="#EDF7EE" stroke="#4C8C4A" stroke-width="1.3"/>
+  <text x="678" y="490" font-size="12.5" font-weight="700" fill="#2E6B2C">completeness · cds-datatake</text>
+  <text x="678" y="512" class="mono" font-size="11" fill="#2E6B2C">DS  expected = observation_duration</text>
+  <text x="678" y="529" class="mono" font-size="11" fill="#2E6B2C">GR  expected = scenes × 12</text>
+  <text x="678" y="546" class="mono" font-size="11" fill="#2E6B2C">TL/TC expected = expected_tiles</text>
+  <text x="678" y="563" class="mono" font-size="11" fill="#2E6B2C">+ {level}_local_* and final_completeness_*</text>
+  <line x1="340" y1="664" x2="340" y2="588" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="358" y="606" class="mono jkey">NO datatake_id in the S2 product name</text>
+  <text x="358" y="624" class="mono jsub">GR / TL / TC → product_group_id (a PRIP metadata attribute)</text>
+  <text x="358" y="642" class="mono jsub">MSI_*_DS → sensing overlap with the datatake window</text>
+  <rect x="60" y="664" width="560" height="120" rx="9" fill="#FDF1E8" stroke="#C4772F" stroke-width="1.4"/>
+  <text x="78" y="688" class="mono hdr" fill="#8A4B12">4 · cds-product</text>
+  <text x="602" y="688" class="tag" fill="#C4772F" text-anchor="end">REPORTED</text>
+  <text x="78" y="712" class="mono fld">name · product_type · sensing_start_date / end</text>
+  <text x="78" y="731" class="mono fld">product_group_id · datastrip_id · tile_number · detector_id</text>
+  <text x="78" y="750" class="mono fld">expected_tiles = footprint ∩ TILPAR   (L1C / L2A DS only)</text>
+  <text x="78" y="772" class="cap" fill="#8A6B52">one product as delivered by the PRIP</text>
+  <line x1="622" y1="720" x2="656" y2="720" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <rect x="660" y="664" width="340" height="106" rx="9" fill="#FDF1E8" stroke="#C4772F" stroke-width="1.3"/>
+  <text x="678" y="688" font-size="12.5" font-weight="700" fill="#8A4B12">the tile loop</text>
+  <text x="678" y="710" class="mono" font-size="11" fill="#8A4B12">MSI_L1C_DS.expected_tiles</text>
+  <text x="678" y="727" class="mono" font-size="11" fill="#8A4B12">union over the datatake</text>
+  <text x="678" y="744" class="mono" font-size="11" fill="#8A4B12">→ number_of_expected_tiles</text>
+  <text x="678" y="761" class="mono" font-size="11" fill="#8A4B12">→ TL / TC expected (box 3)</text>
+  <rect x="60" y="808" width="940" height="160" rx="9" fill="#FAFBFC" stroke="#E3E7EB"/>
+  <text x="78" y="830" font-size="11" font-weight="700" fill="#5A6672" letter-spacing="0.4">THE S2 NAME HAS NO DATATAKE ID — ONLY THE ORBIT</text>
+  <rect x="78" y="840" width="70" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="113" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">S2A</text>
+  <text x="113" y="881" font-size="10" fill="#6B7683" text-anchor="middle">satellite</text>
+  <rect x="152" y="840" width="80" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="192" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">OPER</text>
+  <text x="192" y="881" font-size="10" fill="#6B7683" text-anchor="middle">file class</text>
+  <rect x="236" y="840" width="150" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="311" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">MSI_L1C_TL</text>
+  <text x="311" y="881" font-size="10" fill="#6B7683" text-anchor="middle">product type</text>
+  <rect x="390" y="840" width="80" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="430" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">ATOS</text>
+  <text x="430" y="881" font-size="10" fill="#6B7683" text-anchor="middle">site centre</text>
+  <rect x="474" y="840" width="170" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="559" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">20240207T124225</text>
+  <text x="559" y="881" font-size="10" fill="#6B7683" text-anchor="middle">creation date</text>
+  <rect x="648" y="840" width="100" height="28" rx="4" fill="#FCE9D8" stroke="#C4772F" stroke-width="1.5"/>
+  <text x="698" y="859" class="mono" font-size="13" fill="#8A4B12" font-weight="700" text-anchor="middle">A045064</text>
+  <text x="698" y="881" font-size="10" fill="#8A4B12" font-weight="700" text-anchor="middle">absolute orbit</text>
+  <rect x="752" y="840" width="100" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="802" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">T31TCJ</text>
+  <text x="802" y="881" font-size="10" fill="#6B7683" text-anchor="middle">tile</text>
+  <rect x="856" y="840" width="100" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="906" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">N05.10</text>
+  <text x="906" y="881" font-size="10" fill="#6B7683" text-anchor="middle">baseline</text>
+  <line x1="698" y1="886" x2="698" y2="892" stroke="#C4772F" stroke-width="1.4"/>
+  <text x="698" y="905" font-size="11" font-weight="600" fill="#8A4B12" text-anchor="middle">orbit alone is not enough: a datatake is 45064-1, 45064-2, …</text>
+  <text x="78" y="932" font-size="11" font-weight="700" fill="#5A6672" letter-spacing="0.4">SO THE LINK COMES FROM THE product_group_id METADATA ATTRIBUTE INSTEAD</text>
+  <text x="78" y="954" class="mono" font-size="12.5" fill="#33424E">GS2A_20240207T101201_045064_N05.10   →   absolute_orbit 45064 + sensing 10:12:01 → cds-datatake _id = S2A-45064-1</text>
+</svg>
