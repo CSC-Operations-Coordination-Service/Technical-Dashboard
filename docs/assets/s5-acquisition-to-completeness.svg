@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 992" width="1060" height="992" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#98A3AD"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4C8C4A"/>
+    </marker>
+    <style>
+      .mono { font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; }
+      .hdr  { font-size: 13.5px; font-weight: 700; }
+      .fld  { font-size: 11.5px; fill: #3A4750; }
+      .cap  { font-size: 11px; font-style: italic; }
+      .tag  { font-size: 10.5px; letter-spacing: 0.7px; font-weight: 600; }
+      .jkey { font-size: 12px; font-weight: 700; fill: #33424E; }
+      .jsub { font-size: 11.5px; fill: #5A6672; }
+    </style>
+  </defs>
+
+  <rect x="8" y="8" width="1044" height="976" rx="14" fill="#FFFFFF" stroke="#E3E7EB"/>
+
+  <text x="60" y="44" font-size="21" font-weight="700" fill="#16212B">S5P · from station pass to completeness</text>
+  <text x="60" y="66" font-size="12.5" fill="#6B7683">X-Band reports plus DSIB; the orbit is rebuilt from the product name.</text>
+
+  <rect x="690" y="40" width="11" height="11" rx="2" fill="#FDF1E8" stroke="#C4772F"/>
+  <text x="707" y="50" font-size="11.5" fill="#5A6672">reported</text>
+  <rect x="790" y="40" width="11" height="11" rx="2" fill="#EEF3FB" stroke="#3B6EA5"/>
+  <text x="807" y="50" font-size="11.5" fill="#5A6672">planned</text>
+  <rect x="884" y="40" width="11" height="11" rx="2" fill="#EDF7EE" stroke="#4C8C4A"/>
+  <text x="901" y="50" font-size="11.5" fill="#5A6672">computed</text>
+  <rect x="60" y="88" width="560" height="120" rx="9" fill="#FDF1E8" stroke="#C4772F" stroke-width="1.4"/>
+  <text x="78" y="112" class="mono hdr" fill="#8A4B12">1 · cds-acquisition-pass-status</text>
+  <text x="602" y="112" class="tag" fill="#C4772F" text-anchor="end">REPORTED</text>
+  <text x="78" y="136" class="mono fld">satellite_id · ground_station ← reportName · downlink_orbit</text>
+  <text x="78" y="155" class="mono fld">first_frame_start → last_frame_stop → stop_delivery</text>
+  <text x="78" y="174" class="mono fld">from_acq_delivery_timeliness · delivery_bitrate · fer_data</text>
+  <text x="78" y="196" class="cap" fill="#8A6B52">S5P uses the legacy X-Band report, not CADIP (CONSOLIDATE_S5APS)</text>
+  <line x1="340" y1="208" x2="340" y2="266" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="358" y="228" class="mono jkey">never correlated to a downlink document</text>
+  <text x="358" y="246" class="mono jsub">CORRELATE_ACQUISITIONS accepts CADIP and EDRS sources only</text>
+  <rect x="60" y="268" width="560" height="120" rx="9" fill="#F7F8FA" stroke="#C2CAD2" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="78" y="292" class="mono hdr" fill="#5A6672">cds-downlink-datatake · cds-datatake</text>
+  <text x="602" y="292" class="tag" fill="#C2CAD2" text-anchor="end">NOT USED FOR S5</text>
+  <text x="78" y="316" class="mono fld">no MP_ALL row → no planned downlink document</text>
+  <text x="78" y="335" class="mono fld">no MP_ACQ row → no planned observation document</text>
+  <text x="78" y="354" class="mono fld">pass transfer volume / time comes from cds-ddp-data-available (DSIB)</text>
+  <text x="78" y="376" class="cap" fill="#6B7683">session_id · time_start → time_finished · transfer_time · data_size</text>
+  <line x1="340" y1="388" x2="340" y2="464" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="358" y="408" class="mono jkey">so the observation is rebuilt from the product itself</text>
+  <text x="358" y="426" class="mono jsub">pseudo datatake_id = {satellite}-{absolute_orbit}</text>
+  <text x="358" y="444" class="mono jsub">read straight out of the product name</text>
+  <rect x="60" y="466" width="560" height="120" rx="9" fill="#FDF1E8" stroke="#C4772F" stroke-width="1.4"/>
+  <text x="78" y="490" class="mono hdr" fill="#8A4B12">3 · cds-product</text>
+  <text x="218" y="490" class="mono" font-size="12" fill="#C4772F">datatake_id = S5P-23146</text>
+  <text x="602" y="490" class="tag" fill="#C4772F" text-anchor="end">REPORTED</text>
+  <text x="78" y="514" class="mono fld">name · product_type · timeliness · sensing_start_date / end</text>
+  <text x="78" y="533" class="mono fld">datatake_id (pseudo) · absolute_orbit · collection_number</text>
+  <text x="78" y="552" class="mono fld">L1B / L2 come from the PRIP — L0 products come from the LTA</text>
+  <text x="78" y="574" class="cap" fill="#8A6B52">one product as delivered by the PRIP or the LTA</text>
+  <line x1="340" y1="586" x2="340" y2="662" stroke="#98A3AD" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="358" y="606" class="mono jkey">COMPUTE_S5_COMPLETENESS</text>
+  <text x="358" y="624" class="mono jsub">compute key = {datatake_id}-{timeliness}_{product_type}</text>
+  <text x="358" y="642" class="mono jsub">one completeness document per orbit × timeliness-qualified type</text>
+  <rect x="60" y="664" width="560" height="120" rx="9" fill="#EDF7EE" stroke="#4C8C4A" stroke-width="1.4"/>
+  <text x="78" y="688" class="mono hdr" fill="#2E6B2C">4 · cds-s5-completeness</text>
+  <text x="602" y="688" class="tag" fill="#4C8C4A" text-anchor="end">COMPUTED</text>
+  <text x="78" y="712" class="mono fld">key = S5P-23146-NRTI_L2__AER_LH</text>
+  <text x="78" y="731" class="mono fld">value · expected · percentage · status</text>
+  <text x="78" y="750" class="mono fld">slice_value · slice_expected   ← S5 only</text>
+  <text x="78" y="772" class="cap" fill="#436B45">two verdicts per document: sensing duration and slice count</text>
+  <line x1="622" y1="720" x2="656" y2="720" stroke="#4C8C4A" stroke-width="1.6" marker-end="url(#arrowGreen)"/>
+  <rect x="660" y="664" width="340" height="106" rx="9" fill="#EDF7EE" stroke="#4C8C4A" stroke-width="1.3"/>
+  <text x="678" y="688" font-size="12.5" font-weight="700" fill="#2E6B2C">expected · per orbit</text>
+  <text x="678" y="710" class="mono" font-size="11" fill="#2E6B2C">sensing: 100 / 60 / 55 min</text>
+  <text x="678" y="727" class="mono" font-size="11" fill="#2E6B2C">         per product type</text>
+  <text x="678" y="744" class="mono" font-size="11" fill="#2E6B2C">slices : 21 / 13 / 6 / 1</text>
+  <text x="678" y="761" class="mono" font-size="11" fill="#2E6B2C">static table in CdsS5Completeness</text>
+  <rect x="60" y="808" width="940" height="160" rx="9" fill="#FAFBFC" stroke="#E3E7EB"/>
+  <text x="78" y="830" font-size="11" font-weight="700" fill="#5A6672" letter-spacing="0.4">WHERE THAT PSEUDO datatake_id COMES FROM — THE S5 PRODUCT NAME</text>
+  <rect x="78" y="840" width="70" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="113" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">S5P</text>
+  <text x="113" y="881" font-size="10" fill="#6B7683" text-anchor="middle">satellite</text>
+  <rect x="152" y="840" width="80" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="192" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">NRTI</text>
+  <text x="192" y="881" font-size="10" fill="#6B7683" text-anchor="middle">timeliness</text>
+  <rect x="236" y="840" width="140" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="306" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">L2__AER_LH</text>
+  <text x="306" y="881" font-size="10" fill="#6B7683" text-anchor="middle">product type</text>
+  <rect x="380" y="840" width="160" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="460" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">20220401T203521</text>
+  <text x="460" y="881" font-size="10" fill="#6B7683" text-anchor="middle">sensing start</text>
+  <rect x="544" y="840" width="160" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="624" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">20220401T204021</text>
+  <text x="624" y="881" font-size="10" fill="#6B7683" text-anchor="middle">sensing stop</text>
+  <rect x="708" y="840" width="95" height="28" rx="4" fill="#FCE9D8" stroke="#C4772F" stroke-width="1.5"/>
+  <text x="755" y="859" class="mono" font-size="13" fill="#8A4B12" font-weight="700" text-anchor="middle">23146</text>
+  <text x="755" y="881" font-size="10" fill="#8A4B12" font-weight="700" text-anchor="middle">absolute orbit</text>
+  <rect x="807" y="840" width="60" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="837" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">02</text>
+  <text x="837" y="881" font-size="10" fill="#6B7683" text-anchor="middle">coll.</text>
+  <rect x="871" y="840" width="95" height="28" rx="4" fill="#FFFFFF" stroke="#D7DDE3" stroke-width="1.0"/>
+  <text x="918" y="859" class="mono" font-size="13" fill="#16212B" text-anchor="middle">020301</text>
+  <text x="918" y="881" font-size="10" fill="#6B7683" text-anchor="middle">processor</text>
+  <line x1="755" y1="886" x2="755" y2="892" stroke="#C4772F" stroke-width="1.4"/>
+  <text x="755" y="905" font-size="11" font-weight="600" fill="#8A4B12" text-anchor="middle">absolute orbit → datatake_id = S5P-23146</text>
+  <text x="78" y="932" font-size="11" font-weight="700" fill="#5A6672" letter-spacing="0.4">AND THE COMPLETENESS KEY GLUES THE TIMELINESS ONTO THE TYPE</text>
+  <text x="78" y="954" class="mono" font-size="12.5" fill="#33424E">S5P-23146  +  NRTI_L2__AER_LH   →   expected 55 min of sensing and 13 slices</text>
+</svg>

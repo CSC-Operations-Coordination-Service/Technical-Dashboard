@@ -46,7 +46,25 @@
             "generation_timeliness_from_acq_start": {
                 "type": "long"
             },
+            "generation_timeliness_from_acq_stop": {
+                "type": "long"
+            },
             "delivery_to_eum_timeliness_from_acq_start": {
+                "type": "long"
+            },
+            "delivery_to_eum_completeness_qrt": {
+                "type": "float"
+            },
+            "delivery_to_eum_timeliness_qrt": {
+                "type": "long"
+            },
+            "generation_timeliness_from_acq_start_qrt": {
+                "type": "long"
+            },
+            "generation_timeliness_from_acq_stop_qrt": {
+                "type": "long"
+            },
+            "delivery_to_eum_timeliness_from_acq_start_qrt": {
                 "type": "long"
             },
             "acquisition_start_time": {
@@ -88,6 +106,9 @@
                         "type": "keyword"
                     },
                     "product_type": {
+                        "type": "keyword"
+                    },
+                    "flux": {
                         "type": "keyword"
                     },
                     "delivery_date_to_eum": {

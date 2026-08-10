@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-07-06T14:53:12.402558+00:00
+Generated date: 2026-08-10T09:20:31.545550+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -4416,6 +4416,8 @@ class S3pSessionL0PpGranules(InnerDoc):
 
     product_type = Keyword()
 
+    flux = Keyword()
+
     delivery_date_to_eum = ZuluDate()
 
     delivery_start_date_to_eum = ZuluDate()
@@ -4463,15 +4465,27 @@ class S3pSession(MAASDocument):
 
     delivery_to_eum_completeness = Float()
 
+    delivery_to_eum_completeness_qrt = Float()
+
     delivery_to_eum_timeliness = Long()
 
     delivery_to_eum_timeliness_from_acq_start = Long()
+
+    delivery_to_eum_timeliness_from_acq_start_qrt = Long()
+
+    delivery_to_eum_timeliness_qrt = Long()
 
     downlink_orbit = Keyword()
 
     downlink_session = Keyword()
 
     generation_timeliness_from_acq_start = Long()
+
+    generation_timeliness_from_acq_start_qrt = Long()
+
+    generation_timeliness_from_acq_stop = Long()
+
+    generation_timeliness_from_acq_stop_qrt = Long()
 
     hkraw_delivery_time = ZuluDate()
 
