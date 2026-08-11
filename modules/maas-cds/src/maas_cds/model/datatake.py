@@ -565,6 +565,14 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         expected = {}
         config = MaasConfigManager().get_config("MaasConfigDataflow")
         if not config:
+            # Degraded mode: every duplicated pair is then counted as expected on
+            # every interface. Warn, as nothing on the document tells it apart from
+            # a datatake genuinely distributed everywhere.
+            LOGGER.warning(
+                "[%s] - Dataflow configuration not loaded: duplicated pairs to be"
+                " deleted are not filtered per interface",
+                self.datatake_id,
+            )
             return expected
 
         for record in config["records"]:

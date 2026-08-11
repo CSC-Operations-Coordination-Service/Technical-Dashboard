@@ -1,6 +1,8 @@
 """Product consolidation"""
 
 from maas_engine.engine.rawdata import DataEngine
+from maas_cds.lib.config_manager import MaasConfigManager
+from maas_cds.model.configuration import MaasConfigDataflow
 from maas_cds.model.datatake import CdsDatatake
 
 from maas_cds.model.enumeration import CompletenessScope
@@ -22,6 +24,16 @@ class ComputeCompletenessEngine(DataEngine):
         missing_periods_maximal_offset=None,
     ):
         super().__init__(args, send_reports=send_reports)
+
+        # The datatake model reads the dataflow to know which interfaces distribute
+        # each product type (duplicated pairs to be deleted per interface, see
+        # CdsDatatake._dataflow_expected_interfaces). Without it loaded here, the
+        # compute silently falls back to counting every pair on every interface.
+        self.config_manager = MaasConfigManager(
+            config_model_class=[
+                MaasConfigDataflow(),
+            ]
+        )
 
         CdsDatatake.COMPLETENESS_TOLERANCE = completeness_tolerance
 
