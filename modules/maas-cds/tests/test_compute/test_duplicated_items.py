@@ -10,12 +10,19 @@ from maas_cds.lib.config_manager import MaasConfigManager
 from maas_cds.model.datatake_s1 import CdsDatatakeS1
 from maas_cds.model.datatake_s2 import CdsDatatakeS2
 from maas_cds.model.product import CdsProduct
+from maas_cds.model.product_deletion import CdsInterfaceProductDeletion
 
 BASE = datetime.datetime(2024, 1, 1, tzinfo=datetime.timezone.utc)
 
 
 def _product(
-    name, start_offset, end_offset, deleted=False, interface="DD", issue="GSANOM-1"
+    name,
+    start_offset,
+    end_offset,
+    deleted=False,
+    interface="DD",
+    issue="GSANOM-1",
+    publication_offset=None,
 ):
     start = BASE + timedelta(seconds=start_offset)
     end = BASE + timedelta(seconds=end_offset)
@@ -25,6 +32,8 @@ def _product(
         sensing_end_date=end,
     )
     product.sensing_duration = int((end - start).total_seconds() * 1_000_000)
+    if publication_offset is not None:
+        product.prip_publication_date = BASE + timedelta(seconds=publication_offset)
     if deleted:
         if interface == "DD":
             product.nb_dd_deleted = 1
@@ -37,17 +46,20 @@ def _product(
     return product
 
 
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={"B": {"DD"}})
 @patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
 @patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
 @patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_RAW__0S"])
 @patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
 @patch.object(CdsDatatakeS1, "find_brother_products_scan")
 def test_compute_completeness_duplicated_items_and_original(mock_scan, *_mocks):
-    """A and B overlap by 50% (B is deleted from DD), C is alone.
+    """A and B overlap by 50% (B is mentioned in a DD deletion), C is alone.
 
     - both A and B end up in ``duplicateds.items``
-    - the deleted product of the pair is traced per interface
+    - the product mentioned in a deletion is traced per interface
     - the ``deletion`` aggregate names the ticket and the survivor
+    - B is probed as really deleted from DD, so the DD funnel is complete while
+      nothing is even mentioned on LTA
     - ``original_completeness`` (all products) is bigger than the live value
       (which ignores the deleted product B)
     """
@@ -98,6 +110,34 @@ def test_compute_completeness_duplicated_items_and_original(mock_scan, *_mocks):
     assert deletion["LTA"].expected_pairs_count == 1
     assert deletion["LTA"].deletion_completenness_percentange == 0.0
 
+    # --- funnel: identified -> mentioned -> deleted ---
+    # DD: the pair is identified, mentioned and its duplicate is probed as deleted
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["DD"].mentioned_pairs_count == 1
+    assert deletion["DD"].deleted_pairs_count == 1
+    assert deletion["DD"].targeted_products_count == 1
+    assert deletion["DD"].deleted_products_count == 1
+    assert deletion["DD"].deleted_percentage == 100.0
+    assert deletion["DD"].status == "Complete"
+    assert (
+        deletion["DD"].status_message
+        == "DD deletions done (1/1 identified duplicated pairs deleted)"
+    )
+    # LTA: the pair is identified but not even mentioned in a deletion
+    assert deletion["LTA"].mentioned_pairs_count == 0
+    assert deletion["LTA"].deleted_pairs_count == 0
+    assert deletion["LTA"].deleted_products_count == 0
+    assert deletion["LTA"].deleted_percentage == 0.0
+    assert deletion["LTA"].status == "Missing"
+    assert (
+        deletion["LTA"].status_message
+        == "LTA deletions still missing (0/1 identified duplicated pairs mentioned)"
+    )
+    assert datatake.duplicateds.deletions_status == (
+        "DD deletions done (1/1 identified duplicated pairs deleted)"
+        " / LTA deletions still missing (0/1 identified duplicated pairs mentioned)"
+    )
+
     # --- original vs live completeness ---
     # live ignores deleted B : A(0-100) + C(200-300) = 200s
     assert datatake.IW_RAW__0S_local_value == 200_000_000
@@ -107,6 +147,160 @@ def test_compute_completeness_duplicated_items_and_original(mock_scan, *_mocks):
         datatake.original_completeness["IW_RAW__0S_local_value"]
         > datatake.IW_RAW__0S_local_value
     )
+
+
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={})
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_RAW__0S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_mentioned_but_not_deleted(mock_scan, *_mocks):
+    """A duplicate mentioned in a deletion but still distributed is not "deleted".
+
+    B is flagged as deleted from DD (a deletion ticket is consolidated on it) but
+    the interface probe does not report it as missing: the pair is mentioned, not
+    deleted, so the status stays ``Created`` and never claims to be done.
+    """
+
+    mock_scan.return_value = [
+        _product("A", 0, 100),
+        _product("B", 50, 150, deleted=True),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["DD"].mentioned_pairs_count == 1
+    assert deletion["DD"].deleted_pairs_count == 0
+    # the product is mentioned in a deletion but not (yet) really deleted
+    assert deletion["DD"].targeted_products_count == 1
+    assert deletion["DD"].deleted_products_count == 0
+    # the mentioned share is 100%, the really deleted one is 0%
+    assert deletion["DD"].deletion_completenness_percentange == 100.0
+    assert deletion["DD"].deleted_percentage == 0.0
+    assert deletion["DD"].status == "Created"
+    assert deletion["DD"].status_message == (
+        "DD deletions created (1/1 identified duplicated pairs mentioned, 0 deleted)"
+    )
+
+
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={})
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_RAW__0S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_duplicated_item_latest_publication_first(
+    mock_scan, *_mocks
+):
+    """The item reports the latest published product of the pair in ``name``.
+
+    A and B overlap; B (later sensing) was published before A, so A - published
+    last - is the one reported in ``name``, with its own sensing period and
+    publication date, and B goes in ``paired_with``.
+    """
+
+    mock_scan.return_value = [
+        _product("A", 0, 100, publication_offset=900),
+        _product("B", 50, 150, publication_offset=600),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    (item,) = list(datatake.duplicateds.items)
+    assert item.name == "A"
+    assert item.paired_with == "B"
+    assert item.publication_date == BASE + timedelta(seconds=900)
+    assert item.paired_with_publication_date == BASE + timedelta(seconds=600)
+    # sensing period describes the product reported in name
+    assert item.sensing_start_date == BASE
+    assert item.sensing_end_date == BASE + timedelta(seconds=100)
+
+
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_RAW__0S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_duplicated_item_swapped_on_later_publication(
+    mock_scan, *_mocks
+):
+    """B published after A : the pair is swapped so ``name`` stays the latest one."""
+
+    mock_scan.return_value = [
+        _product("A", 0, 100, publication_offset=600),
+        _product("B", 50, 150, publication_offset=900, deleted=True),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    (item,) = list(datatake.duplicateds.items)
+    assert item.name == "B"
+    assert item.paired_with == "A"
+    assert item.publication_date == BASE + timedelta(seconds=900)
+    assert item.paired_with_publication_date == BASE + timedelta(seconds=600)
+    assert item.sensing_start_date == BASE + timedelta(seconds=50)
+    assert item.sensing_end_date == BASE + timedelta(seconds=150)
+    # the deletion trace still names the deleted member of the pair
+    assert item.deleted_product["DD"] == "B"
+
+
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_RAW__0S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_duplicated_item_unknown_publication_date(
+    mock_scan, *_mocks
+):
+    """Without publication date the sensing order is kept and the dates are null."""
+
+    mock_scan.return_value = [
+        _product("A", 0, 100),
+        _product("B", 50, 150),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    (item,) = list(datatake.duplicateds.items)
+    assert item.name == "A"
+    assert item.paired_with == "B"
+    assert item.publication_date is None
+    assert item.paired_with_publication_date is None
 
 
 @patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
@@ -134,6 +328,10 @@ def test_compute_completeness_no_duplicate(mock_scan, *_mocks):
 
     assert datatake.duplicateds.items == []
     assert datatake.duplicateds.pairs_count == 0
+    # nothing to delete on any interface
+    status = {row.service_type: row.status for row in datatake.duplicateds.deletions}
+    assert status == {"DD": "No duplicated", "LTA": "No duplicated"}
+    assert datatake.duplicateds.deletions_status == "No duplicated"
     # no deletion -> original and live match
     assert (
         datatake.original_completeness["IW_RAW__0S_local_value"]
@@ -187,6 +385,7 @@ def test_compute_completeness_deletion_aggregate_not_duplicated(mock_scan, *_moc
     assert deletion["DD"].deletion_completenness_percentange == 100.0
 
 
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={"B": {"DD"}})
 @patch.object(CdsDatatakeS1, "get_expected_value", return_value=500_000_000)
 @patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
 @patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_RAW__0S"])
@@ -195,8 +394,8 @@ def test_compute_completeness_deletion_aggregate_not_duplicated(mock_scan, *_moc
 def test_compute_completeness_deletion_aggregate_dd_and_lta(mock_scan, *_mocks):
     """DD and LTA deletions are reported independently.
 
-    A-B duplicated, B deleted from DD (SOA-DD).
-    C-D duplicated, D deleted from LTA (SOA-LTA).
+    A-B duplicated, B mentioned in a DD deletion (SOA-DD) and probed as deleted.
+    C-D duplicated, D mentioned in an LTA deletion (SOA-LTA) but still there.
     """
 
     mock_scan.return_value = [
@@ -239,7 +438,22 @@ def test_compute_completeness_deletion_aggregate_dd_and_lta(mock_scan, *_mocks):
     assert deletion["LTA"].expected_pairs_count == 2
     assert deletion["LTA"].deletion_completenness_percentange == 50.0
 
+    # one of the two identified pairs is mentioned on each interface, and only the
+    # DD one is probed as really deleted
+    assert deletion["DD"].status == deletion["LTA"].status == "Created"
+    assert deletion["DD"].deleted_pairs_count == 1
+    assert deletion["LTA"].deleted_pairs_count == 0
+    assert datatake.duplicateds.deletions_status == (
+        "DD deletions created (1/2 identified duplicated pairs mentioned, 1 deleted)"
+        " / LTA deletions created (1/2 identified duplicated pairs mentioned, 0 deleted)"
+    )
 
+
+@patch.object(
+    CdsDatatakeS1,
+    "_probe_deleted_products",
+    return_value={"B": {"DD"}, "F": {"LTA"}},
+)
 @patch.object(
     CdsDatatakeS1,
     "_dataflow_expected_interfaces",
@@ -308,6 +522,87 @@ def test_compute_completeness_expected_pairs_filtered_by_dataflow(
     assert deletion["LTA"].expected_pairs_count == 2
     assert deletion["LTA"].surviving_pairs_count == 1
     assert deletion["LTA"].deletion_completenness_percentange == 50.0
+
+    # the status counts only the pairs identified on each interface
+    assert (
+        deletion["DD"].status_message
+        == "DD deletions done (1/1 identified duplicated pairs deleted)"
+    )
+    assert deletion["LTA"].status_message == (
+        "LTA deletions created (1/2 identified duplicated pairs mentioned, 1 deleted)"
+    )
+
+
+class _DeletionRecord:
+    """Minimal stand-in for a CdsInterfaceProductDeletion hit."""
+
+    def __init__(self, **fields):
+        self._fields = fields
+
+    def to_dict(self):
+        return self._fields
+
+
+@patch.object(CdsInterfaceProductDeletion, "search")
+def test_probe_deleted_products(mock_search):
+    """Only a probe reporting ``Missing`` marks a mentioned product as deleted.
+
+    - ``A`` is probed as missing from LTA_Werum -> deleted from LTA
+    - ``B`` is still available on DD_DAS -> mentioned only, not deleted
+    - ``C`` is matched through its DD name (the S2 container case)
+    - ``D`` has no deletion record at all -> absent from the result
+    """
+
+    mock_search.return_value.filter.return_value.params.return_value.execute.return_value = [
+        _DeletionRecord(
+            effective_product_name="A",
+            product_name="A",
+            interface_type="LTA",
+            LTA_Werum_status="Missing",
+        ),
+        _DeletionRecord(
+            effective_product_name="B",
+            product_name="B",
+            interface_type="DD",
+            DD_DAS_status="Available",
+        ),
+        _DeletionRecord(
+            effective_product_name="C_container",
+            product_name="C_container",
+            interface_type="DD",
+            DD_DAS_status="Missing",
+        ),
+    ]
+
+    datatake = CdsDatatakeS1(datatake_id="DT", satellite_unit="S1A", mission="S1")
+
+    probed = datatake._probe_deleted_products(
+        {
+            "A": {"A"},
+            "B": {"B"},
+            "C": {"C", "C_container"},
+            "D": {"D"},
+        }
+    )
+
+    assert probed == {"A": {"LTA"}, "C": {"DD"}}
+
+
+def test_probe_deleted_products_without_mentioned_product():
+    """No product mentioned in a deletion : no query, empty result."""
+
+    datatake = CdsDatatakeS1(datatake_id="DT", satellite_unit="S1A", mission="S1")
+
+    assert datatake._probe_deleted_products({}) == {}
+
+
+@patch.object(CdsInterfaceProductDeletion, "search", side_effect=RuntimeError("boom"))
+def test_probe_deleted_products_unreadable_records(_mock_search):
+    """An unreadable deletion index leaves the probe verdict unknown, not deleted."""
+
+    datatake = CdsDatatakeS1(datatake_id="DT", satellite_unit="S1A", mission="S1")
+
+    assert datatake._probe_deleted_products({"A": {"A"}}) == {}
 
 
 def _dataflow_record(mission, satellites, product_type, services_config):

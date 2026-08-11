@@ -154,11 +154,19 @@
                                 "type": "date",
                                 "locale": "utc"
                             },
+                            "publication_date": {
+                                "type": "date",
+                                "locale": "utc"
+                            },
                             "duplicated_percentage": {
                                 "type": "float"
                             },
                             "paired_with": {
                                 "type": "keyword"
+                            },
+                            "paired_with_publication_date": {
+                                "type": "date",
+                                "locale": "utc"
                             },
                             "deleted_product": {
                                 "type": "object",
@@ -188,6 +196,9 @@
                             "targeted_products_count": {
                                 "type": "integer"
                             },
+                            "deleted_products_count": {
+                                "type": "integer"
+                            },
                             "surviving_pairs_count": {
                                 "type": "integer"
                             },
@@ -200,10 +211,28 @@
                             "expected_pairs_count": {
                                 "type": "integer"
                             },
+                            "mentioned_pairs_count": {
+                                "type": "integer"
+                            },
+                            "deleted_pairs_count": {
+                                "type": "integer"
+                            },
                             "deletion_completenness_percentange": {
                                 "type": "float"
+                            },
+                            "deleted_percentage": {
+                                "type": "float"
+                            },
+                            "status": {
+                                "type": "keyword"
+                            },
+                            "status_message": {
+                                "type": "keyword"
                             }
                         }
+                    },
+                    "deletions_status": {
+                        "type": "keyword"
                     },
                     "datastrip_pairs": {
                         "type": "object",

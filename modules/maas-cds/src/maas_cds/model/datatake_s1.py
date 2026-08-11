@@ -567,6 +567,8 @@ class CdsDatatakeS1(CdsDatatake):
                         dd_issue,
                         lta_deleted,
                         lta_issue,
+                        getattr(product, "prip_publication_date", None),
+                        getattr(product, "dddas_name", None),
                     )
                 )
 
