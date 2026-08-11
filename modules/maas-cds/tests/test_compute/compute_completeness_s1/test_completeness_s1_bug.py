@@ -262,12 +262,16 @@ datatake_s1_doc_wv.meta.id = "S1A-420975"
 datatake_s1_doc_wv.full_clean()
 
 
+# the engine loads the dataflow configuration at init; this test only checks the
+# compute keys extraction, so no database is needed
+@patch("maas_cds.engines.compute.compute_completeness.MaasConfigManager")
 @patch(
     "maas_cds.model.CdsDatatakeS1.get_by_id",
     side_effect=[datatake_s1_doc_wv, datatake_s1_doc_ew],
 )
 def test_completeness(
     mock_get_by_id,
+    mock_config_manager,
     product_s1_doc_wv_raw_0s,
     product_s1_doc_ew_raw_0s,
     product_s1_doc_wv_raw_0s_bis,

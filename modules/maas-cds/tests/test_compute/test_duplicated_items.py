@@ -533,6 +533,164 @@ def test_compute_completeness_expected_pairs_filtered_by_dataflow(
     )
 
 
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={})
+@patch.object(
+    CdsDatatakeS1,
+    "_dataflow_expected_interfaces",
+    # as in the prod dataflow: SLC is distributed on DD only, never on LTA
+    return_value={"IW_SLC__1S": {"DD"}},
+)
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_SLC__1S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_pair_not_expected_on_interface_is_ignored(
+    mock_scan, *_mocks
+):
+    """A pair of a product type not distributed on an interface is not expected there.
+
+    The A-B SLC pair is only distributed on DD, so nothing is ever to be deleted
+    from LTA: the LTA row reports no duplicated at all, even though B carries an LTA
+    deletion. The pair still counts on DD, where it is not mentioned yet.
+    """
+
+    mock_scan.return_value = [
+        _product("A", 0, 100),
+        _product("B", 50, 150, deleted=True, interface="LTA", issue="SOA-LTA"),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    # the pair is still detected and listed: the dataflow only scopes the counts
+    assert datatake.duplicateds.pairs_count == 1
+
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+
+    # LTA: the product type is not distributed there, so no pair is expected and
+    # the status never claims a deletion is missing
+    assert deletion["LTA"].expected_pairs_count == 0
+    assert deletion["LTA"].mentioned_pairs_count == 0
+    assert deletion["LTA"].deleted_pairs_count == 0
+    assert deletion["LTA"].surviving_pairs_count == 0
+    assert deletion["LTA"].status == "No duplicated"
+    assert deletion["LTA"].status_message == "No LTA duplicated product to delete"
+    # with nothing expected, both shares are complete rather than 0%
+    assert deletion["LTA"].deletion_completenness_percentange == 100.0
+    assert deletion["LTA"].deleted_percentage == 100.0
+    # the deletion trace itself is NOT filtered by the dataflow: B is still
+    # reported as mentioned in an LTA deletion
+    assert deletion["LTA"].ticket == "SOA-LTA"
+    assert deletion["LTA"].targeted_products_count == 1
+
+    # DD: the pair is expected but no DD deletion mentions it
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["DD"].mentioned_pairs_count == 0
+    assert deletion["DD"].surviving_pairs_count == 1
+    assert deletion["DD"].status == "Missing"
+
+    # an interface with nothing to delete is left out of the summary
+    assert datatake.duplicateds.deletions_status == (
+        "DD deletions still missing (0/1 identified duplicated pairs mentioned)"
+    )
+
+
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={"B": {"DD"}})
+@patch.object(
+    CdsDatatakeS1,
+    "_dataflow_expected_interfaces",
+    # product type absent from the dataflow (e.g. EN_SLC__1S, dropped in v1.8)
+    return_value={"IW_RAW__0S": {"DD", "LTA"}},
+)
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["EN_SLC__1S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_pair_of_unknown_product_type_is_ignored(
+    mock_scan, *_mocks
+):
+    """A product type absent from the dataflow is expected on no interface.
+
+    ``expected_interfaces.get(product_type, ())`` yields nothing, so the pair is
+    counted on neither DD nor LTA and the whole summary reports no duplicated -
+    even though the pair is listed and its duplicate is probed as deleted from DD.
+    """
+
+    mock_scan.return_value = [
+        _product("A", 0, 100),
+        _product("B", 50, 150, deleted=True, interface="DD", issue="SOA-DD"),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    assert datatake.duplicateds.pairs_count == 1
+
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+    for interface in ("DD", "LTA"):
+        assert deletion[interface].expected_pairs_count == 0
+        assert deletion[interface].mentioned_pairs_count == 0
+        assert deletion[interface].deleted_pairs_count == 0
+        assert deletion[interface].status == "No duplicated"
+
+    # the DD deletion is still traced at product level
+    assert deletion["DD"].targeted_products_count == 1
+    assert deletion["DD"].deleted_products_count == 1
+
+    assert datatake.duplicateds.deletions_status == "No duplicated"
+
+
+@patch.object(CdsDatatakeS1, "_probe_deleted_products", return_value={})
+@patch.object(CdsDatatakeS1, "_dataflow_expected_interfaces", return_value={})
+@patch.object(CdsDatatakeS1, "get_expected_value", return_value=200_000_000)
+@patch.object(CdsDatatakeS1, "product_type_with_missing_periods", return_value=False)
+@patch.object(CdsDatatakeS1, "get_all_product_types", return_value=["IW_SLC__1S"])
+@patch.object(CdsDatatakeS1, "get_global_key_field", return_value="sensing")
+@patch.object(CdsDatatakeS1, "find_brother_products_scan")
+def test_compute_completeness_pairs_not_filtered_without_dataflow(mock_scan, *_mocks):
+    """Without the dataflow loaded every pair is expected on every interface.
+
+    Degraded mode (see the warning in ``_dataflow_expected_interfaces``): the same
+    DD-only SLC pair as above is now counted on LTA too.
+    """
+
+    mock_scan.return_value = [
+        _product("A", 0, 100),
+        _product("B", 50, 150),
+    ]
+
+    datatake = CdsDatatakeS1(
+        datatake_id="DT",
+        satellite_unit="S1A",
+        mission="S1",
+        observation_time_start=BASE,
+        observation_time_stop=BASE + timedelta(seconds=300),
+    )
+
+    datatake.compute_completeness()
+
+    deletion = {row.service_type: row for row in datatake.duplicateds.deletions}
+    assert deletion["DD"].expected_pairs_count == 1
+    assert deletion["LTA"].expected_pairs_count == 1
+    assert deletion["DD"].status == deletion["LTA"].status == "Missing"
+
+
 class _DeletionRecord:
     """Minimal stand-in for a CdsInterfaceProductDeletion hit."""
 
