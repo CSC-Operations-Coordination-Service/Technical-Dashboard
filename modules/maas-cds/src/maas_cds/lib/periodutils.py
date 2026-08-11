@@ -24,9 +24,29 @@ DuplicationCandidate = namedtuple(
         "dd_issue",
         "lta_deleted",
         "lta_issue",
+        # Publication date of the product (PRIP), used to identify which member of a
+        # duplicated pair is the most recently published one.
+        "publication_date",
+        # Name of the product on the DD interface (``dddas_name``): the deletion
+        # records name the DD-side product, which differs from the PRIP name for the
+        # S2 containers. Used to match the product with a deletion.
+        "dd_name",
     ),
-    defaults=(False, None, False, None, False, None),
+    defaults=(False, None, False, None, False, None, None, None),
 )
+
+
+def is_later_publication(candidate_date, reference_date) -> bool:
+    """Whether ``candidate_date`` is a strictly later publication than the reference.
+
+    An unknown (``None``) candidate date never wins, and an unknown reference date
+    is always beaten by a known candidate date. Equal dates are not "later", so the
+    caller's initial order is preserved on ties.
+    """
+    if candidate_date is None:
+        return False
+
+    return reference_date is None or candidate_date > reference_date
 
 
 def compute_total_sensing_product(periods: list[Period]) -> int:
@@ -294,20 +314,29 @@ def compute_duplicated_items(
     considered as duplicated of each other. Every such consecutive pair is
     returned (each element is compared only with the next one).
 
+    In the returned entry the pair is oriented by publication date: ``name`` is the
+    most recently published product of the pair and ``paired_with`` the other one
+    (the sensing order is kept when the publication dates are equal or unknown).
+
     Args:
         candidates (List[DuplicationCandidate]): the products to evaluate, each
-            carrying its ``name`` and sensing period. Must be sorted by start.
+            carrying its ``name``, sensing period and publication date. Must be
+            sorted by start.
         threshold (float): minimal overlap percentage to flag a pair.
         minimal_duration (float): minimal overlap duration, in seconds, to flag a
             pair (0.0 disables the duration constraint).
 
     Returns:
         List[dict]: one entry per duplicated *pair* (not per member), with keys
-            ``name`` and ``paired_with`` (the two products), ``sensing_start_date``,
-            ``sensing_end_date``, ``duplicated_percentage`` and ``deleted_product``
+            ``name`` and ``paired_with`` (the two products), ``publication_date``
+            and ``paired_with_publication_date`` (their publication dates),
+            ``sensing_start_date`` / ``sensing_end_date`` (of the ``name`` product),
+            ``duplicated_percentage`` and ``deleted_product``
             (``{"DD": name|None, "LTA": name|None}`` naming the pair member deleted
-            from each interface). A product involved in several consecutive overlaps
-            yields one pair entry per overlap.
+            from each interface). ``duplicated_percentage`` characterises the pair:
+            it is the sensing overlap relative to the earlier-sensing product, not
+            to the product reported in ``name``. A product involved in several
+            consecutive overlaps yields one pair entry per overlap.
     """
 
     duplicated_items = []
@@ -330,8 +359,10 @@ def compute_duplicated_items(
             "name": candidate.name,
             "sensing_start_date": candidate.start,
             "sensing_end_date": candidate.end,
+            "publication_date": candidate.publication_date,
             "duplicated_percentage": float(percentage),
             "paired_with": paired_with.name,
+            "paired_with_publication_date": paired_with.publication_date,
             "deleted_product": dict(deleted_product),
         }
 
@@ -345,8 +376,16 @@ def compute_duplicated_items(
 
         if percentage >= threshold and duration >= minimal_duration:
             deleted_product = _deleted_product(previous, brother)
-            duplicated_items.append(
-                _item(previous, brother, percentage, deleted_product)
-            )
+
+            # The latest published product of the pair is the one reported in
+            # ``name``: it is the product that superseded the other one.
+            if is_later_publication(
+                brother.publication_date, previous.publication_date
+            ):
+                latest, other = brother, previous
+            else:
+                latest, other = previous, brother
+
+            duplicated_items.append(_item(latest, other, percentage, deleted_product))
 
     return duplicated_items

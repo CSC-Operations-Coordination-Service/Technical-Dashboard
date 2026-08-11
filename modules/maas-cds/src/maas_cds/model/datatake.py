@@ -19,17 +19,30 @@ from maas_cds.lib.periodutils import (
     compute_duplicated_indicator,
     compute_duplicated_items,
     compute_missing_sensing_periods,
+    is_later_publication,
 )
 from maas_cds.model import generated
 from maas_cds.model.anomaly_mixin import AnomalyMixin
-from maas_cds.model.enumeration import CompletenessScope, CompletenessStatus
+from maas_cds.model.enumeration import (
+    CompletenessScope,
+    CompletenessStatus,
+    DuplicatedDeletionStatus,
+)
 from maas_cds.model.product import CdsProduct
+from maas_cds.model.product_deletion import CdsInterfaceProductDeletion
 from datetime import timedelta
 
 __all__ = ["CdsDatatake"]
 
 
 LOGGER = logging.getLogger("CdsModelDatatake")
+
+# Value the interface probe (TRACK_DELETION / probe_item) writes in the per-service
+# ``{interface}_{service}_status`` field of a deletion record when the product is
+# really gone from the interface. The other values (``Available``,
+# ``Never published``, ``Unknow``) mean the product is mentioned in a deletion but
+# not deleted - or not probed yet.
+PROBE_DELETED_STATUS = "Missing"
 
 
 class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
@@ -76,6 +89,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     _dup_pair_count = 0
     _dup_paired_names = None
     _dup_deleted = None
+    _dup_deleted_aliases = None
     _dup_pairs = None
     _dup_datastrip_pairs = None
 
@@ -347,16 +361,18 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
     def _duplicated_product_info(product, to_be_deleted, deletion_issue):
         """Build the per-product dict consumed by ``append_duplicated_pair``.
 
-        Carries the product identity, sensing period and both the global and the
-        per-interface (DD / LTA) deletion trace.
+        Carries the product identity, sensing period, publication date and both the
+        global and the per-interface (DD / LTA) deletion trace.
         """
         by_interface = product.deletion_trace_by_interface()
         dd_deleted, dd_issue = by_interface["DD"]
         lta_deleted, lta_issue = by_interface["LTA"]
         return {
             "name": product.name,
+            "dd_name": getattr(product, "dddas_name", None),
             "sensing_start_date": product.sensing_start_date,
             "sensing_end_date": product.sensing_end_date,
+            "publication_date": getattr(product, "prip_publication_date", None),
             "to_be_deleted": to_be_deleted,
             "deletion_issue": deletion_issue,
             "dd_deleted": dd_deleted,
@@ -366,36 +382,61 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         }
 
     def _init_duplicateds_buffers(self):
-        """(Re)set the datatake-level buffers feeding ``finalize_duplicateds``."""
+        """(Re)set the datatake-level buffers feeding ``finalize_duplicateds``.
+
+        The duplicated reporting follows a three-step funnel, each step being a
+        subset of the previous one:
+
+        - **identified**: the pair is detected as duplicated by this compute
+        - **mentioned**: one of its products is present in a deletion (a deletion
+          ticket and its attachment have been consolidated on the product)
+        - **deleted**: that product is really gone, i.e. the interface probe of the
+          deletion reports it as ``Missing``
+        """
         self._dup_items = []
         self._dup_pair_count = 0
         self._dup_paired_names = set()
-        # name -> deletion issue, per interface, for every deleted product seen
+        # name -> deletion issue, per interface, for every product mentioned in a
+        # deletion (mentioned step: says nothing about the product being gone yet)
         self._dup_deleted = {"DD": {}, "LTA": {}}
-        # one record per duplicated pair: its product type and, per interface,
-        # whether the pair carries a product deleted from it. Feeds the
-        # per-interface expected / surviving pair counts in finalize_duplicateds.
+        # name -> names identifying that product in the deletion records: its PRIP
+        # name and its DD name (``dddas_name``), which differ for the S2 containers
+        self._dup_deleted_aliases = {}
+        # one record per identified duplicated pair: its product type and, per
+        # interface, the name of the product mentioned in a deletion (None when the
+        # pair is not mentioned at all). Feeds the per-interface identified /
+        # mentioned / deleted pair counts in finalize_duplicateds.
         self._dup_pairs = []
         # datastrip-centric duplicated pairs (S2 only, see
         # CdsDatatakeS2.compute_duplicated_datastrips)
         self._dup_datastrip_pairs = []
 
     def _record_deleted_product(
-        self, name, dd_deleted, dd_issue, lta_deleted, lta_issue
+        self, name, dd_deleted, dd_issue, lta_deleted, lta_issue, dd_name=None
     ):
-        """Remember a deleted product and its ticket, per interface."""
+        """Remember a product mentioned in a deletion and its ticket, per interface.
+
+        A mentioned product is not necessarily gone from the interface: whether it
+        really is is resolved by ``_probe_deleted_products``, which needs the names
+        the deletion records use, hence the alias buffer.
+        """
+        if not dd_deleted and not lta_deleted:
+            return
+
         if dd_deleted:
             self._dup_deleted["DD"][name] = dd_issue
         if lta_deleted:
             self._dup_deleted["LTA"][name] = lta_issue
+
+        self._dup_deleted_aliases[name] = {alias for alias in (name, dd_name) if alias}
 
     def _register_pair_item(self, item):
         """Buffer a single duplicated pair (one entry per pair).
 
         ``item`` is a dict with keys ``product_type``, ``name``, ``paired_with``,
         ``deleted_product`` and the sensing period. Both members are recorded as
-        paired, and the pair is buffered with its product type and per-interface
-        deletion flags (consumed by ``finalize_duplicateds``).
+        paired, and the pair is buffered with its product type and, per interface,
+        the product mentioned in a deletion (consumed by ``finalize_duplicateds``).
         """
         self._dup_paired_names.add(item["name"])
         self._dup_paired_names.add(item["paired_with"])
@@ -404,8 +445,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         self._dup_pairs.append(
             {
                 "product_type": item["product_type"],
-                "deleted": {
-                    interface: bool(deleted_product.get(interface))
+                # per interface, the pair member mentioned in a deletion (or None)
+                "mentioned": {
+                    interface: deleted_product.get(interface) or None
                     for interface in ("DD", "LTA")
                 },
             }
@@ -420,11 +462,16 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         Used by detections that do not rely on the time-overlap percentage (e.g. S2
         granules or tiles), where two products are considered full duplicates.
 
+        As in the time-overlap detection, the item reports the most recently
+        published product of the pair in ``name`` and the other one in
+        ``paired_with`` (see ``compute_duplicated_items``).
+
         Args:
             product_type (str): the current product type
             first (dict): first product, keys ``name``, ``sensing_start_date``,
-                ``sensing_end_date`` and the per-interface deletion trace
-                (``dd_deleted`` / ``dd_issue`` / ``lta_deleted`` / ``lta_issue``)
+                ``sensing_end_date``, ``publication_date`` and the per-interface
+                deletion trace (``dd_deleted`` / ``dd_issue`` / ``lta_deleted`` /
+                ``lta_issue``)
             second (dict): the other product of the pair (same keys)
             percentage (float): duplicated percentage to store on the item
         """
@@ -440,16 +487,26 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 info.get("dd_issue"),
                 info.get("lta_deleted"),
                 info.get("lta_issue"),
+                info.get("dd_name"),
             )
+
+        if is_later_publication(
+            second.get("publication_date"), first.get("publication_date")
+        ):
+            latest, other = second, first
+        else:
+            latest, other = first, second
 
         self._register_pair_item(
             {
                 "product_type": product_type,
-                "name": first["name"],
-                "sensing_start_date": first.get("sensing_start_date"),
-                "sensing_end_date": first.get("sensing_end_date"),
+                "name": latest["name"],
+                "sensing_start_date": latest.get("sensing_start_date"),
+                "sensing_end_date": latest.get("sensing_end_date"),
+                "publication_date": latest.get("publication_date"),
                 "duplicated_percentage": float(percentage),
-                "paired_with": second["name"],
+                "paired_with": other["name"],
+                "paired_with_publication_date": other.get("publication_date"),
                 "deleted_product": deleted_product,
             }
         )
@@ -480,8 +537,9 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
         for item in items:
             self._register_pair_item({"product_type": product_type, **item})
 
-        # Record every deleted product of the type (including those not part of a
-        # pair) so ``finalize_duplicateds`` can report deleted-not-duplicated.
+        # Record every product of the type mentioned in a deletion (including those
+        # not part of an identified pair) so ``finalize_duplicateds`` can report the
+        # products mentioned in a deletion without being identified as duplicated.
         for candidate in candidates:
             self._record_deleted_product(
                 candidate.name,
@@ -489,6 +547,7 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 candidate.dd_issue,
                 candidate.lta_deleted,
                 candidate.lta_issue,
+                candidate.dd_name,
             )
 
     def _dataflow_expected_interfaces(self):
@@ -527,18 +586,158 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
 
         return expected
 
+    def _probe_deleted_products(self, aliases_by_name):
+        """Resolve which mentioned products are really deleted from their interface.
+
+        A product mentioned in a deletion is only really gone once the interface
+        probe says so: ``TRACK_DELETION`` fills the per-service
+        ``{interface}_{service}_status`` field of the ``CdsInterfaceProductDeletion``
+        record with ``Missing`` (gone), ``Available`` (still distributed),
+        ``Never published`` or ``Unknow`` (not probed yet). Only ``Missing`` counts
+        as deleted here, so a duplicate whose deletion ticket exists but whose
+        product is still served is reported as mentioned, not deleted.
+
+        Args:
+            aliases_by_name (dict): ``product name -> set of names identifying it in
+                the deletion records`` (its PRIP name and its DD name)
+
+        Returns:
+            dict: ``product name -> set(service_type)`` holding the interfaces the
+                product is probed as deleted from. Empty when nothing is mentioned
+                or when the deletion records cannot be read (the products then stay
+                mentioned-but-not-deleted rather than being wrongly reported gone).
+        """
+        if not aliases_by_name:
+            return {}
+
+        all_aliases = sorted(
+            alias for aliases in aliases_by_name.values() for alias in aliases
+        )
+
+        try:
+            records = list(
+                CdsInterfaceProductDeletion.search()
+                .filter(
+                    "bool",
+                    should=[
+                        Q("terms", effective_product_name=all_aliases),
+                        Q("terms", product_name=all_aliases),
+                    ],
+                    minimum_should_match=1,
+                )
+                .params(ignore=404, ignore_unavailable=True, size=len(all_aliases) * 2)
+                .execute()
+            )
+        except Exception as error:  # pylint: disable=broad-except
+            # Never fail the completeness compute for the deletion monitoring: an
+            # unreachable / missing deletion index only means the probe verdict is
+            # unknown for now.
+            LOGGER.warning(
+                "[%s] Unable to read the deletion records of the duplicated products: %s",
+                self.datatake_id,
+                error,
+            )
+            return {}
+
+        # alias -> interfaces the probe reports the product as deleted from
+        deleted_aliases = {}
+        for record in records:
+            record_dict = record.to_dict()
+            # ``{interface}_{service}_status`` fields only, e.g. DD_DAS_status or
+            # LTA_Werum_status: the interface is the first part of the field name.
+            probed_missing = {
+                field.split("_")[0]
+                for field, value in record_dict.items()
+                if field.endswith("_status")
+                and field.startswith(("DD_", "LTA_"))
+                and value == PROBE_DELETED_STATUS
+            }
+            if not probed_missing:
+                continue
+            for alias in (
+                record_dict.get("effective_product_name"),
+                record_dict.get("product_name"),
+            ):
+                if alias:
+                    deleted_aliases.setdefault(alias, set()).update(probed_missing)
+
+        return {
+            name: set().union(*(deleted_aliases.get(alias, set()) for alias in aliases))
+            for name, aliases in aliases_by_name.items()
+            if any(alias in deleted_aliases for alias in aliases)
+        }
+
+    @staticmethod
+    def _deletion_status(interface, identified_pairs, mentioned_pairs, deleted_pairs):
+        """Status of the duplicate removal on an interface, along the funnel.
+
+        The three counts are nested subsets: identified by us as duplicated ->
+        mentioned in a deletion -> really deleted (interface probe reports the
+        product as missing).
+
+        Args:
+            interface (str): the service type (``DD`` / ``LTA``)
+            identified_pairs (int): duplicated pairs identified on this interface,
+                i.e. whose product type the dataflow distributes on it
+            mentioned_pairs (int): those pairs having one of their products
+                mentioned in a deletion
+            deleted_pairs (int): those pairs having that product really deleted
+
+        Returns:
+            tuple(DuplicatedDeletionStatus, str): the status and a human readable
+                message carrying the counts, e.g. ``LTA deletions created (458/458
+                identified duplicated pairs mentioned, 125 deleted)``
+        """
+        if not identified_pairs:
+            return (
+                DuplicatedDeletionStatus.NO_DUPLICATED,
+                f"No {interface} duplicated product to delete",
+            )
+
+        pairs = "identified duplicated pairs"
+
+        # Every identified pair has its duplicate really gone from the interface.
+        if deleted_pairs == identified_pairs:
+            return (
+                DuplicatedDeletionStatus.COMPLETE,
+                f"{interface} deletions done"
+                f" ({deleted_pairs}/{identified_pairs} {pairs} deleted)",
+            )
+
+        # Deletions exist but the funnel is not complete: either some pairs are not
+        # mentioned yet, or they are mentioned without being (probed as) deleted.
+        if mentioned_pairs:
+            return (
+                DuplicatedDeletionStatus.CREATED,
+                f"{interface} deletions created"
+                f" ({mentioned_pairs}/{identified_pairs} {pairs} mentioned,"
+                f" {deleted_pairs} deleted)",
+            )
+
+        # Nothing mentioned at all: no deletion has been created for those pairs.
+        return (
+            DuplicatedDeletionStatus.MISSING,
+            f"{interface} deletions still missing"
+            f" (0/{identified_pairs} {pairs} mentioned)",
+        )
+
     def finalize_duplicateds(self):
         """Assemble the nested ``duplicateds`` object from the buffers.
 
         Called once at the end of the include-deleted completeness pass, when both
-        members of every duplicated pair and all deleted products are known.
+        members of every duplicated pair and all the products mentioned in a
+        deletion are known.
+
+        Every per-interface count follows the same funnel (see
+        ``_init_duplicateds_buffers``): identified as duplicated -> mentioned in a
+        deletion -> really deleted (probed as missing on the interface).
         """
         # Each product type is distributed only on the interfaces the dataflow
-        # declares for it. A duplicated pair is "expected to be removed" from an
-        # interface only when that interface actually distributes its product type
-        # (e.g. an S1 SLC pair is never expected to be deleted from DD since SLC is
-        # LTA-only). When the dataflow config is not loaded the map is empty and
-        # every pair is counted, preserving the previous behaviour.
+        # declares for it. A duplicated pair is only identified on an interface when
+        # that interface actually distributes its product type (e.g. an S1 SLC pair
+        # is never to be deleted from DD since SLC is LTA-only). When the dataflow
+        # config is not loaded the map is empty and every pair is counted,
+        # preserving the previous behaviour.
         expected_interfaces = self._dataflow_expected_interfaces()
 
         def pair_expected_on(pair, interface):
@@ -546,12 +745,16 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 return True
             return interface in expected_interfaces.get(pair["product_type"], ())
 
+        # Interfaces each mentioned product is really deleted from, resolved once
+        # for the whole datatake (one query on the deletion records).
+        probed_deleted = self._probe_deleted_products(self._dup_deleted_aliases)
+
         # One row per service_type (DD / LTA): a flat, Grafana-friendly shape.
         deletions = []
         for interface in ("DD", "LTA"):
-            deleted = self._dup_deleted[interface]  # name -> issue
+            mentioned = self._dup_deleted[interface]  # name -> issue
 
-            issues = [issue for issue in deleted.values() if issue]
+            issues = [issue for issue in mentioned.values() if issue]
             distinct_issues = set(issues)
             if len(distinct_issues) > 1:
                 LOGGER.warning(
@@ -562,54 +765,100 @@ class CdsDatatake(AnomalyMixin, generated.CdsDatatake):
                 )
             ticket = Counter(issues).most_common(1)[0][0] if issues else None
 
-            # Products deleted from this interface in this datatake.
-            targeted = sorted(deleted)
-            # Deleted here but not part of any duplicated pair.
+            # Products of this datatake mentioned in a deletion on this interface...
+            targeted = sorted(mentioned)
+            # ... and, among them, those the probe reports as really deleted.
+            deleted_products = sorted(
+                name
+                for name in targeted
+                if interface in probed_deleted.get(name, set())
+            )
+            # Mentioned here without being identified as duplicated by us: either a
+            # deletion for another cause, or a duplication we do not detect.
             not_duplicated = sorted(
                 name for name in targeted if name not in self._dup_paired_names
             )
 
-            # Only pairs whose product type the dataflow distributes on this
-            # interface are expected to have their duplicate removed from it.
-            expected_pairs = sum(
-                1 for pair in self._dup_pairs if pair_expected_on(pair, interface)
-            )
-            pairs_with_deletion = sum(
-                1
-                for pair in self._dup_pairs
-                if pair_expected_on(pair, interface) and pair["deleted"][interface]
-            )
-            # Duplicated pairs that survived: expected on this interface but without
-            # a product deleted from it (we cannot tell which single product
-            # "should" survive, so this is counted at the pair level).
-            surviving_pairs = expected_pairs - pairs_with_deletion
+            # --- pair level, along the funnel ---
+            # identified: pairs whose product type this interface distributes
+            identified_pairs = [
+                pair for pair in self._dup_pairs if pair_expected_on(pair, interface)
+            ]
+            # mentioned: one of the pair members is present in a deletion
+            mentioned_pairs = [
+                pair for pair in identified_pairs if pair["mentioned"][interface]
+            ]
+            # deleted: that very product is probed as missing on the interface
+            deleted_pairs = [
+                pair
+                for pair in mentioned_pairs
+                if interface in probed_deleted.get(pair["mentioned"][interface], set())
+            ]
 
-            # Share of expected duplicated pairs whose duplicate was actually
-            # deleted from this interface. 100% when there is no pair to delete.
-            if expected_pairs:
+            # Duplicated pairs that survived: identified on this interface but with
+            # no member mentioned in a deletion (we cannot tell which single product
+            # "should" survive, so this is counted at the pair level).
+            surviving_pairs = len(identified_pairs) - len(mentioned_pairs)
+
+            # Share of the identified duplicated pairs mentioned in a deletion, and
+            # share of those really deleted. 100% when there is no pair to delete.
+            if identified_pairs:
                 completeness = round(
-                    (expected_pairs - surviving_pairs) / expected_pairs * 100, 2
+                    len(mentioned_pairs) / len(identified_pairs) * 100, 2
+                )
+                deleted_percentage = round(
+                    len(deleted_pairs) / len(identified_pairs) * 100, 2
                 )
             else:
                 completeness = 100.0
+                deleted_percentage = 100.0
+
+            status, status_message = self._deletion_status(
+                interface,
+                len(identified_pairs),
+                len(mentioned_pairs),
+                len(deleted_pairs),
+            )
 
             deletions.append(
                 generated.CdsDatatakeDuplicatedsDeletions(
                     service_type=interface,
                     ticket=ticket,
                     targeted_products_count=len(targeted),
+                    deleted_products_count=len(deleted_products),
                     surviving_pairs_count=surviving_pairs,
                     deleted_not_duplicated_products=not_duplicated,
                     deleted_not_duplicated_products_count=len(not_duplicated),
-                    expected_pairs_count=expected_pairs,
+                    expected_pairs_count=len(identified_pairs),
+                    mentioned_pairs_count=len(mentioned_pairs),
+                    deleted_pairs_count=len(deleted_pairs),
                     deletion_completenness_percentange=completeness,
+                    deleted_percentage=deleted_percentage,
+                    status=status.value,
+                    status_message=status_message,
                 )
             )
+
+        # Single line summarizing both interfaces, e.g. "LTA deletions created
+        # (458/458 identified duplicated pairs mentioned, 125 deleted) / DD deletions
+        # still missing (0/458 identified duplicated pairs mentioned)". Interfaces
+        # without any duplicated product to delete are left out to keep it readable.
+        concerned = [
+            row.status_message
+            for row in deletions
+            if row.status != DuplicatedDeletionStatus.NO_DUPLICATED.value
+        ]
+        deletions_status = (
+            " / ".join(concerned)
+            if concerned
+            else DuplicatedDeletionStatus.NO_DUPLICATED.value
+        )
 
         self.duplicateds = generated.CdsDatatakeDuplicateds(
             items=self._dup_items,
             pairs_count=self._dup_pair_count,
             deletions=deletions,
+            deletions_status=deletions_status,
             datastrip_pairs=self._dup_datastrip_pairs,
         )
 

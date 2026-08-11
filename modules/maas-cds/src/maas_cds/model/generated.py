@@ -4,7 +4,7 @@ DA0 classes generated from index templates.
 
 **DO NOT EDIT, ONLY INHERIT !**
 
-Generated date: 2026-08-10T09:20:31.545550+00:00
+Generated date: 2026-08-10T13:54:22.817201+00:00
 
 Generated from:
     - resources/templates/cds-acquisition-pass-status_template.json
@@ -1709,9 +1709,13 @@ class CdsDatatakeDuplicatedsItems(InnerDoc):
 
     sensing_end_date = ZuluDate()
 
+    publication_date = ZuluDate()
+
     duplicated_percentage = Float()
 
     paired_with = Keyword()
+
+    paired_with_publication_date = ZuluDate()
 
     deleted_product = Object(CdsDatatakeDuplicatedsItemsDeletedProduct)
 
@@ -1729,6 +1733,8 @@ class CdsDatatakeDuplicatedsDeletions(InnerDoc):
 
     targeted_products_count = Integer()
 
+    deleted_products_count = Integer()
+
     surviving_pairs_count = Integer()
 
     deleted_not_duplicated_products = Keyword()
@@ -1737,7 +1743,17 @@ class CdsDatatakeDuplicatedsDeletions(InnerDoc):
 
     expected_pairs_count = Integer()
 
+    mentioned_pairs_count = Integer()
+
+    deleted_pairs_count = Integer()
+
     deletion_completenness_percentange = Float()
+
+    deleted_percentage = Float()
+
+    status = Keyword()
+
+    status_message = Keyword()
 
 
 class CdsDatatakeDuplicatedsDatastripPairsDatastripsProductsDeletions(InnerDoc):
@@ -1822,6 +1838,8 @@ class CdsDatatakeDuplicateds(InnerDoc):
     pairs_count = Integer()
 
     deletions = Object(CdsDatatakeDuplicatedsDeletions)
+
+    deletions_status = Keyword()
 
     datastrip_pairs = Object(CdsDatatakeDuplicatedsDatastripPairs)
 
