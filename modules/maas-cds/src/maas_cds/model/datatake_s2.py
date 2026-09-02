@@ -145,6 +145,13 @@ class CdsDatatakeS2(CdsDatatake):
                 "2026-07-23T00:00:00.000Z": ["L2A"],
             },
         },
+        "S2C": {
+            # L2A is not produced anymore for RAW observations since 2026-07-23
+            "RAW": {
+                "0": [],
+                "2026-08-01T00:00:00.000Z": ["L2A"],
+            },
+        },
     }
 
     STATIC_COMPLETENESS_VALUE = {"MSI_L.*_DS": 3608000 + 1000000}
